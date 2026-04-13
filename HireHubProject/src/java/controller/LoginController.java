@@ -29,7 +29,12 @@ public class LoginController extends HttpServlet {
         // Check if user is already logged in
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("jwtToken") != null) {
-            response.sendRedirect(request.getContextPath() + "/user/dashboard");
+            String role = (String) session.getAttribute("userRole");
+            if ("RECRUITER".equals(role)) {
+                response.sendRedirect(request.getContextPath() + "/jobs");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/user/dashboard");
+            }
             return;
         }
 
@@ -112,7 +117,11 @@ public class LoginController extends HttpServlet {
         // Update last login
         userDAO.updateLastLogin(user.getUserId());
 
-        // Redirect to dashboard
-        response.sendRedirect(request.getContextPath() + "/user/dashboard");
+        // Redirect based on role
+        if ("RECRUITER".equals(roleCode)) {
+            response.sendRedirect(request.getContextPath() + "/jobs");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/user/dashboard");
+        }
     }
 }
