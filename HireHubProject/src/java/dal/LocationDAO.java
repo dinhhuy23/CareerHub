@@ -1,35 +1,47 @@
 package dal;
 
-import model.Location;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import model.Location;
 
-public class LocationDAO {
-    private static final Logger LOGGER = Logger.getLogger(LocationDAO.class.getName());
+public class LocationDAO extends DBContext {
     private final DBContext dbContext = new DBContext();
-
-    public List<Location> getAllActive() {
+    public List<Location> getAllActiveLocations() {
         List<Location> list = new ArrayList<>();
-        String sql = "SELECT * FROM Locations WHERE IsActive = 1 ORDER BY LocationName";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT LocationId, LocationName FROM Locations WHERE IsActive = 1 ORDER BY LocationName";
+
+        try {
+            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
-                Location l = new Location();
-                l.setLocationId(rs.getLong("LocationId"));
-                l.setLocationName(rs.getString("LocationName"));
-                l.setLocationType(rs.getString("LocationType"));
-                l.setParentLocationId(rs.getObject("ParentLocationId") != null ? rs.getLong("ParentLocationId") : null);
-                l.setPostalCode(rs.getString("PostalCode"));
-                l.setActive(rs.getBoolean("IsActive"));
-                list.add(l);
+                Location location = new Location();
+                location.setLocationId(rs.getLong("LocationId"));
+                location.setLocationName(rs.getString("LocationName"));
+                list.add(location);
             }
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error getting locations", e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         return list;
+    }
+
+    public String getLocationNameById(long locationId) {
+        String sql = "SELECT LocationName FROM Locations WHERE LocationId = ?";
+        try {
+            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql);
+            ps.setLong(1, locationId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("LocationName");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }

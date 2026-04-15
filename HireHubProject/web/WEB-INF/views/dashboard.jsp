@@ -11,50 +11,7 @@
 </head>
 <body class="app-page">
     <!-- Navigation -->
-    <nav class="navbar glass-nav">
-        <div class="nav-container">
-            <a href="${pageContext.request.contextPath}/user/dashboard" class="nav-logo">
-                <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
-                    <rect width="48" height="48" rx="12" fill="url(#navLogo)"/>
-                    <path d="M14 20h20M14 28h14M14 14h8v4h-8zM26 14h8v4h-8z" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                    <defs><linearGradient id="navLogo" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
-                </svg>
-                <span>HireHub</span>
-            </a>
-            <div class="nav-links">
-                <a href="${pageContext.request.contextPath}/user/dashboard" class="nav-link active">Dashboard</a>
-                <a href="${pageContext.request.contextPath}/user/profile" class="nav-link">Hồ sơ</a>
-            </div>
-            <div class="nav-user">
-                <div class="user-dropdown">
-                    <button class="user-btn" onclick="toggleDropdown()">
-                        <div class="user-avatar">${sessionScope.userFullName.substring(0,1)}</div>
-                        <span class="user-name">${sessionScope.userFullName}</span>
-                        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                    </button>
-                    <div class="dropdown-menu" id="userDropdown">
-                        <a href="${pageContext.request.contextPath}/user/profile" class="dropdown-item">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            Thông tin cá nhân
-                        </a>
-                        <a href="${pageContext.request.contextPath}/user/edit-profile" class="dropdown-item">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                            Chỉnh sửa hồ sơ
-                        </a>
-                        <a href="${pageContext.request.contextPath}/user/change-password" class="dropdown-item">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            Đổi mật khẩu
-                        </a>
-                        <hr class="dropdown-divider">
-                        <a href="${pageContext.request.contextPath}/logout" class="dropdown-item text-danger">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                            Đăng xuất
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <jsp:include page="/WEB-INF/views/header.jsp" />
 
     <!-- Main Content -->
     <main class="main-content">
