@@ -3,6 +3,7 @@ package utils;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Base64;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -15,9 +16,15 @@ import org.json.JSONObject;
 public class JWTUtil {
 
     // Secret key for signing tokens - in production, store this in environment variable
-    private static final String SECRET_KEY = "HireHub_JWT_Secret_Key_2026_!@#$%^&*()_SuperSecure";
+    private static final String SECRET_KEY = getEnvOrDefault(
+        "JWT_SECRET",
+        "HireHub_JWT_Secret_Key_2026_!@#$%^&*()_SuperSecure");
     private static final String ALGORITHM = "HmacSHA256";
-    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 24 hours in ms
+    private static final long ACCESS_TOKEN_EXPIRATION_MS =
+        getLongEnvOrDefault("JWT_EXPIRES_IN", 24 * 60 * 60) * 1000L;
+    private static final long REFRESH_TOKEN_EXPIRATION_MS =
+        getLongEnvOrDefault("JWT_REFRESH_EXPIRES_IN", 7 * 24 * 60 * 60) * 1000L;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /**
      * Generate a JWT token for a user.
@@ -41,7 +48,7 @@ public class JWTUtil {
             payload.put("fullName", fullName);
             payload.put("role", roleCode);
             payload.put("iat", System.currentTimeMillis());
-            payload.put("exp", System.currentTimeMillis() + EXPIRATION_TIME);
+            payload.put("exp", System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION_MS);
 
             // Encode header and payload
             String encodedHeader = base64UrlEncode(header.toString().getBytes(StandardCharsets.UTF_8));
@@ -127,6 +134,33 @@ public class JWTUtil {
         return System.currentTimeMillis() > claims.getLong("exp");
     }
 
+    /**
+     * Generate a secure random refresh token.
+     */
+    public static String generateRefreshToken() {
+        byte[] randomBytes = new byte[48];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        return base64UrlEncode(randomBytes);
+    }
+
+    /**
+     * Return refresh token expiration timestamp in milliseconds.
+     */
+    public static long getRefreshTokenExpirationTime() {
+        return System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION_MS;
+    }
+
+    /**
+     * Return refresh token expiration in seconds for session timeout usage.
+     */
+    public static int getRefreshTokenExpirationSeconds() {
+        long seconds = REFRESH_TOKEN_EXPIRATION_MS / 1000L;
+        if (seconds > Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) seconds;
+    }
+
     // --- Private helper methods ---
 
     private static String sign(String data) throws NoSuchAlgorithmException, InvalidKeyException {
@@ -144,5 +178,26 @@ public class JWTUtil {
 
     private static byte[] base64UrlDecode(String data) {
         return Base64.getUrlDecoder().decode(data);
+    }
+
+    private static String getEnvOrDefault(String key, String defaultValue) {
+        String value = System.getenv(key);
+        if (value == null || value.trim().isEmpty()) {
+            return defaultValue;
+        }
+        return value.trim();
+    }
+
+    private static long getLongEnvOrDefault(String key, long defaultValue) {
+        String value = System.getenv(key);
+        if (value == null || value.trim().isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            long parsed = Long.parseLong(value.trim());
+            return parsed > 0 ? parsed : defaultValue;
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 }

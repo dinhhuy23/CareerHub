@@ -31,6 +31,11 @@
         <url-pattern>/employer/*</url-pattern>
     </filter-mapping>
 
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
+    </filter-mapping>
+
     <!-- Recruiter Authorization Filter -->
     <filter>
         <filter-name>RecruiterAuthFilter</filter-name>
@@ -43,6 +48,20 @@
     <filter-mapping>
         <filter-name>RecruiterAuthFilter</filter-name>
         <url-pattern>/employer/*</url-pattern>
+    </filter-mapping>
+
+    <!-- Admin Authorization Filter -->
+    <filter>
+        <filter-name>AdminAuthFilter</filter-name>
+        <filter-class>filter.AuthorizationFilter</filter-class>
+        <init-param>
+            <param-name>allowedRole</param-name>
+            <param-value>ADMIN</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>AdminAuthFilter</filter-name>
+        <url-pattern>/admin/*</url-pattern>
     </filter-mapping>
 
     <!-- Session Config -->

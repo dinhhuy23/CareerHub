@@ -1,5 +1,6 @@
 package controller;
 
+import dal.RefreshTokenDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,12 +16,18 @@ import java.io.IOException;
 @WebServlet(name = "LogoutController", urlPatterns = {"/logout"})
 public class LogoutController extends HttpServlet {
 
+    private final RefreshTokenDAO refreshTokenDAO = new RefreshTokenDAO();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
         if (session != null) {
+            String refreshToken = (String) session.getAttribute("refreshToken");
+            if (refreshToken != null && !refreshToken.trim().isEmpty()) {
+                refreshTokenDAO.revokeTokenByValue(refreshToken);
+            }
             session.invalidate();
         }
 

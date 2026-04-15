@@ -42,6 +42,7 @@ public class RegisterController extends HttpServlet {
         String roleCode = request.getParameter("role");
         String phoneNumber = request.getParameter("phoneNumber");
         String gender = request.getParameter("gender");
+        Role selectedRole = null;
 
         // Validation
         StringBuilder errors = new StringBuilder();
@@ -78,6 +79,15 @@ public class RegisterController extends HttpServlet {
             errors.append("Vui lòng chọn vai trò. ");
         } else if (!roleCode.equals("CANDIDATE") && !roleCode.equals("RECRUITER")) {
             errors.append("Vai trò không hợp lệ. ");
+        } else {
+            if (!roleDAO.ensureDefaultRoles()) {
+                errors.append("Hệ thống chưa sẵn sàng cho đăng ký. Vui lòng thử lại sau. ");
+            } else {
+                selectedRole = roleDAO.findByRoleCode(roleCode);
+                if (selectedRole == null) {
+                    errors.append("Vai trò đăng ký chưa được cấu hình. Vui lòng liên hệ quản trị viên. ");
+                }
+            }
         }
 
         // If there are errors, return to form
@@ -103,14 +113,21 @@ public class RegisterController extends HttpServlet {
         long userId = userDAO.insert(newUser);
 
         if (userId > 0) {
-            // Assign role
-            Role role = roleDAO.findByRoleCode(roleCode);
-            if (role != null) {
-                roleDAO.assignRole(userId, role.getRoleId());
+            if (selectedRole != null && roleDAO.assignRole(userId, selectedRole.getRoleId())) {
+                // Redirect to login with success message
+                response.sendRedirect(request.getContextPath() + "/login?success=registered");
+                return;
             }
 
-            // Redirect to login with success message
-            response.sendRedirect(request.getContextPath() + "/login?success=registered");
+            // Roll back user creation when role assignment fails.
+            userDAO.deleteById(userId);
+            request.setAttribute("error", "Đăng ký thất bại do lỗi phân quyền tài khoản. Vui lòng thử lại.");
+            request.setAttribute("email", email);
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("phoneNumber", phoneNumber);
+            request.setAttribute("gender", gender);
+            request.setAttribute("selectedRole", roleCode);
+            request.getRequestDispatcher("/register.jsp").forward(request, response);
         } else {
             request.setAttribute("error", "Đã xảy ra lỗi khi đăng ký. Vui lòng thử lại.");
             request.setAttribute("email", email);

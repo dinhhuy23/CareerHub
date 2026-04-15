@@ -1,9 +1,14 @@
 package filter;
 
+import dal.RefreshTokenDAO;
+import dal.UserDAO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.Timestamp;
+import model.RefreshToken;
+import model.User;
 import org.json.JSONObject;
 import utils.JWTUtil;
 import java.io.IOException;
@@ -13,6 +18,9 @@ import java.io.IOException;
  * Applied to /user/* URL pattern.
  */
 public class AuthenticationFilter implements Filter {
+
+    private final RefreshTokenDAO refreshTokenDAO = new RefreshTokenDAO();
+    private final UserDAO userDAO = new UserDAO();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -42,12 +50,16 @@ public class AuthenticationFilter implements Filter {
         // Validate token
         JSONObject claims = JWTUtil.validateToken(token);
         if (claims == null) {
-            // Invalid or expired token - clear session and redirect
-            if (session != null) {
-                session.invalidate();
+            claims = tryRefreshSessionToken(session, httpRequest);
+
+            if (claims == null) {
+                // Invalid or expired token and cannot refresh - clear session and redirect
+                if (session != null) {
+                    session.invalidate();
+                }
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/login?error=session_expired");
+                return;
             }
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login?error=session_expired");
-            return;
         }
 
         // Token is valid - set user attributes in request for controllers to use
@@ -63,5 +75,68 @@ public class AuthenticationFilter implements Filter {
     @Override
     public void destroy() {
         // No cleanup needed
+    }
+
+    private JSONObject tryRefreshSessionToken(HttpSession session, HttpServletRequest request) {
+        if (session == null) {
+            return null;
+        }
+
+        String refreshToken = (String) session.getAttribute("refreshToken");
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            return null;
+        }
+
+        RefreshToken storedToken = refreshTokenDAO.findActiveToken(refreshToken);
+        if (storedToken == null) {
+            return null;
+        }
+
+        User user = userDAO.findById(storedToken.getUserId());
+        if (user == null || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            refreshTokenDAO.revokeToken(storedToken.getRefreshTokenId());
+            return null;
+        }
+
+        String roleCode = user.getRoleCode() != null ? user.getRoleCode() : "CANDIDATE";
+        String newAccessToken = JWTUtil.generateToken(
+                user.getUserId(),
+                user.getEmail(),
+                user.getFullName(),
+                roleCode
+        );
+        String newRefreshToken = JWTUtil.generateRefreshToken();
+
+        boolean rotated = refreshTokenDAO.rotateToken(
+                storedToken.getRefreshTokenId(),
+                user.getUserId(),
+                newRefreshToken,
+                new Timestamp(JWTUtil.getRefreshTokenExpirationTime()),
+                request.getHeader("User-Agent"),
+                getClientIp(request)
+        );
+
+        if (!rotated) {
+            return null;
+        }
+
+        session.setAttribute("jwtToken", newAccessToken);
+        session.setAttribute("refreshToken", newRefreshToken);
+        session.setAttribute("userId", user.getUserId());
+        session.setAttribute("userEmail", user.getEmail());
+        session.setAttribute("userFullName", user.getFullName());
+        session.setAttribute("userRole", roleCode);
+        session.setAttribute("userRoleName", user.getRoleName());
+        session.setMaxInactiveInterval(JWTUtil.getRefreshTokenExpirationSeconds());
+
+        return JWTUtil.validateToken(newAccessToken);
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.trim().isEmpty()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

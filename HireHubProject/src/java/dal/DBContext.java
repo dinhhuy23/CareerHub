@@ -12,12 +12,14 @@ import java.util.logging.Logger;
  */
 public class DBContext {
 
-    private static final String SERVER_NAME = "localhost";
-    private static final String DB_NAME = "HireHubDB";
-    private static final String PORT_NUMBER = "1433";
-    private static final String USER_ID = "sa";
-    private static final String PASSWORD = "123";
-
+    private static final String SERVER_NAME = getEnvOrDefault("DB_HOST", "localhost");
+    private static final String DB_NAME = getEnvOrDefault("DB_NAME", "HireHubDB");
+    private static final String PORT_NUMBER = getEnvOrDefault("DB_PORT", "1433");
+    private static final String USER_ID = getEnvOrDefault("DB_USER", "sa");
+        private static final String PASSWORD = getEnvOrDefault(
+            "DB_PASSWORD",
+            getEnvOrDefault("MSSQL_SA_PASSWORD", "YourStrong!Passw0rd")
+        );
     private static final Logger LOGGER = Logger.getLogger(DBContext.class.getName());
 
     /**
@@ -54,5 +56,10 @@ public class DBContext {
                 LOGGER.log(Level.WARNING, "Error closing connection", ex);
             }
         }
+    }
+
+    private static String getEnvOrDefault(String key, String defaultValue) {
+        String value = System.getenv(key);
+        return value == null || value.trim().isEmpty() ? defaultValue : value.trim();
     }
 }

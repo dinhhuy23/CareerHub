@@ -37,6 +37,9 @@
                         <a href="${pageContext.request.contextPath}/user/profile" class="dropdown-item">Thông tin cá nhân</a>
                         <a href="${pageContext.request.contextPath}/user/edit-profile" class="dropdown-item">Chỉnh sửa hồ sơ</a>
                         <a href="${pageContext.request.contextPath}/user/change-password" class="dropdown-item">Đổi mật khẩu</a>
+                        <c:if test="${sessionScope.userRole == 'ADMIN'}">
+                            <a href="${pageContext.request.contextPath}/admin/users" class="dropdown-item">Quản lý người dùng</a>
+                        </c:if>
                         <hr class="dropdown-divider">
                         <a href="${pageContext.request.contextPath}/logout" class="dropdown-item text-danger">Đăng xuất</a>
                     </div>

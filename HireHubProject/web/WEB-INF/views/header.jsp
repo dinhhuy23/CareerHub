@@ -32,6 +32,9 @@
                         </button>
                         <div class="dropdown-menu" id="userDropdown">
                             <a href="${pageContext.request.contextPath}/user/profile" class="dropdown-item">Tài khoản</a>
+                            <c:if test="${sessionScope.userRole == 'ADMIN'}">
+                                <a href="${pageContext.request.contextPath}/admin/users" class="dropdown-item">Quản lý người dùng</a>
+                            </c:if>
                             <c:if test="${sessionScope.userRole == 'RECRUITER'}">
                                 <a href="${pageContext.request.contextPath}/employer/jobs" class="dropdown-item">Quản lý tin tuyển dụng</a>
                             </c:if>

@@ -1,5 +1,6 @@
 package controller;
 
+import dal.RefreshTokenDAO;
 import dal.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -7,6 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.sql.Timestamp;
 import model.User;
 import utils.JWTUtil;
 import utils.SecurityUtil;
@@ -21,6 +23,7 @@ import java.io.IOException;
 public class LoginController extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
+    private final RefreshTokenDAO refreshTokenDAO = new RefreshTokenDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -104,15 +107,38 @@ public class LoginController extends HttpServlet {
                 roleCode
         );
 
+        String refreshToken = JWTUtil.generateRefreshToken();
+        Timestamp refreshTokenExpiredAt = new Timestamp(JWTUtil.getRefreshTokenExpirationTime());
+
+        String userAgent = request.getHeader("User-Agent");
+        String ipAddress = getClientIp(request);
+
+        refreshTokenDAO.revokeAllActiveTokensByUser(user.getUserId());
+        long refreshTokenId = refreshTokenDAO.insertToken(
+            user.getUserId(),
+            refreshToken,
+            refreshTokenExpiredAt,
+            userAgent,
+            ipAddress
+        );
+
+        if (refreshTokenId <= 0) {
+            request.setAttribute("error", "Không thể tạo phiên đăng nhập an toàn. Vui lòng thử lại.");
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/login.jsp").forward(request, response);
+            return;
+        }
+
         // Create session and store token
         HttpSession session = request.getSession(true);
         session.setAttribute("jwtToken", token);
+        session.setAttribute("refreshToken", refreshToken);
         session.setAttribute("userId", user.getUserId());
         session.setAttribute("userEmail", user.getEmail());
         session.setAttribute("userFullName", user.getFullName());
         session.setAttribute("userRole", roleCode);
         session.setAttribute("userRoleName", user.getRoleName());
-        session.setMaxInactiveInterval(24 * 60 * 60); // 24 hours
+        session.setMaxInactiveInterval(JWTUtil.getRefreshTokenExpirationSeconds());
 
         // Update last login
         userDAO.updateLastLogin(user.getUserId());
@@ -123,5 +149,13 @@ public class LoginController extends HttpServlet {
         } else {
             response.sendRedirect(request.getContextPath() + "/user/dashboard");
         }
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.trim().isEmpty()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

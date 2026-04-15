@@ -1061,6 +1061,86 @@ a:hover {
     margin-top: var(--space-md);
 }
 
+/* === Admin Users === */
+.admin-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-md);
+    align-items: end;
+}
+
+.admin-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.table-card {
+    overflow: hidden;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.admin-table th {
+    color: var(--text-secondary);
+    font-weight: 600;
+    background: rgba(15, 15, 35, 0.4);
+}
+
+.admin-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.06);
+}
+
+.table-empty {
+    text-align: center !important;
+    color: var(--text-muted);
+    padding: 28px !important;
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.inline-form {
+    display: inline-flex;
+}
+
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+}
+
+.pager-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-md);
+}
+
+.pager-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pager-current,
+.pager-info {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
 /* === Animations === */
 @keyframes fadeInUp {
     from {
@@ -1127,6 +1207,16 @@ a:hover {
 
     .actions-grid, .stats-grid {
         grid-template-columns: 1fr;
+    }
+
+    .admin-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pager-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
     }
 
     .form-row {

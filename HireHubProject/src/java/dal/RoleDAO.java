@@ -37,6 +37,27 @@ public class RoleDAO {
     }
 
     /**
+     * Find a role by its ID.
+     * @param roleId The role ID
+     * @return Role object or null
+     */
+    public Role findByRoleId(long roleId) {
+        String sql = "SELECT * FROM Roles WHERE RoleId = ? AND IsActive = 1";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, roleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToRole(rs);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding role by ID: " + roleId, e);
+        }
+        return null;
+    }
+
+    /**
      * Get all roles assigned to a user.
      * @param userId The user ID
      * @return List of Role objects
@@ -98,6 +119,79 @@ public class RoleDAO {
             LOGGER.log(Level.SEVERE, "Error finding all roles", e);
         }
         return roles;
+    }
+
+    /**
+     * Ensure core roles exist for registration flow.
+     * @return true if operation completed successfully
+     */
+    public boolean ensureDefaultRoles() {
+        String candidateSql = "IF NOT EXISTS (SELECT 1 FROM Roles WHERE RoleCode = 'CANDIDATE') "
+                + "INSERT INTO Roles (RoleCode, RoleName, [Description], IsActive, CreatedAt) "
+                + "VALUES ('CANDIDATE', N'Ứng viên', N'Người tìm việc - Candidate', 1, SYSUTCDATETIME())";
+        String recruiterSql = "IF NOT EXISTS (SELECT 1 FROM Roles WHERE RoleCode = 'RECRUITER') "
+                + "INSERT INTO Roles (RoleCode, RoleName, [Description], IsActive, CreatedAt) "
+                + "VALUES ('RECRUITER', N'Nhà tuyển dụng', N'Người đăng tin tuyển dụng - Recruiter', 1, SYSUTCDATETIME())";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement candidatePs = conn.prepareStatement(candidateSql);
+             PreparedStatement recruiterPs = conn.prepareStatement(recruiterSql)) {
+            candidatePs.executeUpdate();
+            recruiterPs.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error ensuring default roles", e);
+        }
+        return false;
+    }
+
+    /**
+     * Set one active role for a user (deactivate others).
+     * @param userId User ID
+     * @param roleId Role ID to activate
+     * @return true if update was successful
+     */
+    public boolean setUserSingleRole(long userId, long roleId) {
+        String deactivateSql = "UPDATE UserRoles SET IsActive = 0 WHERE UserId = ?";
+        String activateExistingSql = "UPDATE UserRoles SET IsActive = 1, AssignedAt = SYSUTCDATETIME() "
+                                 + "WHERE UserId = ? AND RoleId = ?";
+        String insertSql = "INSERT INTO UserRoles (UserId, RoleId, AssignedAt, IsActive) "
+                       + "VALUES (?, ?, SYSUTCDATETIME(), 1)";
+
+        try (Connection conn = dbContext.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement deactivatePs = conn.prepareStatement(deactivateSql);
+                 PreparedStatement activatePs = conn.prepareStatement(activateExistingSql);
+                 PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
+
+                deactivatePs.setLong(1, userId);
+                deactivatePs.executeUpdate();
+
+                activatePs.setLong(1, userId);
+                activatePs.setLong(2, roleId);
+                int activatedRows = activatePs.executeUpdate();
+
+                if (activatedRows == 0) {
+                    insertPs.setLong(1, userId);
+                    insertPs.setLong(2, roleId);
+                    insertPs.executeUpdate();
+                }
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                LOGGER.log(Level.SEVERE, "Error setting single role for user: " + userId, e);
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error handling transaction for role assignment", e);
+        }
+
+        return false;
     }
 
     // --- Helper ---
