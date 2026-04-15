@@ -139,4 +139,75 @@ public class RecruiterDAO {
             e.printStackTrace();
         }
     }
+
+    public List<Recruiter> getRecruitersByCompanyId(long companyId) {
+        List<Recruiter> list = new ArrayList<>();
+
+        String sql = "SELECT rp.RecruiterId, rp.UserId, rp.CompanyId, rp.JobTitle, rp.IsPrimaryContact, rp.Status, "
+                + "u.FullName, u.Email, u.PhoneNumber, u.AvatarUrl "
+                + "FROM RecruiterProfiles rp "
+                + "INNER JOIN Users u ON rp.UserId = u.UserId "
+                + "WHERE rp.CompanyId = ? "
+                + "ORDER BY rp.IsPrimaryContact DESC, u.FullName ASC";
+
+        try {
+            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql);
+            ps.setLong(1, companyId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Recruiter recruiter = new Recruiter();
+                recruiter.setRecruiterId(rs.getLong("RecruiterId"));
+                recruiter.setUserId(rs.getLong("UserId"));
+                recruiter.setCompanyId(rs.getLong("CompanyId"));
+                recruiter.setJobTitle(rs.getString("JobTitle"));
+                recruiter.setIsPrimaryContact(rs.getBoolean("IsPrimaryContact"));
+                recruiter.setStatus(rs.getString("Status"));
+                recruiter.setFullName(rs.getString("FullName"));
+                recruiter.setEmail(rs.getString("Email"));
+                recruiter.setPhoneNumber(rs.getString("PhoneNumber"));
+                recruiter.setAvatarUrl(rs.getString("AvatarUrl"));
+
+                list.add(recruiter);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public Recruiter getRecruiterDetailById(long recruiterId) {
+        String sql = "SELECT rp.RecruiterId, rp.UserId, rp.CompanyId, rp.JobTitle, rp.IsPrimaryContact, rp.Bio, rp.Status, "
+                + "u.FullName, u.Email, u.PhoneNumber, u.AvatarUrl "
+                + "FROM RecruiterProfiles rp "
+                + "INNER JOIN Users u ON rp.UserId = u.UserId "
+                + "WHERE rp.RecruiterId = ?";
+
+        try {
+            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql);
+            ps.setLong(1, recruiterId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Recruiter recruiter = new Recruiter();
+                recruiter.setRecruiterId(rs.getLong("RecruiterId"));
+                recruiter.setUserId(rs.getLong("UserId"));
+                recruiter.setCompanyId(rs.getLong("CompanyId"));
+                recruiter.setJobTitle(rs.getString("JobTitle"));
+                recruiter.setIsPrimaryContact(rs.getBoolean("IsPrimaryContact"));
+                recruiter.setStatus(rs.getString("Status"));
+                recruiter.setFullName(rs.getString("FullName"));
+                recruiter.setEmail(rs.getString("Email"));
+                recruiter.setPhoneNumber(rs.getString("PhoneNumber"));
+                recruiter.setAvatarUrl(rs.getString("AvatarUrl"));
+                recruiter.setBio(rs.getString("Bio"));
+                return recruiter;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

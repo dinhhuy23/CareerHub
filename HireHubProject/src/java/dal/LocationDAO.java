@@ -32,4 +32,20 @@ public class LocationDAO {
         }
         return list;
     }
+
+    public String getLocationNameById(long locationId) {
+        String sql = "SELECT LocationName FROM Locations WHERE LocationId = ?";
+        try {
+            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql);
+            ps.setLong(1, locationId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("LocationName");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 }
