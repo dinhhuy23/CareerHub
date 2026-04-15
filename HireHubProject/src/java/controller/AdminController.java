@@ -101,9 +101,17 @@ public class AdminController extends HttpServlet {
 
     private void handleCreateGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Modal is embedded in user-list.jsp, redirect there
         request.setAttribute("formMode", "create");
         request.setAttribute("roles", roleDAO.findAllActiveRoles());
-        request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+        List<User> users = userDAO.findUsersForAdmin(null, null, null, 1, 10);
+        int totalUsers = userDAO.countUsersForAdmin(null, null, null);
+        int totalPages = Math.max(1, (int) Math.ceil(totalUsers / 10.0));
+        request.setAttribute("users", users);
+        request.setAttribute("currentPage", 1);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalUsers", totalUsers);
+        request.getRequestDispatcher("/WEB-INF/views/admin/user-list.jsp").forward(request, response);
     }
 
     private void handleCreatePost(HttpServletRequest request, HttpServletResponse response)
@@ -165,7 +173,13 @@ public class AdminController extends HttpServlet {
             request.setAttribute("selectedRoleId", roleId);
             request.setAttribute("selectedStatus", status);
             request.setAttribute("formMode", "create");
-            request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+            List<User> users = userDAO.findUsersForAdmin(null, null, null, 1, 10);
+            int totalUsers = userDAO.countUsersForAdmin(null, null, null);
+            request.setAttribute("users", users);
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("totalPages", Math.max(1, (int) Math.ceil(totalUsers / 10.0)));
+            request.setAttribute("totalUsers", totalUsers);
+            request.getRequestDispatcher("/WEB-INF/views/admin/user-list.jsp").forward(request, response);
             return;
         }
 
@@ -183,28 +197,19 @@ public class AdminController extends HttpServlet {
         request.setAttribute("selectedRoleId", roleId);
         request.setAttribute("selectedStatus", status);
         request.setAttribute("formMode", "create");
-        request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+        List<User> usersOnErr = userDAO.findUsersForAdmin(null, null, null, 1, 10);
+        int totalOnErr = userDAO.countUsersForAdmin(null, null, null);
+        request.setAttribute("users", usersOnErr);
+        request.setAttribute("currentPage", 1);
+        request.setAttribute("totalPages", Math.max(1, (int) Math.ceil(totalOnErr / 10.0)));
+        request.setAttribute("totalUsers", totalOnErr);
+        request.getRequestDispatcher("/WEB-INF/views/admin/user-list.jsp").forward(request, response);
     }
 
     private void handleEditGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        long userId = parseLong(request.getParameter("id"));
-        if (userId <= 0) {
-            response.sendRedirect(request.getContextPath() + "/admin/users?error=invalid_id");
-            return;
-        }
-
-        User user = userDAO.findById(userId);
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/admin/users?error=user_not_found");
-            return;
-        }
-
-        user.setPasswordHash(null);
-        request.setAttribute("formMode", "edit");
-        request.setAttribute("user", user);
-        request.setAttribute("roles", roleDAO.findAllActiveRoles());
-        request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+        // Edit is modal-based, redirect to list
+        response.sendRedirect(request.getContextPath() + "/admin/users");
     }
 
     private void handleEditPost(HttpServletRequest request, HttpServletResponse response)
@@ -270,8 +275,13 @@ public class AdminController extends HttpServlet {
             request.setAttribute("user", formUser);
             request.setAttribute("roles", roleDAO.findAllActiveRoles());
             request.setAttribute("selectedRoleId", roleId);
-            request.setAttribute("selectedStatus", status);
-            request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+            List<User> users = userDAO.findUsersForAdmin(null, null, null, 1, 10);
+            int totalUsers = userDAO.countUsersForAdmin(null, null, null);
+            request.setAttribute("users", users);
+            request.setAttribute("currentPage", 1);
+            request.setAttribute("totalPages", Math.max(1, (int) Math.ceil(totalUsers / 10.0)));
+            request.setAttribute("totalUsers", totalUsers);
+            request.getRequestDispatcher("/WEB-INF/views/admin/user-list.jsp").forward(request, response);
             return;
         }
 
@@ -286,8 +296,13 @@ public class AdminController extends HttpServlet {
         request.setAttribute("user", formUser);
         request.setAttribute("roles", roleDAO.findAllActiveRoles());
         request.setAttribute("selectedRoleId", roleId);
-        request.setAttribute("selectedStatus", status);
-        request.getRequestDispatcher("/WEB-INF/views/admin/user-form.jsp").forward(request, response);
+        List<User> usersOnErr = userDAO.findUsersForAdmin(null, null, null, 1, 10);
+        int totalOnErr = userDAO.countUsersForAdmin(null, null, null);
+        request.setAttribute("users", usersOnErr);
+        request.setAttribute("currentPage", 1);
+        request.setAttribute("totalPages", Math.max(1, (int) Math.ceil(totalOnErr / 10.0)));
+        request.setAttribute("totalUsers", totalOnErr);
+        request.getRequestDispatcher("/WEB-INF/views/admin/user-list.jsp").forward(request, response);
     }
 
     private void handleDeletePost(HttpServletRequest request, HttpServletResponse response)

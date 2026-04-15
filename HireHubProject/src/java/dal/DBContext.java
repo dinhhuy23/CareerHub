@@ -16,9 +16,9 @@ public class DBContext {
     private static final String DB_NAME = getEnvOrDefault("DB_NAME", "HireHubDB");
     private static final String PORT_NUMBER = getEnvOrDefault("DB_PORT", "1433");
     private static final String USER_ID = getEnvOrDefault("DB_USER", "sa");
-        private static final String PASSWORD = getEnvOrDefault(
+    private static final String PASSWORD = getEnvOrDefault(
             "DB_PASSWORD",
-            getEnvOrDefault("MSSQL_SA_PASSWORD", "YourStrong!Passw0rd")
+            getEnvOrDefault("MSSQL_SA_PASSWORD", "123")
         );
     private static final Logger LOGGER = Logger.getLogger(DBContext.class.getName());
 

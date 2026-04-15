@@ -31,6 +31,14 @@ public class AuthenticationFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
+        // TODO: [TEST ONLY] - Bypass auth để test UI, bỏ comment block này khi deploy thật
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        httpRequest.setAttribute("userId", 1L);
+        httpRequest.setAttribute("userEmail", "admin@hirehub.com");
+        httpRequest.setAttribute("userFullName", "Super Admin");
+        httpRequest.setAttribute("userRole", "ADMIN");
+        chain.doFilter(request, response);
+        /*
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
@@ -70,6 +78,7 @@ public class AuthenticationFilter implements Filter {
 
         // Continue with the request
         chain.doFilter(request, response);
+        */
     }
 
     @Override
