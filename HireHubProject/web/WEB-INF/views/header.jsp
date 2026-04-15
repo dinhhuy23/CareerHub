@@ -14,6 +14,7 @@
             <a href="${pageContext.request.contextPath}/jobs" class="nav-link">Việc làm</a>
             <c:if test="${not empty sessionScope.userRole}">
                 <a href="${pageContext.request.contextPath}/user/dashboard" class="nav-link active">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/admin/recruiters" class="nav-link">Nhà Tuyển Dụng</a>
             </c:if>
         </div>
         
