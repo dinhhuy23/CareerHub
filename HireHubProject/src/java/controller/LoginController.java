@@ -30,10 +30,12 @@ public class LoginController extends HttpServlet {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("jwtToken") != null) {
             String role = (String) session.getAttribute("userRole");
-            if ("RECRUITER".equals(role)) {
-                response.sendRedirect(request.getContextPath() + "/employer/applications");
+            if ("ADMIN".equals(role)) {
+                response.sendRedirect(request.getContextPath() + "/admin/recruiters");
+            } else if ("RECRUITER".equals(role)) {
+                response.sendRedirect(request.getContextPath() + "/employer/dashboard");
             } else {
-                response.sendRedirect(request.getContextPath() + "/jobs");
+                response.sendRedirect(request.getContextPath() + "/user/dashboard");
             }
             return;
         }
@@ -118,10 +120,12 @@ public class LoginController extends HttpServlet {
         userDAO.updateLastLogin(user.getUserId());
 
         // Chuyển hướng sau đăng nhập theo vai trò
-        if ("RECRUITER".equals(roleCode)) {
-            response.sendRedirect(request.getContextPath() + "/employer/applications");
+        if ("ADMIN".equals(roleCode)) {
+            response.sendRedirect(request.getContextPath() + "/admin/recruiters");
+        } else if ("RECRUITER".equals(roleCode)) {
+            response.sendRedirect(request.getContextPath() + "/employer/dashboard");
         } else {
-            response.sendRedirect(request.getContextPath() + "/jobs");
+            response.sendRedirect(request.getContextPath() + "/user/dashboard");
         }
     }
 }
