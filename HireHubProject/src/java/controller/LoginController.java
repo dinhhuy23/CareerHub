@@ -31,9 +31,9 @@ public class LoginController extends HttpServlet {
         if (session != null && session.getAttribute("jwtToken") != null) {
             String role = (String) session.getAttribute("userRole");
             if ("RECRUITER".equals(role)) {
-                response.sendRedirect(request.getContextPath() + "/jobs");
+                response.sendRedirect(request.getContextPath() + "/employer/applications");
             } else {
-                response.sendRedirect(request.getContextPath() + "/user/dashboard");
+                response.sendRedirect(request.getContextPath() + "/jobs");
             }
             return;
         }
@@ -117,11 +117,11 @@ public class LoginController extends HttpServlet {
         // Update last login
         userDAO.updateLastLogin(user.getUserId());
 
-        // Redirect based on role
+        // Chuyển hướng sau đăng nhập theo vai trò
         if ("RECRUITER".equals(roleCode)) {
-            response.sendRedirect(request.getContextPath() + "/jobs");
+            response.sendRedirect(request.getContextPath() + "/employer/applications");
         } else {
-            response.sendRedirect(request.getContextPath() + "/user/dashboard");
+            response.sendRedirect(request.getContextPath() + "/jobs");
         }
     }
 }
