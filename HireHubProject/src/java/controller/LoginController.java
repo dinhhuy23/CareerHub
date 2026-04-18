@@ -35,7 +35,7 @@ public class LoginController extends HttpServlet {
             } else if ("RECRUITER".equals(role)) {
                 response.sendRedirect(request.getContextPath() + "/employer/dashboard");
             } else {
-                response.sendRedirect(request.getContextPath() + "/user/dashboard");
+                response.sendRedirect(request.getContextPath() + "/jobs");
             }
             return;
         }
@@ -125,7 +125,7 @@ public class LoginController extends HttpServlet {
         } else if ("RECRUITER".equals(roleCode)) {
             response.sendRedirect(request.getContextPath() + "/employer/dashboard");
         } else {
-            response.sendRedirect(request.getContextPath() + "/user/dashboard");
+            response.sendRedirect(request.getContextPath() + "/jobs");
         }
     }
 }
