@@ -86,7 +86,35 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Mức lương tối thiểu (VND)</label>
-                            <input type="number" name="salaryMin" class="form-input" value="${job.salaryMin != null ? job.salaryMin.stripTrailingZeros().toPlainString() : ''}" style="padding-left: 14px;">
+                           <div class="form-row">
+    <div class="form-group">
+        <label class="form-label">Mức lương tối thiểu (VND)</label>
+        <input
+            type="number"
+            name="salaryMin"
+            class="form-input"
+            value="${job.salaryMin != null ? job.salaryMin.stripTrailingZeros().toPlainString() : ''}"
+            style="padding-left: 14px;"
+            min="0"
+            step="1"
+            oninput="validateSalaryInput(this)"
+        >
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Mức lương tối đa (VND)</label>
+        <input
+            type="number"
+            name="salaryMax"
+            class="form-input"
+            value="${job.salaryMax != null ? job.salaryMax.stripTrailingZeros().toPlainString() : ''}"
+            style="padding-left: 14px;"
+            min="0"
+            step="1"
+            oninput="validateSalaryInput(this)"
+        >
+    </div>
+</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Mức lương tối đa (VND)</label>

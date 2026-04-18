@@ -327,4 +327,72 @@ public class JobDAO {
             LOGGER.log(Level.SEVERE, "Error incrementing view count", e);
         }
     }
+
+    // Đếm tổng số lượng tin tuyển dụng mà Nhà tuyển dụng này đã đăng
+    public int countJobsByEmployer(long employerUserId) {
+        long trueRecruiterId = getActualRecruiterId(employerUserId);
+        String sql = "SELECT COUNT(*) FROM Jobs WHERE PostedByRecruiterId = ? AND Status != 'DELETED'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, trueRecruiterId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error counting employer jobs", e);
+        }
+        return 0;
+    }
+
+    // Tính tổng tất cả lượt xem từ tất cả các tin tuyển dụng của một Nhà tuyển dụng cụ thể
+    public long getTotalViewsByEmployer(long employerUserId) {
+        long trueRecruiterId = getActualRecruiterId(employerUserId);
+        String sql = "SELECT SUM(ViewCount) FROM Jobs WHERE PostedByRecruiterId = ? AND Status != 'DELETED'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, trueRecruiterId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error getting total views", e);
+        }
+        return 0;
+    }
+
+    public List<Job> findByCompanyId(long companyId) {
+        List<Job> list = new ArrayList<>();
+        String sql = "SELECT j.*, rp.UserId as EmployerUserId, "
+                   + "COALESCE(c.CompanyName, u.FullName) as EmployerName, "
+                   + "c.CompanyName, "
+                   + "jc.CategoryName, "
+                   + "l.LocationName, "
+                   + "et.TypeName as EmploymentTypeName, "
+                   + "el.LevelName as ExperienceLevelName "
+                   + "FROM Jobs j "
+                   + "JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                   + "JOIN Users u ON rp.UserId = u.UserId "
+                   + "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId "
+                   + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
+                   + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
+                   + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
+                   + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
+                   + "WHERE j.CompanyId = ? AND j.Status = 'PUBLISHED' "
+                   + "ORDER BY j.PublishedAt DESC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, companyId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToJob(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding jobs by company", e);
+        }
+        return list;
+    }
 }
+
+

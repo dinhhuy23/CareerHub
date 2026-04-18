@@ -9,34 +9,7 @@
     <title>Quản lý tin tuyển dụng - HireHub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
-    <style>
-        .table-glass {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-        .table-glass th, .table-glass td {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .table-glass th {
-            background: rgba(255,255,255,0.05);
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-        .table-glass tr:hover {
-            background: rgba(255,255,255,0.02);
-        }
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .status-PUBLISHED { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .status-CLOSED { background: rgba(239, 68, 68, 0.2); color: var(--error); }
-        .status-DRAFT { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-    </style>
+
 </head>
 <body class="app-page">
     <jsp:include page="/WEB-INF/views/header.jsp" />
@@ -168,8 +141,8 @@
     </main>
 
     <!-- Modal Xem/Sửa -->
-    <div id="jobModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto; padding: 40px 20px;">
-        <div class="glass-card animate-fadeInUp" style="position: relative; width: 100%; max-width: 900px; margin: 0 auto; padding: var(--space-2xl); background: #1a1b26; border-radius: 16px;">
+    <div id="jobModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; overflow-y: auto; padding: 40px 20px;">
+        <div class="glass-card animate-fadeInUp" style="position: relative; width: 100%; max-width: 900px; margin: 0 auto; padding: var(--space-2xl); background: var(--bg-secondary); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
             <button onclick="closeModal()" type="button" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
