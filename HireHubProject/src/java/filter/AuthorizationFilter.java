@@ -11,12 +11,16 @@ import java.io.IOException;
  */
 public class AuthorizationFilter implements Filter {
 
-    private String allowedRole;
+    private String[] allowedRolesArray;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        // Read the allowed role from filter config (set in web.xml)
-        allowedRole = filterConfig.getInitParameter("allowedRole");
+        // Read the allowed roles from filter config (set in web.xml)
+        String rolesParam = filterConfig.getInitParameter("allowedRoles");
+        if (rolesParam != null && !rolesParam.trim().isEmpty()) {
+            // Split by comma and remove spaces
+            allowedRolesArray = rolesParam.split("\\s*,\\s*");
+        }
     }
 
     @Override
@@ -39,12 +43,21 @@ public class AuthorizationFilter implements Filter {
             return;
         }
 
-        // Check if user's role matches the allowed role
-        if (allowedRole != null && !allowedRole.isEmpty() && !allowedRole.equals(userRole)) {
-            // Access denied
-            httpRequest.setAttribute("errorMessage", "Bạn không có quyền truy cập trang này");
-            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
-            return;
+        // Check if user's role matches any of the allowed roles
+        if (allowedRolesArray != null && allowedRolesArray.length > 0) {
+            boolean hasAccess = false;
+            for (String r : allowedRolesArray) {
+                if (r.equals(userRole)) {
+                    hasAccess = true;
+                    break;
+                }
+            }
+            if (!hasAccess) {
+                // Access denied
+                httpRequest.setAttribute("errorMessage", "Bạn không có quyền truy cập trang này. Yêu cầu quyền: " + String.join(", ", allowedRolesArray));
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                return;
+            }
         }
 
         chain.doFilter(request, response);
