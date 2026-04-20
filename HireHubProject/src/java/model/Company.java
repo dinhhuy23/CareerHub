@@ -21,6 +21,8 @@ public class Company {
     private Long createdByUserId;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    
+    private Location location;
 
     public Company() {
     }
@@ -160,6 +162,15 @@ public class Company {
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+    
 }
 
 

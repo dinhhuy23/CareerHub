@@ -95,6 +95,7 @@ public class RecruiterDAO {
                 r.setRecruiterId(rs.getLong("RecruiterId"));
                 r.setUserId(rs.getLong("UserId"));
                 r.setCompanyId(rs.getLong("CompanyId"));
+                r.setDepartmentId(rs.getLong("DepartmentId"));
                 r.setJobTitle(rs.getString("JobTitle"));
                 r.setStatus(rs.getString("Status"));
                 r.setBio(rs.getString("Bio"));

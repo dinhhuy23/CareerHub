@@ -36,4 +36,24 @@ public class DepartmentDAO {
 
         return list;
     }
+
+    public List<Department> getByCompanyId(int companyId) {
+        List<Department> list = new ArrayList<>();
+        String sql = "SELECT * FROM Departments WHERE [CompanyId] = ?";
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, companyId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Department d = new Department();
+                d.setDepartmentId(rs.getLong("DepartmentId"));
+                d.setDepartmentName(rs.getString("DepartmentName"));
+                list.add(d);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }
