@@ -53,8 +53,8 @@ public class JobDAO {
 
     public long insert(Job job) throws SQLException {
         // 1. Lấy RecruiterId và CompanyId của nhà tuyển dụng từ UserId
-        long companyId = 1; // Default fallback
-        long trueRecruiterId = job.getPostedByRecruiterId(); // Assume it's already RecruiterId, fallback if not
+        long companyId = -1; 
+        long trueRecruiterId = job.getPostedByRecruiterId(); 
         
         String getProfileSql = "SELECT RecruiterId, CompanyId FROM RecruiterProfiles WHERE UserId = ?";
         try (Connection conn = dbContext.getConnection();
@@ -64,10 +64,17 @@ public class JobDAO {
                 if (rs.next()) {
                     trueRecruiterId = rs.getLong("RecruiterId");
                     companyId = rs.getLong("CompanyId");
+                } else {
+                    throw new SQLException("Không tìm thấy hồ sơ nhà tuyển dụng cho UserId: " + job.getPostedByRecruiterId());
                 }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error getting company id", e);
+            throw e;
+        }
+
+        if (companyId <= 0) {
+            throw new SQLException("Tài khoản nhà tuyển dụng chưa liên kết với công ty.");
         }
 
         // 2. Chèn dữ liệu vào bảng Jobs với các cột NOT NULL bị thiếu

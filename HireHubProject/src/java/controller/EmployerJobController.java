@@ -24,12 +24,21 @@ public class EmployerJobController extends HttpServlet {
     private final LocationDAO locationDAO = new LocationDAO();
     private final EmploymentTypeDAO typeDAO = new EmploymentTypeDAO();
     private final ExperienceLevelDAO levelDAO = new ExperienceLevelDAO();
+    private final dal.RecruiterDAO recruiterDAO = new dal.RecruiterDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         Long userId = (Long) request.getAttribute("userId");
+        
+        // Kiểm tra quyền hạn Nhà tuyển dụng
+        String validationError = validateRecruiter(userId);
+        if (validationError != null) {
+            request.setAttribute("errorMessage", validationError);
+            request.getRequestDispatcher("/WEB-INF/views/employer_warning.jsp").forward(request, response);
+            return;
+        }
 
         loadFormLookups(request);
 
@@ -43,6 +52,14 @@ public class EmployerJobController extends HttpServlet {
             throws ServletException, IOException {
 
         Long userId = (Long) request.getAttribute("userId");
+        
+        // Kiểm tra quyền hạn Nhà tuyển dụng
+        String validationError = validateRecruiter(userId);
+        if (validationError != null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, validationError);
+            return;
+        }
+
         String action = request.getParameter("action");
 
         if ("status".equals(action)) {
@@ -221,5 +238,25 @@ public class EmployerJobController extends HttpServlet {
         }
         String trimmed = val.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String validateRecruiter(Long userId) {
+        if (userId == null) return "Bạn cần đăng nhập để thực hiện chức năng này.";
+        
+        model.Recruiter recruiter = recruiterDAO.getByUserId(userId);
+        
+        if (recruiter == null) {
+            return "Hồ sơ tuyển dụng của bạn chưa tồn tại. Vui lòng cập nhật hồ sơ trước.";
+        }
+        
+        if (!"ACTIVE".equalsIgnoreCase(recruiter.getStatus())) {
+            return "Tài khoản tuyển dụng của bạn đang bị khóa hoặc chưa được Admin phê duyệt.";
+        }
+        
+        if (recruiter.getCompanyId() <= 0) {
+            return "Tài khoản của bạn chưa được liên kết với bất kỳ công ty nào. Vui lòng liên hệ Admin hoặc cập nhật công ty.";
+        }
+        
+        return null;
     }
 }
