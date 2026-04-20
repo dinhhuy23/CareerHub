@@ -1,0 +1,10 @@
+{
+    "java.project.sourcePaths": [
+        "src/java"
+    ],
+    "java.project.referencedLibraries": [
+        "build/web/WEB-INF/lib/**/*.jar",
+        ".vscode/lib/**/*.jar"
+    ],
+    "java.project.outputPath": "build/web/WEB-INF/classes"
+}

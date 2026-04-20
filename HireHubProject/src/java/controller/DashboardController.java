@@ -28,6 +28,10 @@ public class DashboardController extends HttpServlet {
                 // Recruiter không dùng /user/dashboard, chuyển về employer dashboard
                 response.sendRedirect(request.getContextPath() + "/employer/dashboard");
                 return;
+            } else if ("ADMIN".equals(role)) {
+                // Admin chuyển về trang quản trị
+                response.sendRedirect(request.getContextPath() + "/admin/recruiters");
+                return;
             }
         }
 

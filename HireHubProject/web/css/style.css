@@ -733,7 +733,9 @@ a:hover {
 
 /* === User Dropdown === */
 .nav-user {
-    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .user-dropdown {
@@ -770,6 +772,7 @@ a:hover {
     font-weight: 700;
     font-size: 0.875rem;
     color: white;
+    position: relative;
 }
 
 .user-name {

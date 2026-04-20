@@ -1,1 +1,11 @@
-{}
+{
+    "java.project.sourcePaths": [
+        "HireHubProject/src/java"
+    ],
+    "java.project.referencedLibraries": [
+        "HireHubProject/build/web/WEB-INF/lib/**/*.jar",
+        "HireHubProject/.vscode/lib/**/*.jar",
+        "HireHubProject/lib/**/*.jar"
+    ],
+    "java.project.outputPath": "HireHubProject/build/web/WEB-INF/classes"
+}

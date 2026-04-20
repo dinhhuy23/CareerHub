@@ -1,7 +1,13 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
-    if (session.getAttribute("jwtToken") != null) {
-        response.sendRedirect(request.getContextPath() + "/user/dashboard");
+    String role = (String) session.getAttribute("userRole");
+    if (role != null) {
+        if ("ADMIN".equals(role)) {
+            response.sendRedirect(request.getContextPath() + "/admin/recruiters");
+        } else if ("RECRUITER".equals(role)) {
+            response.sendRedirect(request.getContextPath() + "/employer/dashboard");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/user/dashboard");
+        }
         return;
     }
 

@@ -112,6 +112,34 @@ public class ApplicationDAO {
         return list;
     }
 
+    // ==========================================
+    // MỚI: Lấy TẤT CẢ hồ sơ của tất cả user nộp cho ADMIN quản lý
+    // ==========================================
+    public List<Application> findAll() {
+        List<Application> list = new ArrayList<>();
+        String sql = "SELECT a.*, ast.StatusCode AS CurrentStatus, u.UserId AS CandidateUserId, "
+                   + "j.Title, u.FullName, u.Email, u.AvatarUrl, cr.FileUrl AS CvUrl, c.CompanyName "
+                   + "FROM Applications a "
+                   + "JOIN ApplicationStatuses ast ON a.CurrentStatusId = ast.ApplicationStatusId "
+                   + "JOIN Jobs j ON a.JobId = j.JobId "
+                   + "JOIN CandidateProfiles cp ON a.CandidateId = cp.CandidateId "
+                   + "JOIN Users u ON cp.UserId = u.UserId "
+                   + "LEFT JOIN CandidateResumes cr ON a.ResumeId = cr.ResumeId "
+                   + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                   + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
+                   + "ORDER BY a.AppliedAt DESC";
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapResultSetToApplication(rs));
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding all applications for Admin", e);
+        }
+        return list;
+    }
+
     // Cập nhật trạng thái ứng tuyển (VD: Từ Chờ duyệt sang Phỏng vấn)
     // KHỚP SCHEMA: CurrentStatusId
     public boolean updateStatus(long applicationId, String status) {

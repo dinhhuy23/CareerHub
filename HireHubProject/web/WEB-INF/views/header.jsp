@@ -13,26 +13,70 @@
         </a>
 
         <div class="nav-links">
-            <a href="${pageContext.request.contextPath}/jobs" class="nav-link">Việc làm</a>
+            <%-- Lấy URI gốc trước khi forward để so sánh active menu --%>
+            <c:set var="currentUri" value="${requestScope['jakarta.servlet.forward.request_uri']}" />
+            <c:if test="${empty currentUri}">
+                <c:set var="currentUri" value="${pageContext.request.requestURI}" />
+            </c:if>
+
+            <%-- Menu mặc định cho người chưa đăng nhập --%>
+            <c:if test="${empty sessionScope.userRole}">
+                <a href="${pageContext.request.contextPath}/jobs" 
+                   class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
+                   Việc làm
+                </a>
+            </c:if>
+
             <c:if test="${not empty sessionScope.userRole}">
-
-                <a href="${pageContext.request.contextPath}/user/dashboard" class="nav-link active">Dashboard</a>
-                <a href="${pageContext.request.contextPath}/admin/recruiters" class="nav-link">Nhà Tuyển Dụng</a>
-
                 <c:choose>
+                    <%-- Nav dành cho ADMIN --%>
+                    <c:when test="${sessionScope.userRole == 'ADMIN'}">
+                        <a href="${pageContext.request.contextPath}/admin/recruiters" 
+                           class="nav-link ${currentUri.contains('/admin/recruiters') ? 'active' : ''}">
+                           Quản lý nhà tuyển dụng
+                        </a>
+                        <a href="${pageContext.request.contextPath}/admin/applications" 
+                           class="nav-link ${currentUri.contains('/admin/applications') ? 'active' : ''}">
+                           Quản lý hồ sơ
+                        </a>
+                        <a href="${pageContext.request.contextPath}/jobs" 
+                           class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
+                           Tất cả việc làm
+                        </a>
+                    </c:when>
+                    
                     <%-- Nav dành cho RECRUITER --%>
                     <c:when test="${sessionScope.userRole == 'RECRUITER'}">
-                        <a href="${pageContext.request.contextPath}/employer/dashboard" class="nav-link">Dashboard</a>
-                        <a href="${pageContext.request.contextPath}/employer/jobs" class="nav-link">Tin đăng</a>
-                        <a href="${pageContext.request.contextPath}/employer/applications" class="nav-link">Ứng viên</a>
+                        <a href="${pageContext.request.contextPath}/employer/dashboard" 
+                           class="nav-link ${currentUri.contains('/employer/dashboard') ? 'active' : ''}">
+                           Dashboard
+                        </a>
+                        <a href="${pageContext.request.contextPath}/employer/jobs" 
+                           class="nav-link ${currentUri.contains('/employer/jobs') ? 'active' : ''}">
+                           Tin đăng
+                        </a>
+                        <a href="${pageContext.request.contextPath}/employer/applications" 
+                           class="nav-link ${currentUri.contains('/employer/applications') ? 'active' : ''}">
+                           Ứng viên
+                        </a>
                     </c:when>
+                    
                     <%-- Nav dành cho CANDIDATE --%>
                     <c:otherwise>
-                        <a href="${pageContext.request.contextPath}/user/dashboard" class="nav-link">Dashboard</a>
-                        <a href="${pageContext.request.contextPath}/user/my-applications" class="nav-link">Hồ sơ đã nộp</a>
+                        <a href="${pageContext.request.contextPath}/user/dashboard" 
+                           class="nav-link ${currentUri.contains('/user/dashboard') ? 'active' : ''}">
+                           Dashboard
+                        </a>
+                        <a href="${pageContext.request.contextPath}/jobs" 
+                           class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
+                           Việc làm
+                        </a>
+                        <a href="${pageContext.request.contextPath}/user/my-applications" 
+                           class="nav-link ${currentUri.contains('/user/my-applications') ? 'active' : ''}">
+                           Hồ sơ đã nộp
+                        </a>
                     </c:otherwise>
                 </c:choose>
-
             </c:if>
         </div>
 
@@ -43,23 +87,17 @@
                     <a href="${pageContext.request.contextPath}/register" class="btn btn-primary" style="padding: 6px 16px;">Đăng ký</a>
                 </c:when>
                 <c:otherwise>
-                    <%-- Icon chuông thông báo (chỉ hiện cho CANDIDATE) --%>
-                    <c:if test="${sessionScope.userRole == 'CANDIDATE'}">
-                        <a href="${pageContext.request.contextPath}/user/notifications" id="notifBell"
-                           style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); border: 1px solid var(--border-color); margin-right: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s;"
-                           onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <%-- Badge số chưa đọc – được inject bằng AJAX --%>
-                            <span id="notifCount" style="display:none; position: absolute; top: -4px; right: -4px; background: var(--error); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; font-weight: 800; align-items: center; justify-content: center;"></span>
-                        </a>
-                    </c:if>
+
 
                     <div class="user-dropdown">
                         <button class="user-btn" onclick="toggleDropdown()">
-                            <div class="user-avatar">${sessionScope.userFullName.substring(0,1)}</div>
+                            <div class="user-avatar">
+                                ${sessionScope.userFullName.substring(0,1).toUpperCase()}
+                                <%-- Badge thông báo kiểu tin nhắn: nằm đè lên góc avatar --%>
+                                <c:if test="${sessionScope.userRole == 'CANDIDATE'}">
+                                    <span id="notifCount" style="display:none; position: absolute; top: -5px; right: -5px; background: var(--error); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; font-weight: 800; align-items: center; justify-content: center; border: 2px solid var(--bg-secondary); box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></span>
+                                </c:if>
+                            </div>
                             <span class="user-name">${sessionScope.userFullName}</span>
                             <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
                         </button>
