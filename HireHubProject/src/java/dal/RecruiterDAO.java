@@ -24,7 +24,9 @@ public class RecruiterDAO {
                 + "LEFT JOIN Companies c ON r.CompanyId = c.CompanyId "
                 + "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId WHERE r.Status = 'ACTIVE'";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = dbContext.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Recruiter r = new Recruiter();
@@ -103,6 +105,9 @@ public class RecruiterDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
     // GET BY USER ID
     public Recruiter getByUserId(long userId) {
         String sql = "SELECT * FROM RecruiterProfiles WHERE UserId=?";
