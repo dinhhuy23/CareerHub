@@ -155,9 +155,11 @@
                                             </td>
 
                                             <td class="actions">
+                                                <c:if test="${r.status == 'ACTIVE'}">
                                                 <a class="btn-edit" href="recruiters?action=edit&id=${r.recruiterId}">Edit</a>
                                                 <a class="btn-delete" href="recruiters?action=delete&id=${r.recruiterId}"
                                                    onclick="return confirm('Delete this recruiter?')">Delete</a>
+                                                </c:if>
                                             </td>
                                         </tr>
                                     </c:forEach>
