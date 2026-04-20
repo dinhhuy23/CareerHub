@@ -171,7 +171,7 @@
                         <% if (isEdit && company != null) { %>
                         <a href="${pageContext.request.contextPath}/company/detail?id=<%= company.getCompanyId() %>" class="btn btn-light">Cancel</a>
                         <% } else { %>
-                        <a href="${pageContext.request.contextPath}/company/company-list.jsp" class="btn btn-light">Cancel</a>
+                        <a href="${pageContext.request.contextPath}/admin/company" class="btn btn-light">Cancel</a>
                         <% } %>
                     </div>
                 </form>
