@@ -119,7 +119,7 @@
                             <table class="recruiter-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
+                                        <th>No</th>
                                         <th>Job</th>
                                         <th>Company</th>
                                         <th>Department</th>
@@ -130,9 +130,9 @@
                                 </thead>
 
                                 <tbody>
-                                    <c:forEach var="r" items="${list}">
+                                    <c:forEach var="r" items="${list}" varStatus="loop">
                                         <tr>
-                                            <td>#${r.recruiterId}</td>
+                                            <td>${loop.index + 1}</td> <!-- STT bắt đầu từ 1 -->
 
                                             <td>
                                                 <div class="job-title">${r.jobTitle}</div>

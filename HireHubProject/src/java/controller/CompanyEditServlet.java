@@ -1,18 +1,29 @@
 package controller;
 
+import com.cloudinary.Cloudinary;
 import dal.CompanyDAO;
 import dal.LocationDAO;
 import java.io.IOException;
 import java.time.Year;
 import java.util.List;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import model.Company;
 import model.Location;
+import utils.CloudinaryConfig;
 
+@MultipartConfig(
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50
+)
 @WebServlet(name = "CompanyEditServlet", urlPatterns = {"/company/edit"})
 public class CompanyEditServlet extends HttpServlet {
 
@@ -64,7 +75,7 @@ public class CompanyEditServlet extends HttpServlet {
         String websiteUrl = request.getParameter("websiteUrl");
         String email = request.getParameter("email");
         String phoneNumber = request.getParameter("phoneNumber");
-        String logoUrl = request.getParameter("logoUrl");
+//        String logoUrl = request.getParameter("logoUrl");
         String description = request.getParameter("description");
         String foundedYearRaw = request.getParameter("foundedYear");
         String companySize = request.getParameter("companySize");
@@ -116,7 +127,19 @@ public class CompanyEditServlet extends HttpServlet {
         company.setWebsiteUrl(websiteUrl);
         company.setEmail(email);
         company.setPhoneNumber(phoneNumber);
-        company.setLogoUrl(logoUrl);
+        Part filePart = request.getPart("image");
+        if (filePart != null && filePart.getSize() > 0) {
+            InputStream inputStream = filePart.getInputStream();
+
+            byte[] bytes = inputStream.readAllBytes();
+            Cloudinary cloudinary = CloudinaryConfig.getCloudinary();
+            Map result = cloudinary.uploader().upload(bytes, new HashMap());
+
+            String logoUrl = (String) result.get("secure_url");
+            company.setLogoUrl(logoUrl);
+        } else {
+            company.setLogoUrl(request.getParameter("imageOrigin"));
+        }
         company.setDescription(description);
         company.setFoundedYear(foundedYear);
         company.setCompanySize(companySize);

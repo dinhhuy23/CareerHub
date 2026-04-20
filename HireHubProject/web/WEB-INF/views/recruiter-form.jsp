@@ -40,7 +40,7 @@
                 padding: 10px 12px;
                 border-radius: 8px;
                 border: none;
-                background: rgba(255,255,255,0.05);
+                background: var(--bg-input);
                 color: white;
             }
 
@@ -143,7 +143,7 @@
                             <!-- ===== COMPANY DROPDOWN ===== -->
                             <div class="form-group">
                                 <label>Company</label>
-                                <select name="companyId" required>
+                                <select name="companyId" required id="companySelect">
                                     <c:forEach var="c" items="${companies}">
                                         <option value="${c.companyId}"
                                                 ${c.companyId == recruiter.companyId ? 'selected' : ''}>
@@ -156,13 +156,9 @@
                             <!-- ===== DEPARTMENT DROPDOWN ===== -->
                             <div class="form-group">
                                 <label>Department</label>
-                                <select name="departmentId">
-                                    <c:forEach var="d" items="${departments}">
-                                        <option value="${d.departmentId}"
-                                                ${d.departmentId == recruiter.departmentId ? 'selected' : ''}>
-                                            ${d.departmentName}
-                                        </option>
-                                    </c:forEach>
+                                <select name="departmentId" id="departmentSelect">
+                                    <option value="">-- Select Department --</option>
+
                                 </select>
                             </div>
 
@@ -192,6 +188,37 @@
 
             </div>
         </main>
+        <script>
+            const selectedDepartmentId = "${recruiter.departmentId}";
+            document.getElementById("companySelect").addEventListener("change", function () {
+                const companyId = this.value;
 
+                fetch("/HireHubProject/getDepartmentsByCompany?companyId=" + companyId)
+                        .then(res => res.json())
+                        .then(data => {
+                            const deptSelect = document.getElementById("departmentSelect");
+                            deptSelect.innerHTML = '<option value="">-- Select Department --</option>';
+
+                            data.forEach(d => {
+                                const option = document.createElement("option");
+                                option.value = d.departmentId;
+                                option.textContent = d.departmentName;
+
+                                // set selected nếu trùng
+                                if (d.departmentId == selectedDepartmentId) {
+                                    option.selected = true;
+                                }
+
+                                deptSelect.appendChild(option);
+                            });
+                        });
+            });
+            window.onload = function () {
+                const companyId = document.getElementById("companySelect").value;
+                if (companyId) {
+                    document.getElementById("companySelect").dispatchEvent(new Event("change"));
+                }
+            }
+        </script>
     </body>
 </html>

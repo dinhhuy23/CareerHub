@@ -43,6 +43,8 @@
                            class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
                            Tất cả việc làm
                         </a>
+                        
+                        <a href="${pageContext.request.contextPath}/admin/company"  class="nav-link ${currentUri.endsWith('/admin/company') || currentUri.endsWith('/admin/company/') ? 'active' : ''}">Quản lý Công ty</a>
                     </c:when>
                     
                     <%-- Nav dành cho RECRUITER --%>

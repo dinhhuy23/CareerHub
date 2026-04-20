@@ -9,8 +9,10 @@
         <meta charset="UTF-8">
         <title>Company Detail</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/company.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
     </head>
     <body>
+                <jsp:include page="/WEB-INF/views/header.jsp" />
         <%
             Company company = (Company) request.getAttribute("company");
             List<Recruiter> recruiters = (List<Recruiter>) request.getAttribute("recruiters");
@@ -24,7 +26,7 @@
                     <div class="company-logo-box">
                         <div class="company-logo-box">
                             <% if (company != null && company.getLogoUrl() != null && !company.getLogoUrl().trim().isEmpty()) { %>
-                            <img src="${pageContext.request.contextPath}<%= company.getLogoUrl() %>" alt="Company Logo" class="company-logo">
+                            <img src="<%= company.getLogoUrl() %>" alt="Company Logo" class="company-logo">
                             <% } else { %>
                             <div class="company-logo-placeholder">No Logo</div>
                             <% } %>
@@ -124,7 +126,7 @@
                 </div>
 
                 <div class="button-group">
-                    <a href="${pageContext.request.contextPath}/company/company-list.jsp" class="btn btn-light">Back to Company List</a>
+                    <a href="${pageContext.request.contextPath}/admin/company" class="btn btn-light">Back to Company List</a>
 
                     <% if (company != null) { %>
                     <a href="${pageContext.request.contextPath}/company/edit?id=<%= company.getCompanyId() %>" class="btn btn-primary">Edit Company</a>
