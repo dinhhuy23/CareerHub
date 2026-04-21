@@ -2,6 +2,8 @@ package controller;
 
 import dal.RoleDAO;
 import dal.UserDAO;
+import dal.CandidateDAO;
+import dal.RecruiterDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -9,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Role;
 import model.User;
+import model.Recruiter;
 import utils.SecurityUtil;
 import java.io.IOException;
 
@@ -107,6 +110,16 @@ public class RegisterController extends HttpServlet {
             Role role = roleDAO.findByRoleCode(roleCode);
             if (role != null) {
                 roleDAO.assignRole(userId, role.getRoleId());
+                
+                // Create Profile based on role
+                if ("CANDIDATE".equals(roleCode)) {
+                    new CandidateDAO().createProfile(userId);
+                } else if ("RECRUITER".equals(roleCode)) {
+                    Recruiter recruiter = new Recruiter();
+                    recruiter.setUserId(userId);
+                    recruiter.setStatus("ACTIVE"); // Set default status
+                    new RecruiterDAO().insert(recruiter);
+                }
             }
 
             // Redirect to login with success message

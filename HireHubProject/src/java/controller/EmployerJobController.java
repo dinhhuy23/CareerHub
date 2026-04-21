@@ -32,13 +32,7 @@ public class EmployerJobController extends HttpServlet {
 
         Long userId = (Long) request.getAttribute("userId");
         
-        // Kiểm tra quyền hạn Nhà tuyển dụng
-        String validationError = validateRecruiter(userId);
-        if (validationError != null) {
-            request.setAttribute("errorMessage", validationError);
-            request.getRequestDispatcher("/WEB-INF/views/employer_warning.jsp").forward(request, response);
-            return;
-        }
+
 
         loadFormLookups(request);
 
@@ -53,12 +47,7 @@ public class EmployerJobController extends HttpServlet {
 
         Long userId = (Long) request.getAttribute("userId");
         
-        // Kiểm tra quyền hạn Nhà tuyển dụng
-        String validationError = validateRecruiter(userId);
-        if (validationError != null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, validationError);
-            return;
-        }
+
 
         String action = request.getParameter("action");
 
@@ -240,23 +229,5 @@ public class EmployerJobController extends HttpServlet {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private String validateRecruiter(Long userId) {
-        if (userId == null) return "Bạn cần đăng nhập để thực hiện chức năng này.";
-        
-        model.Recruiter recruiter = recruiterDAO.getByUserId(userId);
-        
-        if (recruiter == null) {
-            return "Hồ sơ tuyển dụng của bạn chưa tồn tại. Vui lòng cập nhật hồ sơ trước.";
-        }
-        
-        if (!"ACTIVE".equalsIgnoreCase(recruiter.getStatus())) {
-            return "Tài khoản tuyển dụng của bạn đang bị khóa hoặc chưa được Admin phê duyệt.";
-        }
-        
-        if (recruiter.getCompanyId() <= 0) {
-            return "Tài khoản của bạn chưa được liên kết với bất kỳ công ty nào. Vui lòng liên hệ Admin hoặc cập nhật công ty.";
-        }
-        
-        return null;
-    }
+
 }

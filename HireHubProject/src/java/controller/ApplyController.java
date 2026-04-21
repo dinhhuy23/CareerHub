@@ -54,10 +54,8 @@ public class ApplyController extends HttpServlet {
             Long resumeId = null;
 
             if (filePart != null && filePart.getSize() > 0) {
-                // Thư mục lưu file
-                String uploadPath = request.getServletContext().getRealPath("") + java.io.File.separator + "uploads" + java.io.File.separator + "cv";
-                java.io.File uploadDir = new java.io.File(uploadPath);
-                if (!uploadDir.exists()) uploadDir.mkdirs();
+                // Thư mục lưu file: Sử dụng FileUtil để lưu ngoài thư mục build (tránh mất file khi clean and build)
+                String uploadPath = utils.FileUtil.getUploadPath("cv");
 
                 // Sinh tên file duy nhất tránh trùng lặp ghim đuôi pdf
                 String fileName = java.util.UUID.randomUUID().toString() + ".pdf";
