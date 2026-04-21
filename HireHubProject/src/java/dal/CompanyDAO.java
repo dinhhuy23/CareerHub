@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import model.Company;
+import model.Location;
 
 public class CompanyDAO {
 
@@ -15,7 +16,7 @@ public class CompanyDAO {
 
     public List<Company> getAll() {
         List<Company> list = new ArrayList<>();
-        String sql = "SELECT CompanyId, CompanyName FROM Companies";
+        String sql = "SELECT C.*, L.LocationName FROM Companies C left join Locations L on C.LocationId = L.LocationId";
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
@@ -23,6 +24,15 @@ public class CompanyDAO {
                 Company c = new Company();
                 c.setCompanyId(rs.getLong("CompanyId"));
                 c.setCompanyName(rs.getString("CompanyName"));
+                c.setIndustry(rs.getString("Industry"));
+                c.setCompanySize(rs.getString("CompanySize"));
+                Location location = new Location();
+                location.setLocationName(rs.getString("LocationName"));
+                c.setLocation(location);
+                c.setWebsiteUrl(rs.getString("WebsiteUrl"));
+                c.setStatus(rs.getString("Status"));
+                c.setLogoUrl(rs.getString("LogoUrl"));
+                c.setDescription(rs.getString("Description"));
                 list.add(c);
             }
 

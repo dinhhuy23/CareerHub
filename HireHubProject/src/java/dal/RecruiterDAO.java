@@ -22,7 +22,7 @@ public class RecruiterDAO {
         List<Recruiter> list = new ArrayList<>();
         String sql = "SELECT r.*, c.CompanyName, d.DepartmentName FROM RecruiterProfiles r "
                 + "LEFT JOIN Companies c ON r.CompanyId = c.CompanyId "
-                + "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId WHERE r.Status = 'ACTIVE'";
+                + "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId";
 
         try (Connection conn = dbContext.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -97,6 +97,7 @@ public class RecruiterDAO {
                 r.setRecruiterId(rs.getLong("RecruiterId"));
                 r.setUserId(rs.getLong("UserId"));
                 r.setCompanyId(rs.getLong("CompanyId"));
+                r.setDepartmentId(rs.getLong("DepartmentId"));
                 r.setJobTitle(rs.getString("JobTitle"));
                 r.setStatus(rs.getString("Status"));
                 r.setBio(rs.getString("Bio"));
