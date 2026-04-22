@@ -77,6 +77,10 @@
                            class="nav-link ${currentUri.contains('/user/my-applications') ? 'active' : ''}">
                            Hồ sơ đã nộp
                         </a>
+                        <a href="${pageContext.request.contextPath}/user/saved-jobs" 
+                           class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
+                           Việc làm đã lưu
+                        </a>
                     </c:otherwise>
                 </c:choose>
             </c:if>
@@ -112,6 +116,10 @@
                                 <a href="${pageContext.request.contextPath}/user/my-applications" class="dropdown-item">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                     Hồ sơ đã ứng tuyển
+                                </a>
+                                <a href="${pageContext.request.contextPath}/user/saved-jobs" class="dropdown-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                    Việc làm đã lưu
                                 </a>
                                 <a href="${pageContext.request.contextPath}/user/notifications" class="dropdown-item">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>

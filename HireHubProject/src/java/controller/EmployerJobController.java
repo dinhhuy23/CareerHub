@@ -24,12 +24,15 @@ public class EmployerJobController extends HttpServlet {
     private final LocationDAO locationDAO = new LocationDAO();
     private final EmploymentTypeDAO typeDAO = new EmploymentTypeDAO();
     private final ExperienceLevelDAO levelDAO = new ExperienceLevelDAO();
+    private final dal.RecruiterDAO recruiterDAO = new dal.RecruiterDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         Long userId = (Long) request.getAttribute("userId");
+        
+
 
         loadFormLookups(request);
 
@@ -43,6 +46,9 @@ public class EmployerJobController extends HttpServlet {
             throws ServletException, IOException {
 
         Long userId = (Long) request.getAttribute("userId");
+        
+
+
         String action = request.getParameter("action");
 
         if ("status".equals(action)) {
@@ -222,4 +228,6 @@ public class EmployerJobController extends HttpServlet {
         String trimmed = val.trim();
         return trimmed.isEmpty() ? null : trimmed;
     }
+
+
 }

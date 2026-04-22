@@ -64,6 +64,7 @@
         .status-INTERVIEWING{ background: rgba(6,182,212,0.15);   color: #06B6D4; }
         .status-OFFERED     { background: rgba(16,185,129,0.15);  color: #10B981; }
         .status-REJECTED    { background: rgba(239,68,68,0.15);   color: #EF4444; }
+        .status-WITHDRAWN   { background: rgba(148,163,184,0.15); color: #94A3B8; }
 
         /* Timeline bar */
         .timeline-bar {
@@ -204,6 +205,7 @@
                                     <c:when test="${app.status == 'INTERVIEWING'}">📅 Phỏng vấn</c:when>
                                     <c:when test="${app.status == 'OFFERED'}">🎉 Trúng tuyển</c:when>
                                     <c:when test="${app.status == 'REJECTED'}">❌ Không phù hợp</c:when>
+                                    <c:when test="${app.status == 'WITHDRAWN'}">🔘 Đã rút đơn</c:when>
                                     <c:otherwise>${app.status}</c:otherwise>
                                 </c:choose>
                             </span>

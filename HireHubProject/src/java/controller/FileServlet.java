@@ -24,7 +24,13 @@ public class FileServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // 1. Get the requested file path relative to /uploads/
+        // 0. Security check: User must be logged in to view any files in /uploads/
+        // (AuthenticationFilter should have set these attributes)
+        Object userId = request.getAttribute("userId");
+        if (userId == null) {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Please log in to access this file.");
+            return;
+        }
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -32,8 +38,8 @@ public class FileServlet extends HttpServlet {
         }
 
         // 2. Resolve the real path on the disk
-        // We use the same 'uploads' root as defined in the upload logic
-        String uploadsRoot = getServletContext().getRealPath("/uploads");
+        // We use the persistent storage directory outside the build folder
+        String uploadsRoot = utils.FileUtil.UPLOAD_BASE_DIR;
         String filePath = uploadsRoot + File.separator + URLDecoder.decode(pathInfo, StandardCharsets.UTF_8.name());
         
         File file = new File(filePath);

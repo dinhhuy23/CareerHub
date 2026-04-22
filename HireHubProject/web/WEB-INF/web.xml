@@ -45,6 +45,10 @@
         <filter-name>AuthenticationFilter</filter-name>
         <url-pattern>/company/edit</url-pattern>
     </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthenticationFilter</filter-name>
+        <url-pattern>/uploads/cv/*</url-pattern>
+    </filter-mapping>
 
     <!-- Admin Authorization Filter -->
     <filter>
