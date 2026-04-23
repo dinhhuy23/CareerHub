@@ -5,9 +5,9 @@
     <div class="nav-container">
         <a href="${pageContext.request.contextPath}/" class="nav-logo">
             <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
-                <rect width="48" height="48" rx="12" fill="url(#navLogo)"/>
-                <path d="M14 20h20M14 28h14M14 14h8v4h-8zM26 14h8v4h-8z" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                <defs><linearGradient id="navLogo" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
+            <rect width="48" height="48" rx="12" fill="url(#navLogo)"/>
+            <path d="M14 20h20M14 28h14M14 14h8v4h-8zM26 14h8v4h-8z" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <defs><linearGradient id="navLogo" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#6366F1"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs>
             </svg>
             <span>HireHub</span>
         </a>
@@ -23,7 +23,7 @@
             <c:if test="${empty sessionScope.userRole}">
                 <a href="${pageContext.request.contextPath}/jobs" 
                    class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
-                   Việc làm
+                    Việc làm
                 </a>
             </c:if>
 
@@ -33,49 +33,60 @@
                     <c:when test="${sessionScope.userRole == 'ADMIN'}">
                         <a href="${pageContext.request.contextPath}/admin/recruiters" 
                            class="nav-link ${currentUri.contains('/admin/recruiters') ? 'active' : ''}">
-                           Quản lý nhà tuyển dụng
+                            Quản lý nhà tuyển dụng
                         </a>
                         <a href="${pageContext.request.contextPath}/admin/applications" 
                            class="nav-link ${currentUri.contains('/admin/applications') ? 'active' : ''}">
-                           Quản lý hồ sơ
+                            Quản lý hồ sơ
                         </a>
                         <a href="${pageContext.request.contextPath}/jobs" 
                            class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
-                           Tất cả việc làm
+                            Tất cả việc làm
                         </a>
-                        
-                        <a href="${pageContext.request.contextPath}/admin/company"  class="nav-link ${currentUri.endsWith('/admin/company') || currentUri.endsWith('/admin/company/') ? 'active' : ''}">Quản lý Công ty</a>
+
+                        <a href="${pageContext.request.contextPath}/admin/company"
+                           class="nav-link ${currentUri.contains('/admin/company') ? 'active' : ''}">Quản lý Công ty</a>
+                        <a href="${pageContext.request.contextPath}/admin/departments"
+                           class="nav-link ${currentUri.contains('/admin/departments') ? 'active' : ''}">Quản lý phòng ban</a>
                     </c:when>
-                    
+
                     <%-- Nav dành cho RECRUITER --%>
                     <c:when test="${sessionScope.userRole == 'RECRUITER'}">
                         <a href="${pageContext.request.contextPath}/employer/dashboard" 
                            class="nav-link ${currentUri.contains('/employer/dashboard') ? 'active' : ''}">
-                           Dashboard
+                            Dashboard
                         </a>
                         <a href="${pageContext.request.contextPath}/employer/jobs" 
                            class="nav-link ${currentUri.contains('/employer/jobs') ? 'active' : ''}">
-                           Tin đăng
+                            Tin đăng
                         </a>
                         <a href="${pageContext.request.contextPath}/employer/applications" 
                            class="nav-link ${currentUri.contains('/employer/applications') ? 'active' : ''}">
-                           Ứng viên
+                            Ứng viên
+                        </a>
+                        <a href="${pageContext.request.contextPath}/employer/browse_cv" 
+                           class="nav-link ${currentUri.contains('/employer/browse_cv') ? 'active' : ''}">
+                            Tìm ứng viên
                         </a>
                     </c:when>
-                    
+
                     <%-- Nav dành cho CANDIDATE --%>
                     <c:otherwise>
                         <a href="${pageContext.request.contextPath}/user/dashboard" 
                            class="nav-link ${currentUri.contains('/user/dashboard') ? 'active' : ''}">
-                           Dashboard
+                            Dashboard
                         </a>
                         <a href="${pageContext.request.contextPath}/jobs" 
                            class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
-                           Việc làm
+                            Việc làm
                         </a>
-                        <a href="${pageContext.request.contextPath}/user/my-applications" 
-                           class="nav-link ${currentUri.contains('/user/my-applications') ? 'active' : ''}">
-                           Hồ sơ đã nộp
+                        <a href="${pageContext.request.contextPath}/user/cv/manage_cv" 
+                           class="nav-link ${currentUri.contains('/user/cv/manage_cv') ? 'active' : ''}">
+                            Quản Lí CV
+                        </a>
+                        <a href="${pageContext.request.contextPath}/user/saved-jobs" 
+                           class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
+                            Việc làm đã lưu
                         </a>
                     </c:otherwise>
                 </c:choose>
@@ -113,6 +124,10 @@
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                                     Hồ sơ đã ứng tuyển
                                 </a>
+                                <a href="${pageContext.request.contextPath}/user/saved-jobs" class="dropdown-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                    Việc làm đã lưu
+                                </a>
                                 <a href="${pageContext.request.contextPath}/user/notifications" class="dropdown-item">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                                     Thông báo
@@ -141,7 +156,7 @@
     function toggleDropdown() {
         document.getElementById("userDropdown").classList.toggle("show");
     }
-    window.onclick = function(event) {
+    window.onclick = function (event) {
         if (!event.target.closest('.user-btn')) {
             var dropdowns = document.getElementsByClassName("dropdown-menu");
             for (var i = 0; i < dropdowns.length; i++) {
@@ -155,14 +170,17 @@
     // Lấy số thông báo chưa đọc bằng AJAX (chỉ cho Candidate)
     (function loadNotifCount() {
         var badge = document.getElementById('notifCount');
-        if (!badge) return; // Không phải Candidate
+        if (!badge)
+            return; // Không phải Candidate
         fetch('${pageContext.request.contextPath}/user/notifications/count')
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.count > 0) {
-                    badge.innerText = data.count > 9 ? '9+' : data.count;
-                    badge.style.display = 'flex';
-                }
-            }).catch(function(){});
+                .then(function (r) {
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (data.count > 0) {
+                        badge.innerText = data.count > 9 ? '9+' : data.count;
+                        badge.style.display = 'flex';
+                    }
+                }).catch(function () {});
     })();
 </script>

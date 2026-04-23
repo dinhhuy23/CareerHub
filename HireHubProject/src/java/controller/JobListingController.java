@@ -5,15 +5,18 @@ import dal.JobCategoryDAO;
 import dal.LocationDAO;
 import dal.EmploymentTypeDAO;
 import dal.ExperienceLevelDAO;
+import dal.SavedJobDAO;
 import model.Job;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @WebServlet(name = "JobListingController", urlPatterns = {"/jobs"})
 public class JobListingController extends HttpServlet {
@@ -23,6 +26,7 @@ public class JobListingController extends HttpServlet {
     private final LocationDAO locationDAO = new LocationDAO();
     private final EmploymentTypeDAO typeDAO = new EmploymentTypeDAO();
     private final ExperienceLevelDAO levelDAO = new ExperienceLevelDAO();
+    private final SavedJobDAO savedJobDAO = new SavedJobDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -55,6 +59,21 @@ public class JobListingController extends HttpServlet {
         List<Job> jobs = jobDAO.searchAndFilter(keyword, categoryId, locationId, typeId, levelId, offset, pageSize);
         int totalJobs = jobDAO.countSearchAndFilter(keyword, categoryId, locationId, typeId, levelId);
         int totalPages = (int) Math.ceil((double) totalJobs / pageSize);
+
+        // Check for saved jobs if candidate
+        HttpSession session = request.getSession(false);
+        String userRole = (session != null) ? (String) session.getAttribute("userRole") : null;
+        if ("CANDIDATE".equals(userRole)) {
+            Long userId = (Long) session.getAttribute("userId");
+            if (userId != null) {
+                List<model.SavedJob> savedList = savedJobDAO.getSavedJobsByCandidateId(userId);
+                Set<Long> savedJobIds = new HashSet<>();
+                for (model.SavedJob sj : savedList) {
+                    savedJobIds.add(sj.getJobId());
+                }
+                request.setAttribute("savedJobIds", savedJobIds);
+            }
+        }
 
         request.setAttribute("jobs", jobs);
         request.setAttribute("currentPage", page);

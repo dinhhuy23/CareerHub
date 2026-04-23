@@ -20,11 +20,15 @@ public class RecruiterDAO {
     // GET ALL
     public List<Recruiter> getAll() {
         List<Recruiter> list = new ArrayList<>();
-        String sql = "SELECT r.*, c.CompanyName, d.DepartmentName FROM RecruiterProfiles r "
+        String sql = "SELECT r.*, c.CompanyName, d.DepartmentName, u.FullName, u.Email "
+                + "FROM RecruiterProfiles r "
                 + "LEFT JOIN Companies c ON r.CompanyId = c.CompanyId "
-                + "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId WHERE r.Status = 'ACTIVE'";
+                + "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId "
+                + "LEFT JOIN Users u ON r.UserId = u.UserId";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = dbContext.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Recruiter r = new Recruiter();
@@ -36,6 +40,8 @@ public class RecruiterDAO {
                 r.setCompanyName(rs.getString("CompanyName"));
                 r.setDepartmentName(rs.getString("DepartmentName"));
                 r.setBio(rs.getString("Bio"));
+                r.setFullName(rs.getString("FullName"));
+                r.setEmail(rs.getString("Email"));
                 list.add(r);
             }
 
@@ -96,6 +102,30 @@ public class RecruiterDAO {
                 r.setUserId(rs.getLong("UserId"));
                 r.setCompanyId(rs.getLong("CompanyId"));
                 r.setDepartmentId(rs.getLong("DepartmentId"));
+                r.setJobTitle(rs.getString("JobTitle"));
+                r.setStatus(rs.getString("Status"));
+                r.setBio(rs.getString("Bio"));
+                return r;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // GET BY USER ID
+    public Recruiter getByUserId(long userId) {
+        String sql = "SELECT * FROM RecruiterProfiles WHERE UserId=?";
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                Recruiter r = new Recruiter();
+                r.setRecruiterId(rs.getLong("RecruiterId"));
+                r.setUserId(rs.getLong("UserId"));
+                r.setCompanyId(rs.getLong("CompanyId"));
                 r.setJobTitle(rs.getString("JobTitle"));
                 r.setStatus(rs.getString("Status"));
                 r.setBio(rs.getString("Bio"));

@@ -3,7 +3,20 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/LoginController.java</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/admin-application-list.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/department-list.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/browse_cv.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/cv_template.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/header.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/src/java/controller/CVTemplateController.java</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/cv_form.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/department-form.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/dashboard.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/my_applications.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/web.xml</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/manage_cv.jsp</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/META-INF/context.xml</file>
+            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/web/WEB-INF/views/saved_jobs.jsp</file>
         </group>
     </open-files>
 </project-private>

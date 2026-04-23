@@ -247,10 +247,12 @@ public class ApplicationDAO {
     }
 
     // ==========================================
-    // Rút đơn ứng tuyển (chỉ cho phép khi trạng thái còn là PENDING)
+    // Rút đơn ứng tuyển (Xóa bản ghi để cho phép nộp lại và biến mất khỏi danh sách)
+    // Chỉ cho phép khi trạng thái còn là PENDING
     // ==========================================
     public boolean withdraw(long applicationId, long candidateUserId) {
-        String sql = "DELETE FROM Applications WHERE ApplicationId = ? AND CandidateId = (SELECT CandidateId FROM CandidateProfiles WHERE UserId = ?) "
+        String sql = "DELETE FROM Applications "
+                   + "WHERE ApplicationId = ? AND CandidateId = (SELECT CandidateId FROM CandidateProfiles WHERE UserId = ?) "
                    + "AND CurrentStatusId = (SELECT TOP 1 ApplicationStatusId FROM ApplicationStatuses WHERE StatusCode = 'PENDING')";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -258,7 +260,7 @@ public class ApplicationDAO {
             ps.setLong(2, candidateUserId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error withdrawing application id=" + applicationId, e);
+            LOGGER.log(Level.SEVERE, "Error deleting (withdrawing) application id=" + applicationId, e);
         }
         return false;
     }

@@ -108,36 +108,60 @@ public class RecruiterController extends HttpServlet {
             throws ServletException, IOException {
         String id = request.getParameter("id");
         Recruiter r = new Recruiter();
+        
         if (id == null || id.isEmpty()) {
             String email = request.getParameter("email");
-            // CHECK EMAIL TRÙNG
-            if (userDAO.existsByEmail(email)) {
-                request.setAttribute("error", "Email đã tồn tại!");
+            User existingUser = userDAO.findByEmail(email);
+            long userId;
 
-                // load lại dropdown
-                request.setAttribute("companies", companyDAO.getAll());
-                request.setAttribute("departments", departmentDAO.getAll());
+            if (existingUser != null) {
+                // Nếu User đã tồn tại, kiểm tra xem họ đã có Profile chưa
+                Recruiter existingProfile = recruiterDAO.getByUserId(existingUser.getUserId());
+                if (existingProfile != null) {
+                    request.setAttribute("error", "Người dùng với email này đã có hồ sơ tuyển dụng tại công ty: " + existingProfile.getCompanyName());
+                    
+                    // Reload form data
+                    request.setAttribute("companies", companyDAO.getAll());
+                    request.setAttribute("departments", departmentDAO.getAll());
+                    request.getRequestDispatcher("/WEB-INF/views/recruiter-form.jsp").forward(request, response);
+                    return;
+                }
+                
+                userId = existingUser.getUserId();
+                
+                // Đảm bảo User này có Role là RECRUITER (nếu chưa có thì gán)
+                boolean hasRecruiterRole = false;
+                for (Role role : roleDAO.findRolesByUserId(userId)) {
+                    if ("RECRUITER".equals(role.getRoleCode())) {
+                        hasRecruiterRole = true;
+                        break;
+                    }
+                }
+                
+                if (!hasRecruiterRole) {
+                    Role recruiterRole = roleDAO.findByRoleCode("RECRUITER");
+                    if (recruiterRole != null) {
+                        roleDAO.assignRole(userId, recruiterRole.getRoleId());
+                    }
+                }
+            } else {
+                // Nếu User chưa tồn tại, tạo mới hoàn toàn
+                User u = new User();
+                u.setEmail(email);
+                u.setPasswordHash(SecurityUtil.hashPassword("Abc@123456"));
+                u.setFullName(request.getParameter("fullName"));
+                u.setStatus("ACTIVE");
 
-                request.getRequestDispatcher("/WEB-INF/views/recruiter-form.jsp")
-                        .forward(request, response);
-                return;
+                userId = userDAO.insert(u);
+
+                // Assign role
+                Role role = roleDAO.findByRoleCode("RECRUITER");
+                if (role != null) {
+                    roleDAO.assignRole(userId, role.getRoleId());
+                }
             }
 
-            // 1. tạo user
-            User u = new User();
-            u.setEmail(email);
-            u.setPasswordHash(SecurityUtil.hashPassword("Abc@123456"));
-            u.setFullName(request.getParameter("fullName"));
-
-            long userId = userDAO.insert(u);
-
-            // Assign role
-            Role role = roleDAO.findByRoleCode("RECRUITER");
-            if (role != null) {
-                roleDAO.assignRole(userId, role.getRoleId());
-            }
-
-            // 2. tạo recruiter
+            // Tạo hồ sơ recruiter (link UserId với CompanyId)
             r.setUserId(userId);
             r.setCompanyId(Long.parseLong(request.getParameter("companyId")));
             String deptIdStr = request.getParameter("departmentId");
@@ -148,6 +172,7 @@ public class RecruiterController extends HttpServlet {
             }
             r.setJobTitle(request.getParameter("jobTitle"));
             r.setBio(request.getParameter("bio"));
+            r.setStatus("ACTIVE");
 
             recruiterDAO.insert(r);
         } else {
@@ -164,7 +189,7 @@ public class RecruiterController extends HttpServlet {
             recruiterDAO.update(r);
         }
 
-        response.sendRedirect("/HireHubProject/admin/recruiters");
+        response.sendRedirect(request.getContextPath() + "/admin/recruiters");
     }
 
     /**
