@@ -43,4 +43,64 @@ public class ResumeDAO {
         }
         return -1;
     }
+
+    /**
+     * Lấy danh sách CV của một ứng viên
+     */
+    public java.util.List<model.CandidateResume> findByCandidateId(long userId) {
+        java.util.List<model.CandidateResume> list = new java.util.ArrayList<>();
+        String sql = "SELECT cr.* FROM CandidateResumes cr "
+                   + "JOIN CandidateProfiles cp ON cr.CandidateId = cp.CandidateId "
+                   + "WHERE cp.UserId = ? ORDER BY cr.UploadedAt DESC";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    model.CandidateResume r = new model.CandidateResume();
+                    r.setResumeId(rs.getLong("ResumeId"));
+                    r.setCandidateId(rs.getLong("CandidateId"));
+                    r.setResumeTitle(rs.getString("ResumeTitle"));
+                    r.setFileUrl(rs.getString("FileUrl"));
+                    r.setFileType(rs.getString("FileType"));
+                    r.setFileSizeKB(rs.getInt("FileSizeKB"));
+                    r.setDefault(rs.getBoolean("IsDefault"));
+                    r.setUploadedAt(rs.getTimestamp("UploadedAt"));
+                    list.add(r);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding resumes for userId=" + userId, e);
+        }
+        return list;
+    }
+
+    /**
+     * Đặt một CV làm mặc định (và bỏ mặc định các bản khác)
+     */
+    public boolean setDefaultResume(long resumeId, long userId) {
+        String resetSql = "UPDATE CandidateResumes SET IsDefault = 0 "
+                        + "WHERE CandidateId = (SELECT CandidateId FROM CandidateProfiles WHERE UserId = ?)";
+        String setSql = "UPDATE CandidateResumes SET IsDefault = 1 WHERE ResumeId = ?";
+        
+        try (Connection conn = dbContext.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps1 = conn.prepareStatement(resetSql);
+                 PreparedStatement ps2 = conn.prepareStatement(setSql)) {
+                
+                ps1.setLong(1, userId);
+                ps1.executeUpdate();
+                
+                ps2.setLong(1, resumeId);
+                if (ps2.executeUpdate() > 0) {
+                    conn.commit();
+                    return true;
+                }
+                conn.rollback();
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error setting default resume", e);
+        }
+        return false;
+    }
 }

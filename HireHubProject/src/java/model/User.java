@@ -21,6 +21,7 @@ public class User {
     // Role info (transient - not in Users table)
     private String roleCode;
     private String roleName;
+    private String cvUrl; // Đường dẫn CV mặc định (Dùng cho Discovery)
 
     public User() {
     }
@@ -89,4 +90,7 @@ public class User {
 
     public String getRoleName() { return roleName; }
     public void setRoleName(String roleName) { this.roleName = roleName; }
+
+    public String getCvUrl() { return cvUrl; }
+    public void setCvUrl(String cvUrl) { this.cvUrl = cvUrl; }
 }

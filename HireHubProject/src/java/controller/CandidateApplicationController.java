@@ -68,10 +68,15 @@ public class CandidateApplicationController extends HttpServlet {
         if ("withdraw".equals(action)) {
             try {
                 long appId = Long.parseLong(request.getParameter("applicationId"));
-                // Hàm withdraw chỉ xóa nếu đúng CandidateId và Status = PENDING (an toàn)
-                boolean ok = appDAO.withdraw(appId, userId);
+                String reason = request.getParameter("reason");
+                if (reason == null || reason.trim().isEmpty()) {
+                    reason = "Không có lý do cụ thể";
+                }
+                
+                // Hàm withdraw giờ chuyển sang trạng thái WITHDRAW_REQUESTED và lưu lý do
+                boolean ok = appDAO.withdraw(appId, userId, reason);
                 if (ok) {
-                    response.sendRedirect(request.getContextPath() + "/user/my-applications?success=withdrawn");
+                    response.sendRedirect(request.getContextPath() + "/user/my-applications?success=withdraw_requested");
                 } else {
                     response.sendRedirect(request.getContextPath() + "/user/my-applications?error=cannot_withdraw");
                 }

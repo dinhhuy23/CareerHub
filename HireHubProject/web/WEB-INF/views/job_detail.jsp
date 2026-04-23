@@ -98,13 +98,13 @@
 
                     <div style="font-size: 1.25rem; font-weight: 600; color: var(--primary); margin-bottom: 20px;">
                         <c:if test="${job.companyId != null}">
-                            <a href="${pageContext.request.contextPath}/company?id=${job.companyId}" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                                </svg>
-                                ${job.companyName != null ? job.companyName : job.employerName}
-                            </a>
+                            <a href="${pageContext.request.contextPath}/jobs" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+    Về trang việc làm
+</a>
                         </c:if>
                         <c:if test="${job.companyId == null}">
                             ${job.companyName != null ? job.companyName : job.employerName}

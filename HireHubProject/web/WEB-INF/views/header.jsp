@@ -61,6 +61,10 @@
                            class="nav-link ${currentUri.contains('/employer/applications') ? 'active' : ''}">
                            Ứng viên
                         </a>
+                        <a href="${pageContext.request.contextPath}/employer/candidates" 
+                           class="nav-link ${currentUri.contains('/employer/candidates') ? 'active' : ''}">
+                           Khám phá ứng viên
+                        </a>
                     </c:when>
                     
                     <%-- Nav dành cho CANDIDATE --%>
@@ -80,6 +84,10 @@
                         <a href="${pageContext.request.contextPath}/user/saved-jobs" 
                            class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
                            Việc làm đã lưu
+                        </a>
+                        <a href="${pageContext.request.contextPath}/user/interview-results" 
+                           class="nav-link ${currentUri.contains('/user/interview-results') ? 'active' : ''}">
+                           Kết quả phỏng vấn
                         </a>
                     </c:otherwise>
                 </c:choose>
@@ -120,6 +128,10 @@
                                 <a href="${pageContext.request.contextPath}/user/saved-jobs" class="dropdown-item">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
                                     Việc làm đã lưu
+                                </a>
+                                <a href="${pageContext.request.contextPath}/user/interview-results" class="dropdown-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                                    Kết quả phỏng vấn
                                 </a>
                                 <a href="${pageContext.request.contextPath}/user/notifications" class="dropdown-item">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
