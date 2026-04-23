@@ -275,7 +275,7 @@
                 <select class="rl-filter" id="companyFilter">
                     <option value="All">Tất cả công ty</option>
                     <c:forEach var="r" items="${list}">
-                        <option value="${r.companyName}">${r.companyName}</option>
+                        <option value="${fn:escapeXml(r.companyName)}"><c:out value="${r.companyName}"/></option>
                     </c:forEach>
                 </select>
             </div>
@@ -301,9 +301,9 @@
                                 <c:when test="${not empty list}">
                                     <c:forEach var="r" items="${list}" varStatus="loop">
                                         <c:set var="initial" value="${not empty r.fullName ? fn:toUpperCase(fn:substring(r.fullName, 0, 1)) : '?'}"/>
-                                        <tr data-name="${fn:toLowerCase(r.fullName)} ${fn:toLowerCase(r.email)}"
-                                            data-company="${r.companyName}"
-                                            data-jobtitle="${fn:toLowerCase(r.jobTitle)}"
+                                        <tr data-name="${fn:escapeXml(fn:toLowerCase(r.fullName))} ${fn:escapeXml(fn:toLowerCase(r.email))}"
+                                            data-company="${fn:escapeXml(r.companyName)}"
+                                            data-jobtitle="${fn:escapeXml(fn:toLowerCase(r.jobTitle))}"
                                             data-status="${r.status}">
                                             <td style="color:var(--text-muted); font-size:0.8rem;">${loop.index + 1}</td>
                                             <td>
@@ -320,19 +320,19 @@
                                             <td>
                                                 <span class="job-title-badge">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                                                    ${r.jobTitle}
+                                                    <c:out value="${r.jobTitle}"/>
                                                 </span>
                                             </td>
-                                            <td><span class="company-badge">${r.companyName}</span></td>
+                                            <td><span class="company-badge"><c:out value="${r.companyName}"/></span></td>
                                             <td>
                                                 <c:if test="${not empty r.departmentName}">
-                                                    <span class="dept-badge">${r.departmentName}</span>
+                                                    <span class="dept-badge"><c:out value="${r.departmentName}"/></span>
                                                 </c:if>
                                                 <c:if test="${empty r.departmentName}">
                                                     <span style="color:var(--text-muted); font-size:0.8rem;">—</span>
                                                 </c:if>
                                             </td>
-                                            <td><div class="bio-cell">${r.bio}</div></td>
+                                            <td><div class="bio-cell"><c:out value="${r.bio}"/></div></td>
                                             <td>
                                                 <span class="status-pill ${r.status == 'ACTIVE' ? 'active' : 'inactive'}">
                                                     <span class="status-dot"></span>
@@ -349,7 +349,7 @@
                                                         <a class="btn-icon del" href="${pageContext.request.contextPath}/admin/recruiters?action=delete&id=${r.recruiterId}"
                                                            onclick="return confirm('Xác nhận xóa nhà tuyển dụng này?')">
                                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                                            Xóa
+                                                            Tắt hoạt động
                                                         </a>
                                                     </c:if>
                                                 </div>
