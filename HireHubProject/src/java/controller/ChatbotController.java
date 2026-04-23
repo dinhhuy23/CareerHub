@@ -43,12 +43,12 @@ public class ChatbotController extends HttpServlet {
                 return;
             }
 
-            if ("YOUR_OPENAI_API_KEY_HERE".equals(ChatBotConfig.OPENAI_API_KEY)) {
-                response.getWriter().write(gson.toJson(Map.of("success", false, "message", "Chưa cấu hình API Key trong ChatBotConfig.java")));
+            if (ChatBotConfig.GEMINI_API_KEY.isEmpty()) {
+                response.getWriter().write(gson.toJson(Map.of("success", false, "message", "Chưa cấu hình Gemini API Key (GEMINI_API_KEY).")));
                 return;
             }
 
-            String aiReply = callOpenAI(message);
+            String aiReply = callGemini(message);
 
             response.getWriter().write(gson.toJson(Map.of(
                     "success", true,
@@ -62,52 +62,56 @@ public class ChatbotController extends HttpServlet {
         }
     }
 
-    private String callOpenAI(String userMessage) throws Exception {
+    private String callGemini(String userMessage) throws Exception {
         JsonObject body = new JsonObject();
-        body.addProperty("model", ChatBotConfig.MODEL);
         
-        JsonArray messages = new JsonArray();
-        
-        // System prompt
-        JsonObject systemMsg = new JsonObject();
-        systemMsg.addProperty("role", "system");
-        systemMsg.addProperty("content", ChatBotConfig.SYSTEM_PROMPT);
-        messages.add(systemMsg);
-        
-        // User message
-        JsonObject userMsg = new JsonObject();
-        userMsg.addProperty("role", "user");
-        userMsg.addProperty("content", userMessage);
-        messages.add(userMsg);
-        
-        body.add("messages", messages);
-        body.addProperty("temperature", 0.7);
+        // System instruction
+        JsonObject systemInstruction = new JsonObject();
+        JsonArray sParts = new JsonArray();
+        JsonObject sText = new JsonObject();
+        sText.addProperty("text", ChatBotConfig.SYSTEM_PROMPT);
+        sParts.add(sText);
+        systemInstruction.add("parts", sParts);
+        body.add("system_instruction", systemInstruction);
+
+        // Contents
+        JsonArray contents = new JsonArray();
+        JsonObject userContent = new JsonObject();
+        userContent.addProperty("role", "user");
+        JsonArray uParts = new JsonArray();
+        JsonObject uText = new JsonObject();
+        uText.addProperty("text", userMessage);
+        uParts.add(uText);
+        userContent.add("parts", uParts);
+        contents.add(userContent);
+        body.add("contents", contents);
 
         String jsonPayload = gson.toJson(body);
 
-        HttpRequest openAiRequest = HttpRequest.newBuilder()
-                .uri(URI.create(ChatBotConfig.API_URL))
+        HttpRequest geminiRequest = HttpRequest.newBuilder()
+                .uri(URI.create(ChatBotConfig.API_URL + ChatBotConfig.GEMINI_API_KEY))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + ChatBotConfig.OPENAI_API_KEY)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
                 .build();
 
-        HttpResponse<String> openAiResponse = httpClient.send(
-                openAiRequest,
+        HttpResponse<String> geminiResponse = httpClient.send(
+                geminiRequest,
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
         );
 
-        if (openAiResponse.statusCode() == 200) {
-            JsonObject root = gson.fromJson(openAiResponse.body(), JsonObject.class);
-            JsonArray choices = root.getAsJsonArray("choices");
-            if (choices != null && choices.size() > 0) {
-                return choices.get(0).getAsJsonObject()
-                        .getAsJsonObject("message")
-                        .get("content").getAsString();
+        if (geminiResponse.statusCode() == 200) {
+            JsonObject root = gson.fromJson(geminiResponse.body(), JsonObject.class);
+            JsonArray candidates = root.getAsJsonArray("candidates");
+            if (candidates != null && candidates.size() > 0) {
+                return candidates.get(0).getAsJsonObject()
+                        .getAsJsonObject("content")
+                        .getAsJsonArray("parts")
+                        .get(0).getAsJsonObject()
+                        .get("text").getAsString();
             }
-            return "Không nhận được phản hồi từ AI.";
+            return "Không nhận được phản hồi từ Gemini.";
         } else {
-            throw new RuntimeException("OpenAI API failed: " + openAiResponse.body());
+            throw new RuntimeException("Gemini API failed (" + geminiResponse.statusCode() + "): " + geminiResponse.body());
         }
     }
 }
