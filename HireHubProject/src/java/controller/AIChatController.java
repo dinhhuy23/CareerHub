@@ -15,8 +15,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import dal.ApplicationDAO;
+import dal.CompanyDAO;
+import dal.JobDAO;
+import model.Application;
+import model.Company;
+import model.Job;
+import model.User;
+import java.util.List;
 import java.util.Map;
 import utils.ChatBotConfig;
+import utils.ChatBotContextUtil;
 
 @WebServlet(name = "AIChatController", urlPatterns = { "/ai-chat" })
 public class AIChatController extends HttpServlet {
@@ -56,7 +65,11 @@ public class AIChatController extends HttpServlet {
         }
 
         try {
-            String aiReply = callGemini(userMessage.trim(), apiKey);
+            // 1. Lấy ngữ cảnh từ Database thông qua Utility
+            String dbContext = ChatBotContextUtil.buildDatabaseContext(request);
+            
+            // 2. Gọi Gemini với ngữ cảnh đầy đủ
+            String aiReply = callGemini(userMessage.trim(), apiKey, dbContext);
 
             response.getWriter().write(gson.toJson(Map.of(
                     "reply", aiReply
@@ -70,14 +83,14 @@ public class AIChatController extends HttpServlet {
         }
     }
 
-    private String callGemini(String userMessage, String apiKey) throws Exception {
+    private String callGemini(String userMessage, String apiKey, String dbContext) throws Exception {
         JsonObject requestBody = new JsonObject();
         
-        // System Instruction
+        // System Instruction kết hợp với Context từ DB
         JsonObject systemInstruction = new JsonObject();
         JsonArray systemParts = new JsonArray();
         JsonObject systemText = new JsonObject();
-        systemText.addProperty("text", ChatBotConfig.SYSTEM_PROMPT);
+        systemText.addProperty("text", ChatBotConfig.SYSTEM_PROMPT + "\n" + dbContext);
         systemParts.add(systemText);
         systemInstruction.add("parts", systemParts);
         requestBody.add("system_instruction", systemInstruction);

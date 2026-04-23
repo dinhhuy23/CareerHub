@@ -17,6 +17,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import utils.ChatBotConfig;
+import utils.ChatBotContextUtil;
 
 @WebServlet(name = "ChatbotController", urlPatterns = {"/api/chatbot"})
 public class ChatbotController extends HttpServlet {
@@ -48,7 +49,11 @@ public class ChatbotController extends HttpServlet {
                 return;
             }
 
-            String aiReply = callGemini(message);
+            // 1. Lấy ngữ cảnh từ Database thông qua Utility
+            String dbContext = ChatBotContextUtil.buildDatabaseContext(request);
+
+            // 2. Gọi Gemini với ngữ cảnh đầy đủ
+            String aiReply = callGemini(message, dbContext);
 
             response.getWriter().write(gson.toJson(Map.of(
                     "success", true,
@@ -62,14 +67,14 @@ public class ChatbotController extends HttpServlet {
         }
     }
 
-    private String callGemini(String userMessage) throws Exception {
+    private String callGemini(String userMessage, String dbContext) throws Exception {
         JsonObject body = new JsonObject();
         
-        // System instruction
+        // System instruction kết hợp context
         JsonObject systemInstruction = new JsonObject();
         JsonArray sParts = new JsonArray();
         JsonObject sText = new JsonObject();
-        sText.addProperty("text", ChatBotConfig.SYSTEM_PROMPT);
+        sText.addProperty("text", ChatBotConfig.SYSTEM_PROMPT + "\n" + dbContext);
         sParts.add(sText);
         systemInstruction.add("parts", sParts);
         body.add("system_instruction", systemInstruction);
