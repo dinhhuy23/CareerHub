@@ -44,7 +44,10 @@
                            Tất cả việc làm
                         </a>
                         
-                        <a href="${pageContext.request.contextPath}/admin/company"  class="nav-link ${currentUri.endsWith('/admin/company') || currentUri.endsWith('/admin/company/') ? 'active' : ''}">Quản lý Công ty</a>
+                        <a href="${pageContext.request.contextPath}/admin/company"
+                           class="nav-link ${currentUri.contains('/admin/company') ? 'active' : ''}">Quản lý Công ty</a>
+                        <a href="${pageContext.request.contextPath}/admin/departments"
+                           class="nav-link ${currentUri.contains('/admin/departments') ? 'active' : ''}">Quản lý phòng ban</a>
                     </c:when>
                     
                     <%-- Nav dành cho RECRUITER --%>

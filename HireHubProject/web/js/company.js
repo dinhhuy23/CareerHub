@@ -1,149 +1,58 @@
-const companies = [
-    {
-        id: 1,
-        name: "FPT Software",
-        industry: "Information Technology",
-        size: "1000+ employees",
-        location: "Ha Noi",
-        website: "https://fptsoftware.com",
-        status: "Hiring",
-        logo: "FPT.png",
-        description: "A leading technology company specializing in software development, digital transformation, and global IT services."
-    },
-    {
-        id: 2,
-        name: "VNG Corporation",
-        industry: "Technology & Digital Services",
-        size: "500+ employees",
-        location: "Ho Chi Minh City",
-        website: "https://vng.com.vn",
-        status: "Hiring",
-        logo: "vng.png",
-        description: "A well-known digital technology company focusing on online platforms, cloud solutions, gaming, and digital transformation."
-    },
-    {
-        id: 3,
-        name: "Vietcombank",
-        industry: "Finance & Banking",
-        size: "1000+ employees",
-        location: "Ha Noi",
-        website: "https://vietcombank.com.vn",
-        status: "Hiring",
-        logo: "Vietcombank.png",
-        description: "One of the largest commercial banks in Vietnam, providing diverse banking, financial, and digital payment services."
-    },
-    {
-        id: 4,
-        name: "Rikkeisoft",
-        industry: "Software Outsourcing",
-        size: "201-500 employees",
-        location: "Da Nang",
-        website: "https://rikkeisoft.com",
-        status: "Hiring",
-        logo: "rikkeisoft.png",
-        description: "A software outsourcing company delivering web, mobile, AI, and enterprise system development services."
-    },
-    {
-        id: 5,
-        name: "Vinmec",
-        industry: "Healthcare",
-        size: "500+ employees",
-        location: "Ha Noi",
-        website: "https://vinmec.com",
-        status: "Hiring",
-        logo: "vinmec.png",
-        description: "A leading healthcare system in Vietnam, delivering medical services, hospital operations, and advanced healthcare solutions."
-    },
-    {
-        id: 6,
-        name: "TopCV Vietnam",
-        industry: "Human Resources Technology",
-        size: "51-200 employees",
-        location: "Ha Noi",
-        website: "https://topcv.vn",
-        status: "Hiring",
-        logo: "topcv.png",
-        description: "A recruitment technology platform offering hiring solutions, CV building tools, and job matching services."
-    }
-];
+/**
+ * company.js - Filter/search logic for company-list page.
+ * The company cards are rendered server-side via JSTL (${companies}).
+ * This script only handles client-side filtering on the existing DOM cards.
+ */
 
-function renderCompanies(companyList) {
+function filterCompanies() {
+    const searchValue = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+    const industryValue = document.getElementById("industryFilter")?.value || "All";
+    const locationValue = document.getElementById("locationFilter")?.value || "All";
+
     const container = document.getElementById("companyList");
     if (!container) return;
 
-    container.innerHTML = "";
+    const cards = container.querySelectorAll(".company-card");
+    let visibleCount = 0;
 
-    if (companyList.length === 0) {
-        container.innerHTML = `
-            <div class="detail-card">
-                <p class="empty-text">No companies match your search criteria.</p>
-            </div>
-        `;
-        return;
+    cards.forEach(card => {
+        const name = (card.querySelector(".company-card-info h2")?.textContent || "").toLowerCase();
+        const industry = (card.querySelector(".company-card-info p")?.textContent || "");
+        const location = (card.querySelector(".company-card-body p:nth-child(2)")?.textContent || "");
+
+        const matchName = name.includes(searchValue);
+        const matchIndustry = industryValue === "All" || industry.includes(industryValue);
+        const matchLocation = locationValue === "All" || location.includes(locationValue);
+
+        if (matchName && matchIndustry && matchLocation) {
+            card.style.display = "";
+            visibleCount++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+
+    // Show empty state if no results
+    let emptyMsg = container.querySelector(".empty-filter-msg");
+    if (visibleCount === 0) {
+        if (!emptyMsg) {
+            emptyMsg = document.createElement("p");
+            emptyMsg.className = "empty-filter-msg empty-text";
+            emptyMsg.style.cssText = "text-align:center; padding:24px; color:var(--text-muted); width:100%;";
+            emptyMsg.textContent = "Không tìm thấy công ty phù hợp.";
+            container.appendChild(emptyMsg);
+        }
+    } else if (emptyMsg) {
+        emptyMsg.remove();
     }
-
-    companyList.forEach(company => {
-        const card = document.createElement("div");
-        card.className = "company-card";
-
-        card.innerHTML = `
-            <div class="company-card-header">
-                <img src="${contextPath}/images/company/${company.logo}" alt="${company.name} Logo" class="company-card-logo">
-                <div class="company-card-info">
-                    <h2>${company.name}</h2>
-                    <p>${company.industry}</p>
-                    <span class="status-badge status-active">${company.status}</span>
-                </div>
-            </div>
-
-            <div class="company-card-body">
-                <p><strong>Size:</strong> ${company.size}</p>
-                <p><strong>Location:</strong> ${company.location}</p>
-                <p><strong>Website:</strong> ${company.website}</p>
-                <p class="company-short-desc">${company.description}</p>
-            </div>
-
-            <div class="company-card-footer">
-                <a href="${contextPath}/company/detail?id=${company.id}" class="btn btn-primary">View Detail</a>
-            </div>
-        `;
-
-        container.appendChild(card);
-    });
 }
 
-function filterCompanies() {
-    const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-    const industryValue = document.getElementById("industryFilter").value;
-    const locationValue = document.getElementById("locationFilter").value;
-
-    const filtered = companies.filter(company => {
-        const matchName = company.name.toLowerCase().includes(searchValue);
-        const matchIndustry = industryValue === "All" || company.industry === industryValue;
-        const matchLocation = locationValue === "All" || company.location === locationValue;
-
-        return matchName && matchIndustry && matchLocation;
-    });
-
-    renderCompanies(filtered);
-}
-
-window.onload = function () {
-    renderCompanies(companies);
-
+window.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
     const industryFilter = document.getElementById("industryFilter");
     const locationFilter = document.getElementById("locationFilter");
 
-    if (searchInput) {
-        searchInput.addEventListener("input", filterCompanies);
-    }
-
-    if (industryFilter) {
-        industryFilter.addEventListener("change", filterCompanies);
-    }
-
-    if (locationFilter) {
-        locationFilter.addEventListener("change", filterCompanies);
-    }
-};
+    if (searchInput) searchInput.addEventListener("input", filterCompanies);
+    if (industryFilter) industryFilter.addEventListener("change", filterCompanies);
+    if (locationFilter) locationFilter.addEventListener("change", filterCompanies);
+});
