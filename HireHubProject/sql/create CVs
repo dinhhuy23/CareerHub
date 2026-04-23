@@ -1,0 +1,52 @@
+-- 1. Tạo bảng CVTags
+CREATE TABLE CVTags (
+    TagId INT IDENTITY(1,1) PRIMARY KEY,
+    TagName NVARCHAR(100) NOT NULL,
+    TagSlug VARCHAR(100) NOT NULL
+);
+
+-- 2. Tạo bảng CVTemplates
+CREATE TABLE CVTemplates (
+    TemplateId INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(100) NOT NULL,
+    ImageThumbnail NVARCHAR(500),
+    BaseFileJsp VARCHAR(100) NOT NULL,
+    IsActive BIT DEFAULT 1,
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+-- 3. Tạo bảng CVTemplate_Tags (Bảng trung gian n-n giữa CVTags và CVTemplates)
+CREATE TABLE CVTemplate_Tags (
+    TemplateId INT NOT NULL,
+    TagId INT NOT NULL,
+    PRIMARY KEY (TemplateId, TagId),
+    FOREIGN KEY (TemplateId) REFERENCES CVTemplates(TemplateId),
+    FOREIGN KEY (TagId) REFERENCES CVTags(TagId)
+);
+
+-- 4. Tạo bảng UserCVs
+CREATE TABLE UserCVs (
+    UserCVId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL, -- Cột này thường là Foreign Key liên kết với bảng Users (tài khoản)
+    TemplateId INT NULL,
+    CVTitle NVARCHAR(255),
+    Summary NVARCHAR(MAX),
+    ExperienceRaw NVARCHAR(MAX),
+    EducationRaw NVARCHAR(MAX),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FullName NVARCHAR(100),
+    TargetRole NVARCHAR(100),
+    AvatarUrl NVARCHAR(500),
+    BirthDate DATE,
+    Address NVARCHAR(255),
+    Phone VARCHAR(20),
+    Email VARCHAR(100),
+    UpdatedAt DATETIME DEFAULT GETDATE(),
+    Gender NVARCHAR(20),
+    IsUpload BIT DEFAULT 0,
+    IsAccepted BIT DEFAULT 0,
+    IsDeleted BIT DEFAULT 0,
+    IsSearchable BIT DEFAULT 1,
+    FOREIGN KEY (TemplateId) REFERENCES CVTemplates(TemplateId),
+	FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
