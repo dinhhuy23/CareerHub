@@ -13,7 +13,7 @@
     <style>
         /* ── Page layout ── */
         .rl-container {
-            max-width: 1200px; margin: 0 auto;
+            max-width: 1400px; margin: 0 auto;
             padding: var(--space-xl) var(--space-lg) var(--space-3xl);
         }
 
@@ -97,13 +97,13 @@
             background: linear-gradient(135deg, var(--primary), var(--accent));
         }
         .rl-table th {
-            padding: 14px 16px; text-align: left;
+            padding: 14px 12px; text-align: left;
             font-size: 0.75rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.5px;
             color: rgba(255,255,255,0.9); white-space: nowrap;
         }
         .rl-table td {
-            padding: 14px 16px; font-size: 0.875rem;
+            padding: 14px 12px; font-size: 0.875rem;
             border-bottom: 1px solid rgba(255,255,255,0.04);
             color: var(--text-primary); vertical-align: middle;
         }
@@ -347,9 +347,9 @@
                                                             Sửa
                                                         </a>
                                                         <a class="btn-icon del" href="${pageContext.request.contextPath}/admin/recruiters?action=delete&id=${r.recruiterId}"
-                                                           onclick="return confirm('Xác nhận xóa nhà tuyển dụng này?')">
-                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                                            Tắt hoạt động
+                                                           onclick="return confirm('Xác nhận khóa nhà tuyển dụng này?')">
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                                            Khóa
                                                         </a>
                                                     </c:if>
                                                 </div>
