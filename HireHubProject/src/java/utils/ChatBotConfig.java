@@ -1,13 +1,36 @@
 package utils;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ChatBotConfig {
 
-    // Kiểm tra cả biến môi trường (Environment) và thuộc tính hệ thống (System Property)
-    private static final String ENV_KEY = System.getProperty("GEMINI_API_KEY") != null 
-                                          ? System.getProperty("GEMINI_API_KEY") 
-                                          : System.getenv("GEMINI_API_KEY");
+    public static final String GEMINI_API_KEY = loadApiKey();
 
-    public static final String GEMINI_API_KEY = ENV_KEY != null ? ENV_KEY.trim() : "";
+    private static String loadApiKey() {
+        // 1. Thử đọc từ System Property (VM Options)
+        String key = System.getProperty("GEMINI_API_KEY");
+        if (key != null && !key.trim().isEmpty()) return key.trim();
+
+        // 2. Thử đọc từ Environment Variable
+        key = System.getenv("GEMINI_API_KEY");
+        if (key != null && !key.trim().isEmpty()) return key.trim();
+
+        // 3. Thử đọc từ file local gemini_key.txt (Dùng để test máy cá nhân, đã gitignored)
+        try {
+            // Đường dẫn tương đối từ thư mục chạy của Server
+            // Bạn có thể cần chỉnh lại đường dẫn tuyệt đối nếu Server không tìm thấy
+            String path = "C:\\Users\\ThinkPad\\Desktop\\New folder\\CareerHub\\HireHubProject\\gemini_key.txt";
+            key = new String(Files.readAllBytes(Paths.get(path))).trim();
+            if (!key.isEmpty()) return key;
+        } catch (Exception e) {
+            // Im lặng nếu không tìm thấy file
+        }
+
+        return "";
+    }
 
     public static final String MODEL = "gemini-2.5-flash";
 
