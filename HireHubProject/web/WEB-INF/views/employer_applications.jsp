@@ -256,25 +256,32 @@
                 <select name="status" id="peekStatusSelect" class="form-control" style="width: 100%; margin-bottom: 16px;" onchange="toggleInterviewForm(this.value)">
                     <option value="PENDING">PENDING - Chờ duyệt</option>
                     <option value="REVIEWING">REVIEWING - Đang xem xét</option>
-                    <option value="INTERVIEWING">INTERVIEWING - Phỏng vấn</option>
+                    <option value="INTERVIEWING">Vòng 1 - Phỏng vấn Online</option>
+                    <option value="INTERVIEW_ROUND_2">Vòng 2 - Phỏng vấn Trực tiếp</option>
                     <option value="OFFERED">OFFERED - Trúng tuyển</option>
                     <option value="REJECTED">REJECTED - Từ chối</option>
                     <option value="WITHDRAW_REQUESTED">WITHDRAW_REQUESTED - Yêu cầu rút đơn</option>
                     <option value="WITHDRAWN">WITHDRAWN - Đã rút (Đồng ý cho rút)</option>
                 </select>
 
-                <!-- Vùng hẹn phỏng vấn (Chỉ hiện khi chọn INTERVIEWING) -->
                 <div id="interviewFormBlock" style="display: none; background: rgba(6,182,212,0.05); border: 1px dashed #06B6D4; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
                     <div style="font-weight: 600; color: #06B6D4; margin-bottom: 12px;">📅 Xếp lịch phỏng vấn</div>
                     
                     <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;">Ngày giờ bắt đầu</label>
                     <input type="datetime-local" name="startAt" class="form-control" style="width: 100%; margin-bottom: 12px;">
 
-                    <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;">Link Meeting (VD: Google Meet)</label>
-                    <input type="url" name="meetingLink" class="form-control" placeholder="https://meet.google.com/..." style="width: 100%; margin-bottom: 12px;">
+                    <div id="meetingLinkField">
+                        <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;">Link Meeting (VD: Google Meet)</label>
+                        <input type="url" name="meetingLink" class="form-control" placeholder="https://meet.google.com/..." style="width: 100%; margin-bottom: 12px;">
+                    </div>
 
-                     <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;">Ghi chú gửi ứng viên</label>
-                    <textarea name="interviewNote" class="form-control" rows="2" style="width: 100%; resize: none;"></textarea>
+                    <div id="locationTextField" style="display: none;">
+                        <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;">Địa điểm phỏng vấn (Văn phòng)</label>
+                        <input type="text" name="locationText" class="form-control" placeholder="Tầng 5, Tòa nhà A, Số 123..." style="width: 100%; margin-bottom: 12px;">
+                    </div>
+
+                     <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;" id="noteLabel">Ghi chú gửi ứng viên</label>
+                    <textarea name="interviewNote" id="interviewNoteField" class="form-control" rows="3" placeholder="Nhắc ứng viên mang theo Laptop, CCCD..." style="width: 100%; resize: none;"></textarea>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 16px;">
@@ -291,8 +298,24 @@
     <script>
         function toggleInterviewForm(val) {
             const block = document.getElementById('interviewFormBlock');
-            if (val === 'INTERVIEWING') {
+            const meetingField = document.getElementById('meetingLinkField');
+            const locationField = document.getElementById('locationTextField');
+            const noteLabel = document.getElementById('noteLabel');
+            const noteField = document.getElementById('interviewNoteField');
+
+            if (val === 'INTERVIEWING' || val === 'INTERVIEW_ROUND_2') {
                 block.style.display = 'block';
+                if (val === 'INTERVIEW_ROUND_2') {
+                    meetingField.style.display = 'none';
+                    locationField.style.display = 'block';
+                    noteLabel.innerText = "Yêu cầu cho ứng viên (Cần mang theo gì?)";
+                    noteField.placeholder = "Ví dụ: Mang theo laptop, trang phục lịch sự, CCCD gốc...";
+                } else {
+                    meetingField.style.display = 'block';
+                    locationField.style.display = 'none';
+                    noteLabel.innerText = "Ghi chú gửi ứng viên";
+                    noteField.placeholder = "Nhắc ứng viên chuẩn bị mic, camera...";
+                }
             } else {
                 block.style.display = 'none';
             }

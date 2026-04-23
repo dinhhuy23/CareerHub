@@ -61,10 +61,11 @@ public class EmployerApplicationController extends HttpServlet {
                 appDAO.updateHRNote(appId, hrNote.trim());
             }
 
-            // Nếu trạng thái là phỏng vấn, tạo record phỏng vấn luôn
-            if (success && "INTERVIEWING".equals(status)) {
+            // Nếu trạng thái là phỏng vấn (Vòng 1 hoặc Vòng 2), tạo record phỏng vấn luôn
+            if (success && ("INTERVIEWING".equals(status) || "INTERVIEW_ROUND_2".equals(status))) {
                 String startAtStr = request.getParameter("startAt");
                 String meetingLink = request.getParameter("meetingLink");
+                String locationText = request.getParameter("locationText");
                 String interviewNote = request.getParameter("interviewNote");
                 
                 if (startAtStr != null && !startAtStr.trim().isEmpty()) {
@@ -82,8 +83,16 @@ public class EmployerApplicationController extends HttpServlet {
                         
                         interview.setScheduledByUserId(userId);
                         interview.setMeetingLink(meetingLink);
+                        interview.setLocationText(locationText);
                         interview.setNote(interviewNote);
                         interview.setStatus("SCHEDULED");
+                        
+                        // Nếu là Vòng 2 thì set Type là Offline (2)
+                        if ("INTERVIEW_ROUND_2".equals(status)) {
+                            interview.setInterviewTypeId(2); 
+                        } else {
+                            interview.setInterviewTypeId(1); // Online
+                        }
                         
                         dal.InterviewDAO interviewDAO = new dal.InterviewDAO();
                         interviewDAO.insert(interview);
@@ -115,8 +124,9 @@ public class EmployerApplicationController extends HttpServlet {
     private String getNotificationTitle(String status) {
         switch (status) {
             case "REVIEWING":    return "📋 Hồ sơ đang được xem xét";
-            case "INTERVIEWING": return "📅 Bạn được mời phỏng vấn!";
-            case "OFFERED":      return "🎉 Chúc mừng! Bạn đã trúng tuyển!";
+            case "INTERVIEWING":      return "📅 Bạn được mời phỏng vấn!";
+            case "INTERVIEW_ROUND_2": return "🏢 Mời phỏng vấn trực tiếp (Vòng 2)";
+            case "OFFERED":           return "🎉 Chúc mừng! Bạn đã trúng tuyển!";
             case "REJECTED":     return "📩 Thông báo kết quả ứng tuyển";
             case "WITHDRAWN":    return "✅ Chấp nhận rút hồ sơ";
             default:             return "🔔 Cập nhật trạng thái ứng tuyển";

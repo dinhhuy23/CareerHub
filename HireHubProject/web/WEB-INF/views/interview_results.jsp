@@ -103,6 +103,23 @@
             border: 1px solid #4B5563;
         }
 
+        .badge-round2 {
+            background: #6366F1;
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .interview-info-card {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        .info-row { display: flex; gap: 10px; margin-bottom: 8px; font-size: 0.95rem; }
+        .info-label { font-weight: 700; color: #6366F1; min-width: 100px; }
+        .info-value { color: var(--text-primary); }
+
         .result-meta {
             text-align: right;
         }
@@ -201,6 +218,36 @@
                                     <h3>${app.jobTitle}</h3>
                                     <div class="company-name">${app.companyName}</div>
                                     
+                                    <%-- TRƯỜNG HỢP: PHỎNG VẤN VÒNG 2 (PASS VÒNG 1) --%>
+                                    <c:if test="${app.status == 'INTERVIEW_ROUND_2'}">
+                                        <c:set var="inter" value="${interviews[app.applicationId]}" />
+                                        <div class="interview-info-card animate-fadeInUp">
+                                            <div style="font-weight: 800; color: #6366F1; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                                LỊCH PHỎNG VẤN TRỰC TIẾP (VÒNG 2)
+                                            </div>
+                                            
+                                            <div class="info-row">
+                                                <div class="info-label">Thời gian:</div>
+                                                <div class="info-value" style="font-weight: 700;">
+                                                    <fmt:formatDate value="${inter.startAt}" pattern="dd/MM/yyyy HH:mm"/>
+                                                </div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Địa điểm:</div>
+                                                <div class="info-value">${inter.locationText}</div>
+                                            </div>
+                                            <c:if test="${not empty inter.note}">
+                                                <div class="info-row" style="flex-direction: column; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(99, 102, 241, 0.2);">
+                                                    <div class="info-label">Yêu cầu chuẩn bị:</div>
+                                                    <div class="info-value" style="background: white; padding: 10px; border-radius: 8px; font-style: italic;">
+                                                        ${inter.note}
+                                                    </div>
+                                                </div>
+                                            </c:if>
+                                        </div>
+                                    </c:if>
+
                                     <c:if test="${app.status == 'OFFERED'}">
                                         <button class="btn-view-offer" 
                                                 onclick="openOfferModal('${app.jobTitle}', '${app.companyName}', '${sessionScope.userFullName}')">
@@ -240,6 +287,14 @@
                                                 <polyline points="20 6 9 17 4 12"></polyline>
                                             </svg>
                                             TRÚNG TUYỂN (PASS)
+                                        </div>
+                                    </c:when>
+                                    <c:when test="${app.status == 'INTERVIEW_ROUND_2'}">
+                                        <div class="result-badge badge-round2">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline>
+                                            </svg>
+                                            PASS VÒNG 1
                                         </div>
                                     </c:when>
                                     <c:otherwise>
