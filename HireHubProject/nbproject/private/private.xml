@@ -3,39 +3,55 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Job.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/filter/AuthorizationFilter.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/JobDAO.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/utils/JWTUtil.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/LoginController.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Notification.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/CompanyCreateServlet.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/JobCategoryDAO.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/EmploymentType.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/nbproject/build-impl.xml</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/RecruiterDAO.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/filter/AuthenticationFilter.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/saved_jobs.jsp</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/profile.jsp</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Recruiter.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/my_applications.jsp</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/employer_jobs.jsp</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/SavedJobDAO.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/NotificationDAO.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/RoleDAO.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/LocationDAO.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/ExperienceLevelDAO.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/css/style.css</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/utils/FileUtil.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Role.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/chatbot.jsp</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/AIChatController.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/UserDAO.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/job_detail.jsp</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/CandidateApplicationController.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/AdminApplicationController.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/ResumeDAO.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/SavedJobsListingController.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Department.java</file>
-            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/utils/CloudinaryConfig.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/JobListingController.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/ApplicationDAO.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/ChatbotController.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/filter/EncodingFilter.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/header.jsp</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Job.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/JobDAO.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Notification.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/ApplyController.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/JobCategoryDAO.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/EmploymentType.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/utils/SecurityUtil.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/model/Recruiter.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/utils/ChatBotConfig.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/my_applications.jsp</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/CandidateDAO.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/RecruiterController.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/employer_jobs.jsp</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/SavedJobDAO.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/LocationDAO.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/dal/ExperienceLevelDAO.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/favorite_companies.jsp</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/SaveJobController.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/ProfileController.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/controller/EmployerApplicationController.java</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/css/company.css</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/job_detail.jsp</file>
+            <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/src/java/utils/CloudinaryConfig.java</file>
             <file>file:/C:/Users/ThinkPad/Desktop/New%20folder/CareerHub/HireHubProject/web/WEB-INF/views/jobs.jsp</file>
         </group>
     </open-files>
