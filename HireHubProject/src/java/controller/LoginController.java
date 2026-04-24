@@ -13,9 +13,8 @@ import utils.SecurityUtil;
 import java.io.IOException;
 
 /**
- * Controller for user login.
- * GET /login  - Display login form
- * POST /login - Process login with JWT generation
+ * Controller for user login. GET /login - Display login form POST /login -
+ * Process login with JWT generation
  */
 @WebServlet(name = "LoginController", urlPatterns = {"/login"})
 public class LoginController extends HttpServlet {
@@ -31,7 +30,7 @@ public class LoginController extends HttpServlet {
         if (session != null && session.getAttribute("jwtToken") != null) {
             String role = (String) session.getAttribute("userRole");
             if ("ADMIN".equals(role)) {
-                response.sendRedirect(request.getContextPath() + "/admin/recruiters");
+                response.sendRedirect(request.getContextPath() + "/AdminServlet");
             } else if ("RECRUITER".equals(role)) {
                 response.sendRedirect(request.getContextPath() + "/employer/dashboard");
             } else {
@@ -88,7 +87,9 @@ public class LoginController extends HttpServlet {
             request.getRequestDispatcher("/login.jsp").forward(request, response);
             return;
         }
-
+        if (user.getDeactivateAt() != null) {
+            request.setAttribute("deactivateAt", user.getDeactivateAt());
+        }
         // Verify password
         if (!SecurityUtil.checkPassword(password, user.getPasswordHash())) {
             request.setAttribute("error", "Email hoặc mật khẩu không chính xác.");
@@ -121,7 +122,7 @@ public class LoginController extends HttpServlet {
 
         // Chuyển hướng sau đăng nhập theo vai trò
         if ("ADMIN".equals(roleCode)) {
-            response.sendRedirect(request.getContextPath() + "/admin/recruiters");
+            response.sendRedirect(request.getContextPath() + "/AdminServlet");
         } else if ("RECRUITER".equals(roleCode)) {
             response.sendRedirect(request.getContextPath() + "/employer/dashboard");
         } else {

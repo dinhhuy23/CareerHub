@@ -568,7 +568,14 @@
         }
     </style>
 </head>
+<c:if test="${not empty deactivateAt}">
+    <div style="color: orange;">
+        Tài khoản sẽ bị khóa vào:
+        <fmt:formatDate value="${deactivateAt}" pattern="HH:mm dd/MM/yyyy"/>
+    </div>
+</c:if>
 <body class="app-page">
+    
     <jsp:include page="/WEB-INF/views/header.jsp" />
 
     <main class="main-content">

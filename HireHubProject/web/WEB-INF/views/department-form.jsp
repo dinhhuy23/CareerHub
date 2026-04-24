@@ -171,7 +171,6 @@
                 }, 5000);
             </script>
         </c:if>
-
         <div class="df-container animate-fadeInUp">
 
             <!-- Back -->
@@ -220,7 +219,7 @@
                         <div class="df-group">
                             <label class="df-label">Tên phòng ban <span class="req">*</span></label>
                             <input type="text" name="departmentName" class="df-input char-input"
-                                   value="${department.departmentName}" data-max="150"
+                                   value="${department.departmentName}" maxlength="150" data-max="150"
                                    placeholder="VD: Phòng Kỹ thuật, Phòng Marketing..." required>
                             <div class="df-meta">
                                 <small class="df-chars">0/150</small>
@@ -245,7 +244,7 @@
                         <div class="df-group">
                             <label class="df-label">Mô tả</label>
                             <textarea name="description" class="df-textarea char-input"
-                                      rows="4" data-max="500"
+                                      rows="4" maxlength="500" data-max="500"
                                       placeholder="Mô tả ngắn về chức năng và nhiệm vụ của phòng ban..."><c:out value="${department.description}"/></textarea>
                             <div class="df-meta">
                                 <small class="df-chars">0/500</small>

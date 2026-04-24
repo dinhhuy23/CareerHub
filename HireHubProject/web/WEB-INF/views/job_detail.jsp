@@ -74,6 +74,15 @@
                 </div>
             </c:if>
 
+            <c:if test="${param.success == 'reported'}">
+                <div class="alert alert-success animate-fadeInUp">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Bạn đã gửi báo cáo thành công! Chúng tôi sẽ xem xét sớm.
+                </div>
+            </c:if>
+
             <!-- Job Header -->
             <div class="glass-card animate-fadeInUp" style="padding: var(--space-2xl); margin-bottom: var(--space-xl); position: relative; overflow: hidden; display: flex; gap: 32px; align-items: center; flex-wrap: wrap;">
                 <div style="position: absolute; right: -50px; top: -50px; width: 200px; height: 200px; background: var(--primary); filter: blur(60px); opacity: 0.15; border-radius: 50%;"></div>
@@ -98,13 +107,13 @@
 
                     <div style="font-size: 1.25rem; font-weight: 600; color: var(--primary); margin-bottom: 20px;">
                         <c:if test="${job.companyId != null}">
-                            <a href="${pageContext.request.contextPath}/jobs" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px;">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
-    </svg>
-    Về trang việc làm
-</a>
+                            <a href="${pageContext.request.contextPath}/company?id=${job.companyId}" style="text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 8px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                                ${job.companyName != null ? job.companyName : job.employerName}
+                            </a>
                         </c:if>
                         <c:if test="${job.companyId == null}">
                             ${job.companyName != null ? job.companyName : job.employerName}
@@ -205,6 +214,12 @@
                                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                                 </svg>
                                 <span id="saveJobText">${isSaved ? 'Đã lưu việc làm' : 'Lưu việc làm này'}</span>
+                            </button>
+
+                            <button onclick="openReportModal()" 
+                                    class="btn btn-outline btn-full" 
+                                    style="padding: 12px; margin-top: 12px; font-weight: 600; color: #ff6b6b;">
+                                🚨 Báo cáo tin này
                             </button>
                         </c:if>
 
@@ -349,7 +364,52 @@
         </div>
     </div>
 
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal-backdrop" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div class="glass-card" style="width:100%; max-width:500px; padding:20px; position:relative;">
+            <button onclick="closeReportModal()" 
+                    style="position:absolute; top:15px; right:15px; background:none; border:none; cursor: pointer; color: var(--text-muted);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-lg); color: var(--text-primary);">Báo cáo công việc</h2>
+            <form action="${pageContext.request.contextPath}/report" method="post">
+                <input type="hidden" name="action" value="create"/>
+                <input type="hidden" name="targetType" value="JOB"/>
+                <input type="hidden" name="targetId" value="${job.jobId}"/>
+                
+                <div class="form-group" style="margin-bottom: var(--space-xl);">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Lý do báo cáo</label>
+                    <select name="reportTypeId" required class="form-control" style="width:100%;">
+                        <c:forEach var="rt" items="${reportTypes}">
+                            <option value="${rt.reportTypeId}">${rt.reportName}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: var(--space-xl);">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Nội dung chi tiết</label>
+                    <textarea name="content" rows="4" class="form-control" style="width:100%; resize: none;"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full" style="padding: 14px;">Gửi báo cáo</button>
+            </form>
+        </div>
+    </div>
+
     <script>
+        function openReportModal() {
+            document.getElementById('reportModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
         function openApplyModal() {
             document.getElementById('applyModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
