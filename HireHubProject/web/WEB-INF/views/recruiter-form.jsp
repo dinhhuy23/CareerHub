@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${recruiter != null ? 'Sửa' : 'Thêm'} nhà tuyển dụng | HireHub Admin</title>
+    <title>${isCreate ? 'Thêm' : 'Sửa'} nhà tuyển dụng | HireHub Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
     <style>
@@ -174,13 +174,13 @@
                     <div>
                         <div class="rf-card-title">
                             <c:choose>
-                                <c:when test="${recruiter != null}">Chỉnh sửa nhà tuyển dụng</c:when>
+                                <c:when test="${not isCreate}">Chỉnh sửa nhà tuyển dụng</c:when>
                                 <c:otherwise>Thêm nhà tuyển dụng mới</c:otherwise>
                             </c:choose>
                         </div>
                         <div class="rf-card-subtitle">
                             <c:choose>
-                                <c:when test="${recruiter != null}">Cập nhật thông tin cho ${recruiter.fullName}</c:when>
+                                <c:when test="${not isCreate}">Cập nhật thông tin cho ${recruiter.fullName}</c:when>
                                 <c:otherwise>Điền thông tin để tạo tài khoản nhà tuyển dụng</c:otherwise>
                             </c:choose>
                         </div>
@@ -201,20 +201,23 @@
 
                 <!-- Form -->
                 <form action="${pageContext.request.contextPath}/admin/recruiters" method="post">
-                    <input type="hidden" name="id" value="${recruiter.recruiterId}">
+                    <%-- Chỉ gửi id khi đang ở chế độ Sửa, không gửi khi Thêm mới --%>
+                    <c:if test="${not isCreate}">
+                        <input type="hidden" name="id" value="${recruiter.recruiterId}">
+                    </c:if>
 
                     <div class="rf-body">
 
                         <!-- Section: Tài khoản (chỉ hiện khi tạo mới) -->
-                        <c:if test="${recruiter == null}">
+                        <c:if test="${isCreate}">
                             <div class="rf-section">
                                 <div class="rf-section-title">Thông tin tài khoản</div>
                                 <div class="rf-grid">
                                     <div class="rf-group">
                                         <label class="rf-label">Email <span class="req">*</span></label>
                                         <input type="email" name="email" class="rf-input char-input"
-                                               value="${recruiter.email}" maxlength="255" data-max="255"
-                                               placeholder="example@email.com" required>
+                                               value="${recruiter.email}" data-max="255"
+                                               placeholder="example@email.com">
                                         <div class="rf-meta">
                                             <c:if test="${not empty errors.email}">
                                                 <small class="rf-error">${errors.email}</small>
@@ -225,8 +228,8 @@
                                     <div class="rf-group">
                                         <label class="rf-label">Họ và tên đầy đủ <span class="req">*</span></label>
                                         <input type="text" name="fullName" class="rf-input char-input"
-                                               value="${recruiter.fullName}" maxlength="150" data-max="150"
-                                               placeholder="Nguyễn Văn A" required>
+                                               value="${recruiter.fullName}" data-max="150"
+                                               placeholder="Nguyễn Văn A">
                                         <div class="rf-meta">
                                             <c:if test="${not empty errors.fullName}">
                                                 <small class="rf-error">${errors.fullName}</small>
@@ -246,8 +249,8 @@
                                 <div class="rf-group full">
                                     <label class="rf-label">Chức danh công việc <span class="req">*</span></label>
                                     <input type="text" name="jobTitle" class="rf-input char-input"
-                                           value="${recruiter.jobTitle}" maxlength="150" data-max="150"
-                                           placeholder="VD: Senior Technical Recruiter" required>
+                                           value="${recruiter.jobTitle}" data-max="150"
+                                           placeholder="VD: Senior Technical Recruiter">
                                     <div class="rf-meta">
                                         <c:if test="${not empty errors.jobTitle}">
                                             <small class="rf-error">${errors.jobTitle}</small>
@@ -285,7 +288,7 @@
                             <div class="rf-group">
                                 <label class="rf-label">Bio</label>
                                 <textarea name="bio" class="rf-textarea char-input"
-                                          rows="5" maxlength="1000" data-max="1000"
+                                          rows="5" data-max="1000"
                                           placeholder="Mô tả ngắn về kinh nghiệm và chuyên môn...">${recruiter.bio}</textarea>
                                 <div class="rf-meta">
                                     <c:if test="${not empty errors.bio}">
@@ -311,7 +314,7 @@
                                 <polyline points="20 6 9 17 4 12"/>
                             </svg>
                             <c:choose>
-                                <c:when test="${recruiter != null}">Lưu thay đổi</c:when>
+                                <c:when test="${not isCreate}">Lưu thay đổi</c:when>
                                 <c:otherwise>Tạo tài khoản</c:otherwise>
                             </c:choose>
                         </button>
@@ -351,11 +354,11 @@
                 document.getElementById("companySelect").dispatchEvent(new Event("change"));
             }
 
-            // Character counters
+            // Character counters – read data-max only (no maxlength)
             document.querySelectorAll(".char-input").forEach(function (input) {
                 const counter = input.closest('.rf-group').querySelector('.rf-chars');
                 if (!counter) return;
-                const max = parseInt(input.dataset.max || input.getAttribute("maxlength")) || 0;
+                const max = parseInt(input.dataset.max, 10) || 0;
 
                 function update() {
                     const len = input.value.length;
