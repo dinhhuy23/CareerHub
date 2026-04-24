@@ -13,7 +13,7 @@
     <style>
         /* ── Page layout ── */
         .rl-container {
-            max-width: 1200px; margin: 0 auto;
+            max-width: 1400px; margin: 0 auto;
             padding: var(--space-xl) var(--space-lg) var(--space-3xl);
         }
 
@@ -191,6 +191,44 @@
 
         /* ── Row hidden by filter ── */
         tr.hidden-row { display: none; }
+<<<<<<< HEAD
+
+        /* ── Toast notification ── */
+        .toast-container {
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 20px; border-radius: 12px;
+            font-size: 0.88rem; font-weight: 600;
+            min-width: 280px; max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            animation: toastIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .toast.success {
+            background: rgba(16,185,129,0.18); color: #34d399;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+        .toast.error {
+            background: rgba(239,68,68,0.18); color: #f87171;
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        .toast-close {
+            margin-left: auto; cursor: pointer; opacity: 0.7;
+            background: none; border: none; color: inherit;
+            font-size: 1rem; line-height: 1; padding: 0;
+        }
+        .toast-close:hover { opacity: 1; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(30px); }
+        }
     </style>
 </head>
 <body class="app-page">
@@ -198,6 +236,34 @@
 
     <main class="main-content">
         <div class="rl-container">
+
+            <%-- Toast notification (flash from session) --%>
+            <c:if test="${not empty toastType}">
+                <div class="toast-container" id="toastContainer">
+                    <div class="toast ${toastType}" id="mainToast">
+                        <c:choose>
+                            <c:when test="${toastType == 'success'}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>
+                            </c:when>
+                            <c:otherwise>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            </c:otherwise>
+                        </c:choose>
+                        <span><c:out value="${toastMsg}"/></span>
+                        <button class="toast-close" onclick="this.closest('.toast').remove()">&times;</button>
+                    </div>
+                </div>
+                <script>
+                    (function(){
+                        var t = document.getElementById('mainToast');
+                        if (!t) return;
+                        setTimeout(function(){
+                            t.style.animation = 'toastOut 0.3s ease forwards';
+                            setTimeout(function(){ t.remove(); }, 320);
+                        }, 4000);
+                    })();
+                </script>
+            </c:if>
 
             <!-- Header -->
             <div class="rl-header">
@@ -275,10 +341,11 @@
                 <select class="rl-filter" id="companyFilter">
                     <option value="All">Tất cả công ty</option>
                     <c:forEach var="r" items="${list}">
-                        <option value="${r.companyName}">${r.companyName}</option>
+                        <option value="${fn:escapeXml(r.companyName)}"><c:out value="${r.companyName}"/></option>
                     </c:forEach>
                 </select>
             </div>
+
 
             <!-- Table -->
             <div class="rl-card animate-fadeInUp" style="animation-delay:0.1s;">
@@ -301,9 +368,9 @@
                                 <c:when test="${not empty list}">
                                     <c:forEach var="r" items="${list}" varStatus="loop">
                                         <c:set var="initial" value="${not empty r.fullName ? fn:toUpperCase(fn:substring(r.fullName, 0, 1)) : '?'}"/>
-                                        <tr data-name="${fn:toLowerCase(r.fullName)} ${fn:toLowerCase(r.email)}"
-                                            data-company="${r.companyName}"
-                                            data-jobtitle="${fn:toLowerCase(r.jobTitle)}"
+                                        <tr data-name="${fn:escapeXml(fn:toLowerCase(r.fullName))} ${fn:escapeXml(fn:toLowerCase(r.email))}"
+                                            data-company="${fn:escapeXml(r.companyName)}"
+                                            data-jobtitle="${fn:escapeXml(fn:toLowerCase(r.jobTitle))}"
                                             data-status="${r.status}">
                                             <td style="color:var(--text-muted); font-size:0.8rem;">${loop.index + 1}</td>
                                             <td>
@@ -320,19 +387,19 @@
                                             <td>
                                                 <span class="job-title-badge">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                                                    ${r.jobTitle}
+                                                    <c:out value="${r.jobTitle}"/>
                                                 </span>
                                             </td>
-                                            <td><span class="company-badge">${r.companyName}</span></td>
+                                            <td><span class="company-badge"><c:out value="${r.companyName}"/></span></td>
                                             <td>
                                                 <c:if test="${not empty r.departmentName}">
-                                                    <span class="dept-badge">${r.departmentName}</span>
+                                                    <span class="dept-badge"><c:out value="${r.departmentName}"/></span>
                                                 </c:if>
                                                 <c:if test="${empty r.departmentName}">
                                                     <span style="color:var(--text-muted); font-size:0.8rem;">—</span>
                                                 </c:if>
                                             </td>
-                                            <td><div class="bio-cell">${r.bio}</div></td>
+                                            <td><div class="bio-cell"><c:out value="${r.bio}"/></div></td>
                                             <td>
                                                 <span class="status-pill ${r.status == 'ACTIVE' ? 'active' : 'inactive'}">
                                                     <span class="status-dot"></span>
@@ -347,9 +414,9 @@
                                                             Sửa
                                                         </a>
                                                         <a class="btn-icon del" href="${pageContext.request.contextPath}/admin/recruiters?action=delete&id=${r.recruiterId}"
-                                                           onclick="return confirm('Xác nhận xóa nhà tuyển dụng này?')">
-                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                                            Xóa
+                                                           onclick="return confirm('Xác nhận khóa nhà tuyển dụng này?')">
+                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                                            Khóa
                                                         </a>
                                                     </c:if>
                                                 </div>

@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class JobDAO {
+
     private static final Logger LOGGER = Logger.getLogger(JobDAO.class.getName());
     private final DBContext dbContext = new DBContext();
 
@@ -41,12 +42,30 @@ public class JobDAO {
         job.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
 
         // Join display fields if present
-        try { job.setCategoryName(rs.getString("CategoryName")); } catch (Exception e) {}
-        try { job.setLocationName(rs.getString("LocationName")); } catch (Exception e) {}
-        try { job.setEmploymentTypeName(rs.getString("TypeName")); } catch (Exception e) {}
-        try { job.setExperienceLevelName(rs.getString("LevelName")); } catch (Exception e) {}
-        try { job.setEmployerName(rs.getString("FullName")); } catch (Exception e) {}
-        try { job.setCompanyName(rs.getString("CompanyName")); } catch (Exception e) {}
+        try {
+            job.setCategoryName(rs.getString("CategoryName"));
+        } catch (Exception e) {
+        }
+        try {
+            job.setLocationName(rs.getString("LocationName"));
+        } catch (Exception e) {
+        }
+        try {
+            job.setEmploymentTypeName(rs.getString("TypeName"));
+        } catch (Exception e) {
+        }
+        try {
+            job.setExperienceLevelName(rs.getString("LevelName"));
+        } catch (Exception e) {
+        }
+        try {
+            job.setEmployerName(rs.getString("FullName"));
+        } catch (Exception e) {
+        }
+        try {
+            job.setCompanyName(rs.getString("CompanyName"));
+        } catch (Exception e) {
+        }
 
         return job;
     }
@@ -55,10 +74,12 @@ public class JobDAO {
         // 1. Lấy RecruiterId và CompanyId của nhà tuyển dụng từ UserId
         long companyId = 1; // Default fallback
         long trueRecruiterId = job.getPostedByRecruiterId(); // Assume it's already RecruiterId, fallback if not
-        
+
         String getProfileSql = "SELECT RecruiterId, CompanyId FROM RecruiterProfiles WHERE UserId = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(getProfileSql)) {
+
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(getProfileSql)) {
+
             ps.setLong(1, job.getPostedByRecruiterId());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -72,11 +93,14 @@ public class JobDAO {
 
         // 2. Chèn dữ liệu vào bảng Jobs với các cột NOT NULL bị thiếu
         String sql = "INSERT INTO Jobs (PostedByRecruiterId, CompanyId, Title, Description, Requirements, Responsibilities, "
-                   + "SalaryMin, SalaryMax, CategoryId, LocationId, EmploymentTypeId, ExperienceLevelId, "
-                   + "DeadlineAt, Status, CurrencyCode, VacancyCount, IsFeatured, ViewCount, CreatedAt, UpdatedAt) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'VND', 1, 0, 0, SYSUTCDATETIME(), SYSUTCDATETIME())";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                + "SalaryMin, SalaryMax, CategoryId, LocationId, EmploymentTypeId, ExperienceLevelId, "
+                + "DeadlineAt, Status, CurrencyCode, VacancyCount, IsFeatured, ViewCount, CreatedAt, UpdatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'VND', 1, 0, 0, SYSUTCDATETIME(), SYSUTCDATETIME())";
+
+
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setLong(1, trueRecruiterId);
             ps.setLong(2, companyId);
             ps.setString(3, job.getTitle());
@@ -95,7 +119,12 @@ public class JobDAO {
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) return keys.getLong(1);
+
+
+                    if (keys.next()) {
+                        return keys.getLong(1);
+                    }
+
                 }
             }
         } catch (SQLException e) {
@@ -108,24 +137,31 @@ public class JobDAO {
     // Helper method to convert UserId to RecruiterId
     private long getActualRecruiterId(long userId) {
         String sql = "SELECT RecruiterId FROM RecruiterProfiles WHERE UserId = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getLong(1);
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+
             }
-        } catch (SQLException e) {}
+        } catch (SQLException e) {
+        }
         return userId; // Fallback
     }
 
     public boolean update(Job job) {
         long trueRecruiterId = getActualRecruiterId(job.getPostedByRecruiterId());
         String sql = "UPDATE Jobs SET Title = ?, Description = ?, Requirements = ?, Responsibilities = ?, "
-                   + "SalaryMin = ?, SalaryMax = ?, CategoryId = ?, LocationId = ?, EmploymentTypeId = ?, "
-                   + "ExperienceLevelId = ?, DeadlineAt = ?, Status = ?, UpdatedAt = SYSUTCDATETIME() "
-                   + "WHERE JobId = ? AND PostedByRecruiterId = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                + "SalaryMin = ?, SalaryMax = ?, CategoryId = ?, LocationId = ?, EmploymentTypeId = ?, "
+                + "ExperienceLevelId = ?, DeadlineAt = ?, Status = ?, UpdatedAt = SYSUTCDATETIME() "
+                + "WHERE JobId = ? AND PostedByRecruiterId = ?";
+
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, job.getTitle());
             ps.setString(2, job.getDescription());
             ps.setString(3, job.getRequirements());
@@ -147,12 +183,51 @@ public class JobDAO {
         }
         return false;
     }
+    public boolean updateBasic(long jobId, String title, Double salaryMin, Double salaryMax) {
+    String sql = "UPDATE Jobs SET Title = ?, SalaryMin = ?, SalaryMax = ?, UpdatedAt = SYSUTCDATETIME() WHERE JobId = ?";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, title);
+        ps.setObject(2, salaryMin);
+        ps.setObject(3, salaryMax);
+        ps.setLong(4, jobId);
+
+        return ps.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+    public boolean closeJob(long jobId) {
+        String sql = """
+        UPDATE Jobs 
+        SET Status = 'CLOSED',
+            ClosedAt = SYSUTCDATETIME(),
+            UpdatedAt = SYSUTCDATETIME()
+        WHERE JobId = ?
+    """;
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, jobId);
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error closing job", e);
+        }
+        return false;
+    }
 
     public boolean updateStatus(long jobId, long recruiterOrUserId, String status) {
         long trueRecruiterId = getActualRecruiterId(recruiterOrUserId);
         String sql = "UPDATE Jobs SET Status = ?, UpdatedAt = SYSUTCDATETIME() WHERE JobId = ? AND PostedByRecruiterId = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, status);
             ps.setLong(2, jobId);
             ps.setLong(3, trueRecruiterId);
@@ -165,18 +240,22 @@ public class JobDAO {
 
     public Job findById(long jobId) {
         String sql = "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName "
-                   + "FROM Jobs j "
-                   + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
-                   + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
-                   + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
-                   + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-                   + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
-                   + "WHERE j.JobId = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                + "FROM Jobs j "
+                + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
+                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
+                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
+                + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
+                + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
+                + "WHERE j.JobId = ?";
+
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, jobId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapResultSetToJob(rs);
+                if (rs.next()) {
+                    return mapResultSetToJob(rs);
+                }
+
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error finding job by ID", e);
@@ -188,18 +267,22 @@ public class JobDAO {
         long trueRecruiterId = getActualRecruiterId(employerUserId);
         List<Job> list = new ArrayList<>();
         String sql = "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName "
-                   + "FROM Jobs j "
-                   + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
-                   + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
-                   + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
-                   + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-                   + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' "
-                   + "ORDER BY j.CreatedAt DESC";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                + "FROM Jobs j "
+                + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
+                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
+                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
+                + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
+                + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' "
+                + "ORDER BY j.CreatedAt DESC";
+
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, trueRecruiterId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) list.add(mapResultSetToJob(rs));
+                while (rs.next()) {
+                    list.add(mapResultSetToJob(rs));
+                }
+
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error finding jobs by employer ID", e);
@@ -207,18 +290,22 @@ public class JobDAO {
         return list;
     }
 
-    public List<Job> searchAndFilter(String keyword, Long categoryId, Long locationId, Long typeId, Long levelId, int offset, int fetchSize) {
+    public List<Job> searchAndFilter(String keyword, Long categoryId, Long locationId, Long typeId, Long levelId,
+            int offset, int fetchSize) {
         List<Job> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName "
-          + "FROM Jobs j "
-          + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
-          + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
-          + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
-          + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-          + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
-          + "WHERE j.Status = 'PUBLISHED' "
+                "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName "
+
+
+                + "FROM Jobs j "
+                + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
+                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
+                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
+                + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
+                + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
+                + "WHERE j.Status = 'PUBLISHED' "
         );
+
 
         List<Object> params = new ArrayList<>();
 
@@ -251,15 +338,21 @@ public class JobDAO {
         params.add(offset);
         params.add(fetchSize);
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
 
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) list.add(mapResultSetToJob(rs));
+
+
+                while (rs.next()) {
+                    list.add(mapResultSetToJob(rs));
+                }
+
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error searching jobs", e);
@@ -269,10 +362,11 @@ public class JobDAO {
 
     public int countSearchAndFilter(String keyword, Long categoryId, Long locationId, Long typeId, Long levelId) {
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(j.JobId) "
-          + "FROM Jobs j "
-          + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
-          + "WHERE j.Status = 'PUBLISHED' "
+                "SELECT COUNT(j.JobId) "
+
+                + "FROM Jobs j "
+                + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
+                + "WHERE j.Status = 'PUBLISHED' "
         );
 
         List<Object> params = new ArrayList<>();
@@ -301,15 +395,19 @@ public class JobDAO {
             params.add(levelId);
         }
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
 
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error counting jobs", e);
@@ -319,8 +417,9 @@ public class JobDAO {
 
     public void incrementViewCount(long jobId) {
         String sql = "UPDATE Jobs SET ViewCount = ViewCount + 1 WHERE JobId = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setLong(1, jobId);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -332,11 +431,13 @@ public class JobDAO {
     public int countJobsByEmployer(long employerUserId) {
         long trueRecruiterId = getActualRecruiterId(employerUserId);
         String sql = "SELECT COUNT(*) FROM Jobs WHERE PostedByRecruiterId = ? AND Status != 'DELETED'";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, trueRecruiterId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error counting employer jobs", e);
@@ -344,15 +445,19 @@ public class JobDAO {
         return 0;
     }
 
-    // Tính tổng tất cả lượt xem từ tất cả các tin tuyển dụng của một Nhà tuyển dụng cụ thể
+    // Tính tổng tất cả lượt xem từ tất cả các tin tuyển dụng của một Nhà tuyển dụng
+    // cụ thể
     public long getTotalViewsByEmployer(long employerUserId) {
         long trueRecruiterId = getActualRecruiterId(employerUserId);
         String sql = "SELECT SUM(ViewCount) FROM Jobs WHERE PostedByRecruiterId = ? AND Status != 'DELETED'";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, trueRecruiterId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getLong(1);
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error getting total views", e);
@@ -360,28 +465,81 @@ public class JobDAO {
         return 0;
     }
 
+    public List<Job> getAllJobs() {
+        List<Job> list = new ArrayList<>();
+        String sql = "SELECT * FROM Jobs";
+
+        try (Connection con = dbContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Job j = new Job();
+
+                j.setJobId(rs.getLong("JobId"));
+                j.setCompanyId(rs.getLong("CompanyId"));
+                j.setDepartmentId(rs.getLong("DepartmentId"));
+                j.setPostedByRecruiterId(rs.getLong("PostedByRecruiterId"));
+                j.setCategoryId(rs.getLong("CategoryId"));
+                j.setEmploymentTypeId(rs.getLong("EmploymentTypeId"));
+                j.setExperienceLevelId(rs.getLong("ExperienceLevelId"));
+
+                j.setTitle(rs.getString("Title"));
+                j.setJobCode(rs.getString("JobCode"));
+                j.setDescription(rs.getString("Description"));
+                j.setRequirements(rs.getString("Requirements"));
+                j.setResponsibilities(rs.getString("Responsibilities"));
+
+                j.setLocationId(rs.getLong("LocationId"));
+                j.setAddressDetail(rs.getString("AddressDetail"));
+
+                j.setSalaryMin(rs.getBigDecimal("SalaryMin"));
+                j.setSalaryMax(rs.getBigDecimal("SalaryMax"));
+                j.setCurrencyCode(rs.getString("CurrencyCode"));
+                j.setVacancyCount(rs.getInt("VacancyCount"));
+
+                j.setDeadlineAt(rs.getTimestamp("DeadlineAt"));
+                j.setPublishedAt(rs.getTimestamp("PublishedAt"));
+                j.setClosedAt(rs.getTimestamp("ClosedAt"));
+
+                j.setStatus(rs.getString("Status"));
+                j.setViewCount(rs.getInt("ViewCount"));
+//            j.setIsFeatured(rs.getBoolean("IsFeatured"));
+
+                j.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                j.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+
+                list.add(j);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
     public List<Job> findByCompanyId(long companyId) {
         List<Job> list = new ArrayList<>();
         String sql = "SELECT j.*, rp.UserId as EmployerUserId, "
-                   + "COALESCE(c.CompanyName, u.FullName) as EmployerName, "
-                   + "c.CompanyName, "
-                   + "jc.CategoryName, "
-                   + "l.LocationName, "
-                   + "et.TypeName as EmploymentTypeName, "
-                   + "el.LevelName as ExperienceLevelName "
-                   + "FROM Jobs j "
-                   + "JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
-                   + "JOIN Users u ON rp.UserId = u.UserId "
-                   + "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId "
-                   + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
-                   + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
-                   + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
-                   + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-                   + "WHERE j.CompanyId = ? AND j.Status = 'PUBLISHED' "
-                   + "ORDER BY j.PublishedAt DESC";
+                + "COALESCE(c.CompanyName, u.FullName) as EmployerName, "
+                + "c.CompanyName, "
+                + "jc.CategoryName, "
+                + "l.LocationName, "
+                + "et.TypeName as EmploymentTypeName, "
+                + "el.LevelName as ExperienceLevelName "
+                + "FROM Jobs j "
+                + "JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                + "JOIN Users u ON rp.UserId = u.UserId "
+                + "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId "
+                + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
+                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
+                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
+                + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
+                + "WHERE j.CompanyId = ? AND j.Status = 'PUBLISHED' "
+                + "ORDER BY j.PublishedAt DESC";
 
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setLong(1, companyId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -392,6 +550,44 @@ public class JobDAO {
             LOGGER.log(Level.SEVERE, "Error finding jobs by company", e);
         }
         return list;
+    }
+
+    public List<Job> getJobsPaging(int offset, int pageSize) {
+        List<Job> list = new ArrayList<>();
+        String sql = "SELECT * FROM Jobs ORDER BY CreatedAt DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection con = dbContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapResultSetToJob(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public int countAllJobs() {
+        String sql = "SELECT COUNT(*) FROM Jobs";
+
+        try (Connection con = dbContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 
     public List<Job> getRecommendedJobs(String targetRole, int limit) {
@@ -449,5 +645,3 @@ public class JobDAO {
         return list;
     }
 }
-
-

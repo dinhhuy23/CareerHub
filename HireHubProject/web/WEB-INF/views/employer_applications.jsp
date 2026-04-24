@@ -48,6 +48,8 @@
         .badge-INTERVIEWING { background: rgba(6,182,212,0.15); color: #06B6D4; }
         .badge-OFFERED    { background: rgba(16,185,129,0.15); color: #10B981; }
         .badge-REJECTED   { background: rgba(239,68,68,0.15);  color: #EF4444; }
+        .badge-WITHDRAW_REQUESTED { background: rgba(245,158,11,0.15); color: #F59E0B; border: 1px dashed #F59E0B; }
+        .badge-WITHDRAWN  { background: rgba(107,114,128,0.15); color: #6B7280; }
 
         /* Side-peek panel */
         .peek-overlay {
@@ -257,6 +259,8 @@
                     <option value="INTERVIEWING">INTERVIEWING - Phỏng vấn</option>
                     <option value="OFFERED">OFFERED - Trúng tuyển</option>
                     <option value="REJECTED">REJECTED - Từ chối</option>
+                    <option value="WITHDRAW_REQUESTED">WITHDRAW_REQUESTED - Yêu cầu rút đơn</option>
+                    <option value="WITHDRAWN">WITHDRAWN - Đã rút (Đồng ý cho rút)</option>
                 </select>
 
                 <!-- Vùng hẹn phỏng vấn (Chỉ hiện khi chọn INTERVIEWING) -->

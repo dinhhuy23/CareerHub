@@ -247,20 +247,24 @@ public class ApplicationDAO {
     }
 
     // ==========================================
-    // Rút đơn ứng tuyển (Xóa bản ghi để cho phép nộp lại và biến mất khỏi danh sách)
-    // Chỉ cho phép khi trạng thái còn là PENDING
+    // Yêu cầu rút đơn ứng tuyển (Chuyển sang trạng thái chờ duyệt rút đơn)
+    // Lưu lý do rút đơn vào cột RecruiterNote để nhà tuyển dụng xem
     // ==========================================
-    public boolean withdraw(long applicationId, long candidateUserId) {
-        String sql = "DELETE FROM Applications "
+    public boolean withdraw(long applicationId, long candidateUserId, String reason) {
+        String sql = "UPDATE Applications "
+                   + "SET CurrentStatusId = (SELECT TOP 1 ApplicationStatusId FROM ApplicationStatuses WHERE StatusCode = 'WITHDRAW_REQUESTED'), "
+                   + "RecruiterNote = ?, "
+                   + "LastStatusChangedAt = SYSUTCDATETIME() "
                    + "WHERE ApplicationId = ? AND CandidateId = (SELECT CandidateId FROM CandidateProfiles WHERE UserId = ?) "
                    + "AND CurrentStatusId = (SELECT TOP 1 ApplicationStatusId FROM ApplicationStatuses WHERE StatusCode = 'PENDING')";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, applicationId);
-            ps.setLong(2, candidateUserId);
+            ps.setString(1, "Lý do rút đơn: " + reason);
+            ps.setLong(2, applicationId);
+            ps.setLong(3, candidateUserId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error deleting (withdrawing) application id=" + applicationId, e);
+            LOGGER.log(Level.SEVERE, "Error requesting withdrawal for application id=" + applicationId, e);
         }
         return false;
     }

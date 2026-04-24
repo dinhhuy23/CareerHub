@@ -367,21 +367,64 @@
             font-weight: 600;
         }
 
-        .job-salary-box {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: fit-content;
-            padding: 12px 16px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(5,150,105,0.08));
-            border: 1px solid rgba(16,185,129,0.18);
-            color: #22C55E;
-            font-size: 1.8rem;
-            font-weight: 800;
-            line-height: 1.1;
-        }
+       .job-salary-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
+.job-salary-label {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.job-salary-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background:
+        linear-gradient(135deg, rgba(16,185,129,0.10), rgba(6,182,212,0.08)),
+        rgba(10, 25, 27, 0.72);
+    border: 1px solid rgba(45, 212, 191, 0.18);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 10px 22px rgba(0,0,0,0.18);
+}
+
+.job-salary-value {
+    color: #2dd4bf;
+    font-size: 1.95rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    word-break: break-word;
+}
+
+.job-salary-unit {
+    color: #9fb3c8;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .job-salary-value {
+        font-size: 1.55rem;
+    }
+}
         .job-card-desc {
             color: var(--text-secondary);
             line-height: 1.7;
@@ -525,7 +568,14 @@
         }
     </style>
 </head>
+<c:if test="${not empty deactivateAt}">
+    <div style="color: orange;">
+        Tài khoản sẽ bị khóa vào:
+        <fmt:formatDate value="${deactivateAt}" pattern="HH:mm dd/MM/yyyy"/>
+    </div>
+</c:if>
 <body class="app-page">
+    
     <jsp:include page="/WEB-INF/views/header.jsp" />
 
     <main class="main-content">
@@ -735,18 +785,28 @@
                                     </c:if>
                                 </div>
 
-                                <div class="job-salary-box">
-                                    <c:choose>
-                                        <c:when test="${job.salaryMin != null && job.salaryMax != null}">
-                                            <fmt:formatNumber value="${job.salaryMin}" maxFractionDigits="0" />
-                                            -
-                                            <fmt:formatNumber value="${job.salaryMax}" maxFractionDigits="0" />
-                                        </c:when>
-                                        <c:otherwise>
-                                            Thỏa thuận
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
+                               <div class="job-salary-wrap">
+    <div class="job-salary-label">Mức lương</div>
+
+    <div class="job-salary-box">
+        <div class="job-salary-value">
+            <c:choose>
+                <c:when test="${job.salaryMin != null && job.salaryMax != null}">
+                    <fmt:formatNumber value="${job.salaryMin}" maxFractionDigits="0" />
+                    -
+                    <fmt:formatNumber value="${job.salaryMax}" maxFractionDigits="0" />
+                </c:when>
+                <c:otherwise>
+                    Thỏa thuận
+                </c:otherwise>
+            </c:choose>
+        </div>
+
+        <c:if test="${job.salaryMin != null && job.salaryMax != null}">
+            <div class="job-salary-unit">VND / tháng</div>
+        </c:if>
+    </div>
+</div>
 
                                 <div class="job-card-desc">
                                     <c:choose>

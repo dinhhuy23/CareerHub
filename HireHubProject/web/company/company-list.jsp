@@ -8,9 +8,36 @@
         <title>Recruiting Companies</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/company.css">
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
+        <style>
+            .toast-container{position:fixed;top:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+            .toast{display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:12px;font-size:.88rem;font-weight:600;min-width:280px;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,.35);animation:toastIn .3s ease;backdrop-filter:blur(10px)}
+            .toast.success{background:rgba(16,185,129,.18);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+            .toast.error{background:rgba(239,68,68,.18);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+            .toast-close{margin-left:auto;cursor:pointer;opacity:.7;background:none;border:none;color:inherit;font-size:1rem;line-height:1;padding:0}
+            .toast-close:hover{opacity:1}
+            @keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+            @keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(30px)}}
+        </style>
     </head>
     <body>
         <jsp:include page="/WEB-INF/views/header.jsp" />
+
+        <%-- Toast flash from session --%>
+        <c:if test="${not empty toastType}">
+            <div class="toast-container" id="toastContainer">
+                <div class="toast ${toastType}" id="mainToast">
+                    <c:choose>
+                        <c:when test="${toastType == 'success'}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg></c:when>
+                        <c:otherwise><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></c:otherwise>
+                    </c:choose>
+                    <span><c:out value="${toastMsg}"/></span>
+                    <button class="toast-close" onclick="this.closest('.toast').remove()">&times;</button>
+                </div>
+            </div>
+            <script>
+                (function(){var t=document.getElementById('mainToast');if(!t)return;setTimeout(function(){t.style.animation='toastOut .3s ease forwards';setTimeout(function(){t.remove()},320)},4000);})();
+            </script>
+        </c:if>
 
         <div class="page-container">
             <div class="page-header">

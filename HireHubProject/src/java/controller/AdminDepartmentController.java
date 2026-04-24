@@ -57,25 +57,36 @@ public class AdminDepartmentController extends HttpServlet {
         String companyIdStr = request.getParameter("companyId");
 
         // Validate
+        String errorMsg = null;
         if (name == null || name.trim().isEmpty() || companyIdStr == null || companyIdStr.isEmpty()) {
-            request.setAttribute("error", "Tên phòng ban và công ty không được để trống.");
+            errorMsg = "Tên phòng ban và công ty không được để trống.";
+        } else if (name.trim().length() > 150) {
+            errorMsg = "Tên phòng ban không được vượt quá 150 ký tự.";
+        } else if (desc != null && desc.trim().length() > 500) {
+            errorMsg = "Mô tả không được vượt quá 500 ký tự.";
+        }
+
+        Department d = new Department();
+        if (id != null && !id.isEmpty()) {
+            try { d.setDepartmentId(Long.parseLong(id)); } catch (NumberFormatException ignored) {}
+        }
+        d.setDepartmentName(name != null ? name.trim() : "");
+        d.setDescription(desc != null ? desc.trim() : "");
+        if (companyIdStr != null && !companyIdStr.isEmpty()) {
+            try { d.setCompanyId(Long.parseLong(companyIdStr)); } catch (NumberFormatException ignored) {}
+        }
+
+        if (errorMsg != null) {
+            request.setAttribute("error", errorMsg);
             request.setAttribute("companies", companyDAO.getAll());
-            if (id != null && !id.isEmpty()) {
-                request.setAttribute("department", departmentDAO.getById(Long.parseLong(id)));
-            }
+            request.setAttribute("department", d);
             request.getRequestDispatcher("/WEB-INF/views/department-form.jsp").forward(request, response);
             return;
         }
 
-        Department d = new Department();
-        d.setDepartmentName(name.trim());
-        d.setDescription(desc != null ? desc.trim() : "");
-        d.setCompanyId(Long.parseLong(companyIdStr));
-
         if (id == null || id.isEmpty()) {
             departmentDAO.insert(d);
         } else {
-            d.setDepartmentId(Long.parseLong(id));
             departmentDAO.update(d);
         }
 

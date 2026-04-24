@@ -51,11 +51,12 @@ public class RecruiterDAO {
         return list;
     }
 
-    // INSERT
-    public void insert(Recruiter r) {
+    // INSERT – trả về true nếu thành công
+    public boolean insert(Recruiter r) {
         String sql = "INSERT INTO RecruiterProfiles(UserId, CompanyId, DepartmentId, JobTitle, Bio) VALUES(?,?,?,?,?)";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, r.getUserId());
             ps.setLong(2, r.getCompanyId());
@@ -67,9 +68,10 @@ public class RecruiterDAO {
             ps.setString(4, r.getJobTitle());
             ps.setString(5, r.getBio());
 
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -137,13 +139,14 @@ public class RecruiterDAO {
         return null;
     }
 
-    // UPDATE
-    public void update(Recruiter r) {
+    // UPDATE – trả về true nếu thành công
+    public boolean update(Recruiter r) {
         String sql = "UPDATE RecruiterProfiles "
                 + "SET CompanyId=?, DepartmentId=?, JobTitle=?, Bio=? "
                 + "WHERE RecruiterId=?";
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             // CompanyId (bắt buộc)
             ps.setLong(1, r.getCompanyId());
@@ -164,10 +167,11 @@ public class RecruiterDAO {
             // Where
             ps.setLong(5, r.getRecruiterId());
 
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 

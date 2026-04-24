@@ -40,10 +40,10 @@ public class JobListingController extends HttpServlet {
 
         // Parse search params
         String keyword = request.getParameter("keyword");
-        Long categoryId = parseLongOrNull(request.getParameter("category"));
-        Long locationId = parseLongOrNull(request.getParameter("location"));
-        Long typeId = parseLongOrNull(request.getParameter("type"));
-        Long levelId = parseLongOrNull(request.getParameter("level"));
+        Long categoryId = parseLongOrNull(request.getParameter("categoryId"));
+        Long locationId = parseLongOrNull(request.getParameter("locationId"));
+        Long typeId = parseLongOrNull(request.getParameter("employmentTypeId"));
+        Long levelId = parseLongOrNull(request.getParameter("experienceLevelId"));
 
         // Pagination
         int page = 1;
@@ -80,7 +80,7 @@ public class JobListingController extends HttpServlet {
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalJobs", totalJobs);
 
-        // Retain search values
+        // Retain search values for JSP
         request.setAttribute("keyword", keyword);
         request.setAttribute("selectedCategory", categoryId);
         request.setAttribute("selectedLocation", locationId);

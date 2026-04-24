@@ -133,6 +133,44 @@
     <jsp:include page="/WEB-INF/views/header.jsp" />
 
     <main class="main-content">
+        <!-- Alert Toast -->
+        <c:if test="${not empty error}">
+            <div id="toast-notification" style="position: fixed; top: 80px; right: 20px; z-index: 9999; 
+                        background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+                        border-left: 4px solid var(--error); border-radius: var(--radius-md); 
+                        box-shadow: 0 10px 25px rgba(0,0,0,0.2); padding: 16px 20px; 
+                        display: flex; align-items: center; gap: 12px; max-width: 350px;
+                        animation: slideInRight 0.3s ease-out forwards;">
+                <div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--error-light); color: var(--error); flex-shrink: 0;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </div>
+                <div>
+                    <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; color: var(--text-primary);">Lỗi!</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);"><c:out value="${error}"/></div>
+                </div>
+            </div>
+            <style>
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes fadeOutRight {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+            </style>
+            <script>
+                setTimeout(() => {
+                    const toast = document.getElementById('toast-notification');
+                    if (toast) {
+                        toast.style.animation = 'fadeOutRight 0.3s ease-out forwards';
+                        setTimeout(() => toast.remove(), 300);
+                    }
+                }, 5000);
+            </script>
+        </c:if>
         <div class="df-container animate-fadeInUp">
 
             <!-- Back -->
@@ -159,26 +197,16 @@
                                 <c:otherwise>Thêm phòng ban mới</c:otherwise>
                             </c:choose>
                         </div>
-                        <div class="df-card-subtitle">
+                        <div class="df-card-subtitle" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px;">
                             <c:choose>
-                                <c:when test="${department != null}">Cập nhật thông tin cho phòng ban <strong>${department.departmentName}</strong></c:when>
+                                <c:when test="${department != null}">Cập nhật thông tin cho phòng ban <strong><c:out value="${department.departmentName}"/></strong></c:when>
                                 <c:otherwise>Điền thông tin để tạo phòng ban mới cho công ty</c:otherwise>
                             </c:choose>
                         </div>
                     </div>
                 </div>
 
-                <!-- Alert -->
-                <c:if test="${not empty error}">
-                    <div style="padding: var(--space-lg) var(--space-xl) 0;">
-                        <div class="df-alert">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:1px;">
-                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                            </svg>
-                            <c:out value="${error}"/>
-                        </div>
-                    </div>
-                </c:if>
+
 
                 <!-- Form -->
                 <form action="${pageContext.request.contextPath}/admin/departments" method="post">

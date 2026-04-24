@@ -118,6 +118,7 @@ public class EmployerApplicationController extends HttpServlet {
             case "INTERVIEWING": return "📅 Bạn được mời phỏng vấn!";
             case "OFFERED":      return "🎉 Chúc mừng! Bạn đã trúng tuyển!";
             case "REJECTED":     return "📩 Thông báo kết quả ứng tuyển";
+            case "WITHDRAWN":    return "✅ Chấp nhận rút hồ sơ";
             default:             return "🔔 Cập nhật trạng thái ứng tuyển";
         }
     }

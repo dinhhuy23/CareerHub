@@ -22,8 +22,19 @@ public class User {
     private String roleCode;
     private String roleName;
 
+    private String cvUrl; // Đường dẫn CV mặc định (Dùng cho Discovery)
+
+
+    private Timestamp DeactivateAt;
+
     public User() {
     }
+
+    public Timestamp getDeactivateAt() {
+        return DeactivateAt;
+    }
+
+ 
 
     public User(long userId, String email, String passwordHash, String fullName,
                 String phoneNumber, String avatarUrl, String gender, Date dateOfBirth,
@@ -89,4 +100,7 @@ public class User {
 
     public String getRoleName() { return roleName; }
     public void setRoleName(String roleName) { this.roleName = roleName; }
+
+    public String getCvUrl() { return cvUrl; }
+    public void setCvUrl(String cvUrl) { this.cvUrl = cvUrl; }
 }
