@@ -206,26 +206,53 @@ public class JobDAO {
         return null;
     }
 
+    // Hàm gốc: Lấy tất cả job không lọc
     public List<Job> findByEmployerId(long employerUserId) {
+        return findByEmployerId(employerUserId, null, null);
+    }
+
+    // Hàm mở rộng: Lấy job có hỗ trợ lọc theo Keyword (Tiêu đề) và Status (Trạng thái)
+    public List<Job> findByEmployerId(long employerUserId, String keyword, String status) {
         long trueRecruiterId = getActualRecruiterId(employerUserId);
         List<Job> list = new ArrayList<>();
-        String sql = "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName "
+        
+        StringBuilder sql = new StringBuilder(
+                  "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName "
                 + "FROM Jobs j "
                 + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
                 + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
                 + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
                 + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-                + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' "
-                + "ORDER BY j.CreatedAt DESC";
+                + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' ");
+
+        List<Object> params = new ArrayList<>();
+        params.add(trueRecruiterId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND j.Title LIKE ? ");
+            params.add("%" + keyword.trim() + "%");
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND j.Status = ? ");
+            params.add(status.trim());
+        }
+
+        sql.append("ORDER BY j.CreatedAt DESC");
+
         try (Connection conn = dbContext.getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, trueRecruiterId);
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next())
                     list.add(mapResultSetToJob(rs));
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error finding jobs by employer ID", e);
+            LOGGER.log(Level.SEVERE, "Error finding filtered jobs by employer ID", e);
         }
         return list;
     }

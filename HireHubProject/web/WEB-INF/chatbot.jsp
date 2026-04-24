@@ -92,7 +92,7 @@
 
         <div id="chatBox" class="chat-box">
             <div class="msg bot">
-                <div class="bubble">Xin chào, tôi có thể hỗ trợ gì cho bạn?</div>
+                <div class="bubble">Xin chào</div>
             </div>
         </div>
 

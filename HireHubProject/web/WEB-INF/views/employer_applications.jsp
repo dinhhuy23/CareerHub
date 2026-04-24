@@ -92,6 +92,56 @@
             letter-spacing: 1px;
             margin-bottom: 10px;
         }
+
+        /* Tùy chỉnh giao diện Select2 cho đẹp và khớp với thiết kế Dark Mode */
+        .select2-container .select2-selection--single {
+            height: 42px !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            display: flex;
+            align-items: center;
+            background-color: transparent !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text-primary) !important;
+            line-height: 42px !important;
+            padding-left: 14px !important;
+            font-weight: 500;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+            right: 8px !important;
+        }
+        /* Style cho Dropdown list (Phần thả xuống) */
+        .select2-dropdown {
+            background-color: var(--bg-secondary) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+            overflow: hidden;
+        }
+        /* Style cho ô Search nhập text */
+        .select2-search__field {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            border-radius: 6px !important;
+            padding: 8px 12px !important;
+            border: 1px solid var(--border-color) !important;
+            outline: none;
+        }
+        /* Style cho từng dòng lựa chọn */
+        .select2-container--default .select2-results__option {
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-secondary) !important;
+            padding: 10px 14px !important;
+        }
+        /* Style khi hover hoặc chọn mục */
+        .select2-container--default .select2-results__option--highlighted[aria-selected], 
+        .select2-container--default .select2-results__option[aria-selected="true"] {
+            background-color: rgba(99, 102, 241, 0.15) !important;
+            color: #6366F1 !important; /* Màu primary */
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="app-page">
@@ -101,7 +151,7 @@
         <div class="container animate-fadeInUp">
 
             <!-- Tiêu đề -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
                 <div>
                     <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Danh sách Ứng viên</h1>
                     <p style="color: var(--text-secondary);">Quản lý và duyệt hồ sơ các ứng viên đã nộp đơn vào vị trí của bạn.</p>
@@ -109,6 +159,48 @@
                 <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 20px; font-weight: 700; color: var(--primary);">
                     Tổng: ${applications.size()} ứng viên
                 </div>
+            </div>
+
+            <!-- Thanh Filter -->
+            <div style="margin-bottom: 32px; background: var(--bg-secondary); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <form action="${pageContext.request.contextPath}/employer/applications" method="GET" style="display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap;">
+                    
+                    <!-- Lọc theo Dropdown -->
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        <span style="font-weight: 700; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Bộ lọc:</span>
+                    </div>
+                    <select name="jobId" id="jobIdFilter" class="form-control" style="min-width: 220px; background: var(--bg-primary);" onchange="this.form.submit()">
+                        <option value="">Tất cả vị trí ứng tuyển</option>
+                        <c:forEach var="job" items="${jobs}">
+                            <option value="${job.jobId}" ${selectedJobId == job.jobId ? 'selected' : ''}>
+                                ${job.title} (${job.status})
+                            </option>
+                        </c:forEach>
+                    </select>
+
+                    <!-- Lọc theo Text (Từ khóa) -->
+                    <div style="position: relative; flex: 1; min-width: 250px;">
+                        <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <input type="text" name="keyword" class="form-control" placeholder="Tìm tên ứng viên, email..." value="${searchKeyword}" style="width: 100%; padding-left: 40px; background: var(--bg-primary);">
+                    </div>
+                    
+                    <!-- Nút Tìm kiếm -->
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Tìm kiếm</button>
+                    
+                    <!-- Nút Xóa lọc -->
+                    <c:if test="${not empty selectedJobId or not empty searchKeyword}">
+                        <a href="${pageContext.request.contextPath}/employer/applications" 
+                           style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 4px; padding: 10px 16px; border-radius: 8px; background: var(--bg-primary); border: 1px solid var(--border-color); transition: all 0.2s;"
+                           onmouseover="this.style.color='var(--primary)'; this.style.borderColor='var(--primary)'"
+                           onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--border-color)'">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            Xóa lọc
+                        </a>
+                    </c:if>
+                </form>
             </div>
 
             <!-- Thông báo thành công khi cập nhật trạng thái -->
@@ -190,6 +282,15 @@
                             </c:forEach>
                         </tbody>
                     </table>
+                </div>
+                
+                <%-- Component Phân trang --%>
+                <div style="padding-bottom: 24px;">
+                    <jsp:include page="/WEB-INF/views/components/pagination.jsp">
+                        <jsp:param name="currentPage" value="${currentPage}" />
+                        <jsp:param name="totalPages" value="${totalPages}" />
+                        <jsp:param name="actionUrl" value="${pageContext.request.contextPath}/employer/applications?jobId=${selectedJobId}&keyword=${searchKeyword}" />
+                    </jsp:include>
                 </div>
             </c:if>
 
@@ -362,6 +463,30 @@
         }
     </script>
 
+    <!-- Thư viện jQuery và Select2 để tạo Dropdown có tính năng Search -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Khởi tạo Select2 cho Dropdown Vị trí ứng tuyển
+            $('#jobIdFilter').select2({
+                placeholder: "Nhập text để tìm vị trí ứng tuyển...",
+                allowClear: true,
+                width: 'resolve'
+            });
 
+            // Khi người dùng chọn một mục, tự động submit form
+            $('#jobIdFilter').on('select2:select', function (e) {
+                $(this).closest('form').submit();
+            });
+            
+            // Khi người dùng xóa chọn (nhấn dấu x), cũng submit form
+            $('#jobIdFilter').on('select2:unselect', function (e) {
+                $(this).closest('form').submit();
+            });
+        });
+    </script>
 </body>
 </html>

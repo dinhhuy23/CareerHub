@@ -414,6 +414,47 @@
                 </div>
             </div>
 
+            <!-- Thanh Filter -->
+            <div style="background: var(--bg-secondary); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <form action="${pageContext.request.contextPath}/employer/jobs" method="GET" style="display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap;">
+                    
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        <span style="font-weight: 700; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Bộ lọc:</span>
+                    </div>
+
+                    <!-- Lọc theo Trạng thái -->
+                    <select name="status" class="form-control" style="min-width: 180px; background: var(--bg-primary);" onchange="this.form.submit()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="PUBLISHED" ${searchStatus == 'PUBLISHED' ? 'selected' : ''}>Đang mở (Published)</option>
+                        <option value="DRAFT" ${searchStatus == 'DRAFT' ? 'selected' : ''}>Bản nháp (Draft)</option>
+                        <option value="CLOSED" ${searchStatus == 'CLOSED' ? 'selected' : ''}>Đã đóng (Closed)</option>
+                    </select>
+
+                    <!-- Lọc theo Text (Từ khóa) -->
+                    <div style="position: relative; flex: 1; min-width: 250px;">
+                        <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên công việc..." value="${searchKeyword}" style="width: 100%; padding-left: 40px; background: var(--bg-primary);">
+                    </div>
+                    
+                    <!-- Nút Tìm kiếm -->
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Tìm kiếm</button>
+                    
+                    <!-- Nút Xóa lọc -->
+                    <c:if test="${not empty searchStatus or not empty searchKeyword}">
+                        <a href="${pageContext.request.contextPath}/employer/jobs" 
+                           style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 4px; padding: 10px 16px; border-radius: 8px; background: var(--bg-primary); border: 1px solid var(--border-color); transition: all 0.2s;"
+                           onmouseover="this.style.color='var(--primary)'; this.style.borderColor='var(--primary)'"
+                           onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--border-color)'">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            Xóa lọc
+                        </a>
+                    </c:if>
+                </form>
+            </div>
+
             <div class="glass-card jobs-board">
                 <div class="jobs-board-header">
                     <div>
@@ -623,6 +664,13 @@
                                 </div>
                             </c:forEach>
                         </div>
+                        
+                        <%-- Component Phân trang --%>
+                        <jsp:include page="/WEB-INF/views/components/pagination.jsp">
+                            <jsp:param name="currentPage" value="${currentPage}" />
+                            <jsp:param name="totalPages" value="${totalPages}" />
+                            <jsp:param name="actionUrl" value="${pageContext.request.contextPath}/employer/jobs?keyword=${searchKeyword}&status=${searchStatus}" />
+                        </jsp:include>
                     </c:otherwise>
                 </c:choose>
             </div>

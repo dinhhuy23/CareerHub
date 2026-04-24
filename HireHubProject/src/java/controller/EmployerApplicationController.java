@@ -3,6 +3,7 @@ package controller;
 import dal.ApplicationDAO;
 import dal.NotificationDAO;
 import model.Application;
+import model.Job;
 import model.Notification;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,12 +19,12 @@ public class EmployerApplicationController extends HttpServlet {
 
     private final ApplicationDAO appDAO = new ApplicationDAO();
     private final NotificationDAO notifDAO = new NotificationDAO();
+    private final dal.JobDAO jobDAO = new dal.JobDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Lấy userId từ sessionScope (AuthorizationFilter đã kiểm tra quyền RECRUITER)
         HttpSession session = request.getSession(false);
         Long userId = (session != null) ? (Long) session.getAttribute("userId") : null;
 
@@ -32,9 +33,52 @@ public class EmployerApplicationController extends HttpServlet {
             return;
         }
 
-        // Lấy danh sách hồ sơ ứng tuyển của tất cả các job do người này đăng
-        List<Application> applications = appDAO.findByEmployerId(userId);
-        request.setAttribute("applications", applications);
+        // Lọc theo JobId nếu có
+        Long jobId = null;
+        String jobIdStr = request.getParameter("jobId");
+        if (jobIdStr != null && !jobIdStr.isEmpty()) {
+            try {
+                jobId = Long.parseLong(jobIdStr);
+            } catch (NumberFormatException e) {}
+        }
+
+        // Lấy keyword tìm kiếm (tên, email ứng viên hoặc tên job)
+        String keyword = request.getParameter("keyword");
+
+        // 1. Lấy danh sách hồ sơ ứng tuyển (có lọc và tìm kiếm)
+        List<Application> allApplications = appDAO.findByEmployerId(userId, jobId, keyword);
+        
+        // --- Xử lý phân trang In-Memory ---
+        int pageSize = 6;
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.trim().isEmpty()) {
+            try { currentPage = Integer.parseInt(pageParam); } catch (Exception e) {}
+        }
+        
+        int totalItems = allApplications.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(start + pageSize, totalItems);
+        
+        List<Application> pagedApplications = new java.util.ArrayList<>();
+        if (start < totalItems) {
+            pagedApplications = allApplications.subList(start, end);
+        }
+        
+        // 2. Lấy danh sách các Job của nhà tuyển dụng này để đổ vào Dropdown filter
+        List<Job> jobs = jobDAO.findByEmployerId(userId);
+
+        request.setAttribute("applications", pagedApplications);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("jobs", jobs);
+        request.setAttribute("selectedJobId", jobId);
+        request.setAttribute("searchKeyword", keyword);
+        
         request.getRequestDispatcher("/WEB-INF/views/employer_applications.jsp").forward(request, response);
     }
 

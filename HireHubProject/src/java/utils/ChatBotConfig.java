@@ -32,7 +32,7 @@ public class ChatBotConfig {
         return "";
     }
 
-    public static final String MODEL = "gemini-2.5-flash";
+    public static final String MODEL = "gemini-1.5-flash";
 
     public static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL
             + ":generateContent?key=";

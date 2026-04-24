@@ -34,13 +34,36 @@ public class CandidateInterviewResultsController extends HttpServlet {
         List<Application> allApps = appDAO.findByCandidateId(userId);
 
         // Lọc ra những đơn ĐÃ CÓ KẾT QUẢ hoặc ĐANG PHỎNG VẤN VÒNG 2
-        List<Application> results = allApps.stream()
+        List<Application> allResults = allApps.stream()
                 .filter(app -> "OFFERED".equals(app.getStatus()) 
                             || "REJECTED".equals(app.getStatus())
                             || "INTERVIEW_ROUND_2".equals(app.getStatus()))
                 .collect(Collectors.toList());
 
+        // --- Xử lý phân trang In-Memory ---
+        int pageSize = 6;
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.trim().isEmpty()) {
+            try { currentPage = Integer.parseInt(pageParam); } catch (Exception e) {}
+        }
+        
+        int totalItems = allResults.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(start + pageSize, totalItems);
+        
+        List<Application> results = new java.util.ArrayList<>();
+        if (start < totalItems) {
+            results = allResults.subList(start, end);
+        }
+
         request.setAttribute("results", results);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
 
         // Lấy thông tin phỏng vấn cho các đơn này (đặc biệt là Vòng 2)
         dal.InterviewDAO interviewDAO = new dal.InterviewDAO();

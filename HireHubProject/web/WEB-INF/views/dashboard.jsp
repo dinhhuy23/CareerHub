@@ -106,19 +106,7 @@
                 </a>
             </div>
 
-            <!-- JWT Token Info (for demonstration) -->
-            <div class="section-header animate-fadeInUp" style="animation-delay: 0.3s;">
-                <h2>Thông tin JWT Token</h2>
-            </div>
-            <div class="token-card glass-card animate-fadeInUp" style="animation-delay: 0.35s;">
-                <div class="token-info">
-                    <span class="token-label">Token:</span>
-                    <code class="token-value">${sessionScope.jwtToken}</code>
-                </div>
-                <div class="token-badge">
-                    <span class="badge badge-success">Valid</span>
-                </div>
-            </div>
+
         </div>
     </main>
 

@@ -84,12 +84,13 @@ public class ApplicationDAO {
         return -1;
     }
 
-    // Hàm lấy danh sách tất cả ứng viên nộp vào các job của một Nhà tuyển dụng
-    public List<Application> findByEmployerId(long userId) {
+    // Hàm lấy danh sách hồ sơ ứng tuyển của một Nhà tuyển dụng, có hỗ trợ lọc theo JobId và từ khóa
+    public List<Application> findByEmployerId(long userId, Long jobId, String keyword) {
         long trueRecruiterId = getActualRecruiterId(userId);
         List<Application> list = new ArrayList<>();
-        // Query chuẩn nối từ: Applications -> ApplicationStatuses -> CandidateProfiles -> Users -> Jobs
-        String sql = "SELECT a.*, ast.StatusCode AS CurrentStatus, u.UserId AS CandidateUserId, "
+        
+        StringBuilder sql = new StringBuilder(
+                     "SELECT a.*, ast.StatusCode AS CurrentStatus, u.UserId AS CandidateUserId, "
                    + "j.Title, u.FullName, u.Email, u.AvatarUrl, cr.FileUrl AS CvUrl "
                    + "FROM Applications a "
                    + "JOIN ApplicationStatuses ast ON a.CurrentStatusId = ast.ApplicationStatusId "
@@ -97,12 +98,33 @@ public class ApplicationDAO {
                    + "JOIN CandidateProfiles cp ON a.CandidateId = cp.CandidateId "
                    + "JOIN Users u ON cp.UserId = u.UserId "
                    + "LEFT JOIN CandidateResumes cr ON a.ResumeId = cr.ResumeId "
-                   + "WHERE j.PostedByRecruiterId = ? "
-                   + "ORDER BY a.AppliedAt DESC";
+                   + "WHERE j.PostedByRecruiterId = ? ");
+        
+        List<Object> params = new ArrayList<>();
+        params.add(trueRecruiterId);
 
+        if (jobId != null && jobId > 0) {
+            sql.append("AND j.JobId = ? ");
+            params.add(jobId);
+        }
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ? OR j.Title LIKE ?) ");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+        
+        sql.append("ORDER BY a.AppliedAt DESC");
+        
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, trueRecruiterId);
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) list.add(mapResultSetToApplication(rs));
             }
@@ -110,6 +132,11 @@ public class ApplicationDAO {
             LOGGER.log(Level.SEVERE, "Error finding applications by employer", e);
         }
         return list;
+    }
+
+    // Hàm lấy danh sách tất cả ứng viên nộp vào các job của một Nhà tuyển dụng
+    public List<Application> findByEmployerId(long userId) {
+        return findByEmployerId(userId, null, null);
     }
 
     // ==========================================
@@ -198,8 +225,13 @@ public class ApplicationDAO {
     // ==========================================
     // Lấy danh sách đơn ứng tuyển của một Ứng viên (dùng cho trang My Applications)
     public List<Application> findByCandidateId(long candidateUserId) {
+        return findByCandidateId(candidateUserId, null, null);
+    }
+
+    public List<Application> findByCandidateId(long candidateUserId, String status, String keyword) {
         List<Application> list = new ArrayList<>();
-        String sql = "SELECT a.*, ast.StatusCode AS CurrentStatus, cp.UserId AS CandidateUserId, j.Title, j.JobId as JoinJobId, "
+        StringBuilder sql = new StringBuilder(
+                     "SELECT a.*, ast.StatusCode AS CurrentStatus, cp.UserId AS CandidateUserId, j.Title, j.JobId as JoinJobId, "
                    + "c.CompanyName "
                    + "FROM Applications a "
                    + "JOIN ApplicationStatuses ast ON a.CurrentStatusId = ast.ApplicationStatusId "
@@ -207,15 +239,35 @@ public class ApplicationDAO {
                    + "JOIN Jobs j ON a.JobId = j.JobId "
                    + "JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
                    + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
-                   + "WHERE cp.UserId = ? "
-                   + "ORDER BY a.AppliedAt DESC";
+                   + "WHERE cp.UserId = ? ");
+
+        List<Object> params = new ArrayList<>();
+        params.add(candidateUserId);
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND ast.StatusCode = ? ");
+            params.add(status.trim());
+        }
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (j.Title LIKE ? OR c.CompanyName LIKE ?) ");
+            String searchPattern = "%" + keyword.trim() + "%";
+            params.add(searchPattern);
+            params.add(searchPattern);
+        }
+
+        sql.append("ORDER BY a.AppliedAt DESC");
+
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, candidateUserId);
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Application app = mapResultSetToApplication(rs);
-                    list.add(app);
+                    list.add(mapResultSetToApplication(rs));
                 }
             }
         } catch (SQLException e) {
@@ -251,20 +303,22 @@ public class ApplicationDAO {
     // Lưu lý do rút đơn vào cột RecruiterNote để nhà tuyển dụng xem
     // ==========================================
     public boolean withdraw(long applicationId, long candidateUserId, String reason) {
-        String sql = "UPDATE Applications "
-                   + "SET CurrentStatusId = (SELECT TOP 1 ApplicationStatusId FROM ApplicationStatuses WHERE StatusCode = 'WITHDRAW_REQUESTED'), "
-                   + "RecruiterNote = ?, "
-                   + "LastStatusChangedAt = SYSUTCDATETIME() "
+        // Thực hiện xóa hoàn toàn đơn ứng tuyển khỏi DB để ứng viên có thể apply lại ngay
+        // Điều kiện: Chỉ xóa khi trạng thái vẫn đang là PENDING (Chưa được duyệt)
+        String sql = "DELETE FROM Applications "
                    + "WHERE ApplicationId = ? AND CandidateId = (SELECT CandidateId FROM CandidateProfiles WHERE UserId = ?) "
                    + "AND CurrentStatusId = (SELECT TOP 1 ApplicationStatusId FROM ApplicationStatuses WHERE StatusCode = 'PENDING')";
+        
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, "Lý do rút đơn: " + reason);
-            ps.setLong(2, applicationId);
-            ps.setLong(3, candidateUserId);
+            
+            ps.setLong(1, applicationId);
+            ps.setLong(2, candidateUserId);
+            
             return ps.executeUpdate() > 0;
+            
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error requesting withdrawal for application id=" + applicationId, e);
+            LOGGER.log(Level.SEVERE, "Error completely deleting application id=" + applicationId + " for withdrawal", e);
         }
         return false;
     }

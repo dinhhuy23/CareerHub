@@ -846,6 +846,13 @@
                             </div>
                         </c:forEach>
                     </div>
+                    
+                    <%-- Thêm Component Phân trang --%>
+                    <jsp:include page="/WEB-INF/views/components/pagination.jsp">
+                        <jsp:param name="currentPage" value="${currentPage}" />
+                        <jsp:param name="totalPages" value="${totalPages}" />
+                        <jsp:param name="actionUrl" value="${pageContext.request.contextPath}/jobs?keyword=${keyword}&categoryId=${selectedCategory}&locationId=${selectedLocation}&employmentTypeId=${selectedType}&experienceLevelId=${selectedLevel}" />
+                    </jsp:include>
                 </c:otherwise>
             </c:choose>
 
