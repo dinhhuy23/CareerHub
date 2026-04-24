@@ -230,11 +230,11 @@ public class UserCVDAO {
     public List<UserCV> getAllPublicCVs() {
         List<UserCV> list = new ArrayList<>();
         // Truy vấn các trường cần thiết để hiển thị ở trang danh sách
-        String sql = "SELECT [UserCVId], [UserId], [CVTitle], [FullName], [TargetRole], "
-                + "[AvatarUrl], [UpdatedAt], [Email], [Phone] "
-                + "FROM [dbo].[UserCVs] "
-                + "WHERE [IsSearchable] = 1 AND ([isDeleted] = 0 OR [isDeleted] IS NULL) "
-                + "ORDER BY [UpdatedAt] DESC";
+        String sql = "SELECT c.[UserCVId], c.[UserId], c.[CVTitle], ISNULL(c.[FullName], u.[FullName]) AS FullName, c.[TargetRole], "
+                + "c.[AvatarUrl], c.[UpdatedAt], c.[Email], c.[Phone], c.[IsUpload] "
+                + "FROM [dbo].[UserCVs] c JOIN [dbo].[Users] u ON c.[UserId] = u.[UserId] "
+                + "WHERE c.[IsSearchable] = 1 AND (c.[isDeleted] = 0 OR c.[isDeleted] IS NULL) "
+                + "ORDER BY c.[UpdatedAt] DESC";
 
         if (this.conn == null) {
             return list;
@@ -252,10 +252,72 @@ public class UserCVDAO {
                 cv.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
                 cv.setEmail(rs.getString("Email"));
                 cv.setPhone(rs.getString("Phone"));
+                cv.setIsUpload(rs.getInt("IsUpload"));
                 list.add(cv);
             }
         } catch (SQLException e) {
             System.err.println("DEBUG: Lỗi tại getAllPublicCVs: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public int countSearchableCVs(String keyword) {
+        String sql = "SELECT COUNT(*) FROM [dbo].[UserCVs] WHERE [IsSearchable] = 1 AND ([isDeleted] = 0 OR [isDeleted] IS NULL)";
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql += " AND [TargetRole] LIKE ?";
+        }
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(1, "%" + keyword + "%");
+            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<UserCV> getSearchableCVsPaginated(String keyword, int page, int pageSize) {
+        List<UserCV> list = new ArrayList<>();
+        String sql = "SELECT c.[UserCVId], c.[UserId], c.[CVTitle], ISNULL(c.[FullName], u.[FullName]) AS FullName, c.[TargetRole], "
+                + "c.[AvatarUrl], c.[UpdatedAt], c.[Email], c.[Phone], c.[IsUpload] "
+                + "FROM [dbo].[UserCVs] c JOIN [dbo].[Users] u ON c.[UserId] = u.[UserId] "
+                + "WHERE c.[IsSearchable] = 1 AND (c.[isDeleted] = 0 OR c.[isDeleted] IS NULL) ";
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql += " AND c.[TargetRole] LIKE ? ";
+        }
+        
+        sql += " ORDER BY c.[UpdatedAt] DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(paramIndex++, "%" + keyword + "%");
+            }
+            ps.setInt(paramIndex++, (page - 1) * pageSize);
+            ps.setInt(paramIndex++, pageSize);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                UserCV cv = new UserCV();
+                cv.setUserCVId(rs.getInt("UserCVId"));
+                cv.setUserId(rs.getInt("UserId"));
+                cv.setCvTitle(rs.getString("CVTitle"));
+                cv.setFullName(rs.getString("FullName"));
+                cv.setTargetRole(rs.getString("TargetRole"));
+                cv.setAvatarUrl(rs.getString("AvatarUrl"));
+                cv.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+                cv.setEmail(rs.getString("Email"));
+                cv.setPhone(rs.getString("Phone"));
+                cv.setIsUpload(rs.getInt("IsUpload"));
+                list.add(cv);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return list;
     }
@@ -282,6 +344,7 @@ public class UserCVDAO {
                 cv.setFullName(rs.getString("fullName"));
                 cv.setCvTitle(rs.getString("cvTitle"));
                 cv.setTargetRole(rs.getString("targetRole"));
+                cv.setIsUpload(rs.getInt("IsUpload"));
                 // Set các trường khác tương ứng với database của bạn
 
                 list.add(cv);

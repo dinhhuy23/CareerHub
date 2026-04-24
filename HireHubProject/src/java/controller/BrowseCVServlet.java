@@ -34,11 +34,29 @@ public class BrowseCVServlet extends HttpServlet {
         }
 
         try {
+            String keyword = request.getParameter("keyword");
+            if (keyword == null) keyword = "";
+            
+            String pageStr = request.getParameter("page");
+            int pageNum = 1;
+            if (pageStr != null && !pageStr.isEmpty()) {
+                try { pageNum = Integer.parseInt(pageStr); } catch (Exception e) {}
+            }
+            int pageSize = 6; // Chỉnh xuống 6 CV một trang để dễ test phân trang
+
             UserCVDAO dao = new UserCVDAO();
-            // Lấy toàn bộ danh sách ứng viên công khai
-            List<UserCV> listCV = dao.getAllPublicCVs();
+            
+            int totalCVs = dao.countSearchableCVs(keyword);
+            int totalPages = (int) Math.ceil((double) totalCVs / pageSize);
+            if (pageNum > totalPages && totalPages > 0) pageNum = totalPages;
+
+            List<UserCV> listCV = dao.getSearchableCVsPaginated(keyword, pageNum, pageSize);
 
             request.setAttribute("listCV", listCV);
+            request.setAttribute("currentPage", pageNum);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("keyword", keyword);
+            
             request.getRequestDispatcher("/WEB-INF/views/browse_cv.jsp").forward(request, response);
 
         } catch (Exception e) {

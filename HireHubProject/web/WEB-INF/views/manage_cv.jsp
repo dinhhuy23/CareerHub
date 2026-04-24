@@ -133,6 +133,85 @@
             .cv-date-item i.bi-eye-fill {
                 font-size: 0.9rem;
             }
+            .cv-action-top-right {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                z-index: 10;
+            }
+            .cv-action-top-right .btn-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.1);
+                color: rgba(255, 255, 255, 0.8);
+                transition: all 0.2s ease;
+                text-decoration: none;
+                backdrop-filter: blur(5px);
+            }
+            .cv-action-top-right .btn-icon:hover {
+                background: #10b981;
+                color: white;
+                transform: scale(1.1);
+            }
+            /* Style cho nút gạt Toggle Switch (Dark Theme) */
+            .switch-container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: rgba(255, 255, 255, 0.05);
+                padding: 12px 15px;
+                border-radius: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 50px;
+                height: 24px;
+                margin-bottom: 0;
+            }
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #6c757d;
+                transition: .4s;
+                border-radius: 24px;
+            }
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 4px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+            input:checked + .slider {
+                background-color: #4A90E2;
+            }
+            input:checked + .slider:before {
+                transform: translateX(26px);
+            }
+            .switch-label {
+                font-size: 0.9rem;
+                color: rgba(255, 255, 255, 0.8);
+                font-weight: 500;
+            }
         </style>
     </head>
     <body class="app-page">
@@ -232,6 +311,24 @@
                                     <c:if test="${cv.isAccepted}">
                                         <div class="accepted-badge">DUYỆT</div>
                                     </c:if>
+                                    
+                                    <!-- Nút tải xuống ở góc phải -->
+                                    <div class="cv-action-top-right" style="${cv.isAccepted ? 'right: 55px;' : ''}">
+                                        <c:choose>
+                                            <c:when test="${cv.isUpload == 1}">
+                                                <!-- Đối với File Tải lên: không hiện tải xuống nữa theo yêu cầu -->
+                                            </c:when>
+                                            <c:otherwise>
+                                                <!-- Đối với Web Builder: hiện icon tải xuống -->
+                                                <a href="${pageContext.request.contextPath}/user/cv/preview?id=${cv.userCVId}" 
+                                                   onclick="alert('Mẹo: Trình duyệt sẽ mở tab mới. Bạn hãy nhấn Ctrl+P (hoặc Cmd+P trên Mac) và chọn Lưu dưới dạng PDF để tải CV này nhé!');" 
+                                                   class="btn-icon" target="_blank" title="Tải xuống CV">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+
                                     <div class="card-body p-4">
                                         <div class="mb-2">
                                             <span class="badge ${cv.isUpload == 0 ? 'bg-primary' : 'bg-info'} bg-opacity-10 ${cv.isUpload == 0 ? 'text-primary' : 'text-info'}" style="font-size: 0.65rem;">
@@ -343,16 +440,18 @@
 
                     <h4 class="fw-bold text-white mb-3">Việc làm phù hợp</h4>
                     <div class="d-flex flex-column gap-3">
-                        <c:forEach var="job" items="${jobList}">
-                            <a href="${pageContext.request.contextPath}/job/detail?id=${job.id}" class="glass-card p-3 text-decoration-none shadow-hover d-block">
-                                <h6 class="fw-bold text-white mb-1">${job.title}</h6>
-                                <p class="small text-secondary mb-2">${job.companyName}</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-success fw-bold small">${job.salary}</span>
-                                    <span class="badge bg-primary">Chi tiết</span>
-                                </div>
-                            </a>
-                        </c:forEach>
+                            <c:forEach var="job" items="${jobList}">
+                                <a href="${pageContext.request.contextPath}/job-detail?id=${job.jobId}" class="glass-card p-3 text-decoration-none shadow-hover d-block">
+                                    <h6 class="fw-bold text-white mb-1">${job.title}</h6>
+                                    <p class="small text-secondary mb-2">${job.companyName != null ? job.companyName : 'Đang cập nhật công ty'}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-success fw-bold small">
+                                            ${job.formattedSalary} ${job.formattedSalary != 'Thỏa thuận' ? job.currencyCode : ''}
+                                        </span>
+                                        <span class="badge bg-primary">Chi tiết</span>
+                                    </div>
+                                </a>
+                            </c:forEach>
                     </div>
                 </div>
             </div>
@@ -371,6 +470,18 @@
                                 <label class="text-white-50 small mb-2">Tên CV gợi nhớ</label>
                                 <input type="text" name="cvTitle" class="form-control bg-dark border-secondary text-white" 
                                        placeholder="Ví dụ: CV Java Developer - [Tên của bạn]" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-white-50 small mb-2">Vị trí mong muốn <span class="text-danger">*</span></label>
+                                <input type="text" name="targetRole" class="form-control bg-dark border-secondary text-white" 
+                                       placeholder="Ví dụ: Lập trình viên Java, Chuyên viên Marketing..." required>
+                            </div>
+                            <div class="switch-container mb-4">
+                                <span class="switch-label">Cho phép nhà tuyển dụng tìm thấy CV</span>
+                                <label class="switch">
+                                    <input type="checkbox" name="isSearchable" value="1" checked>
+                                    <span class="slider"></span>
+                                </label>
                             </div>
                             <div class="upload-zone p-4 rounded-3 text-center mb-3" onclick="document.getElementById('cvFileInput').click()">
                                 <i class="bi bi-file-earmark-pdf text-primary fs-1"></i>

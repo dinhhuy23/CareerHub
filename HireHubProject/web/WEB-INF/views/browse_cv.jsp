@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -80,72 +81,57 @@
                 <h1 class="welcome-text"><span class="text-gradient">Tìm kiếm nhân tài</span></h1>
                 <p class="welcome-subtitle">Kết nối với những ứng viên xuất sắc nhất</p>
 
-                <div class="input-wrapper" style="margin-top: 30px;">
-                    <span class="input-icon">🔍</span>
-                    <input type="text" id="cvSearchInput" class="form-input" 
-                           placeholder="Nhập tên ứng viên, vị trí hoặc tiêu đề hồ sơ..." 
-                           onkeyup="filterCVs()" style="padding-right: 20px;">
-                </div>
+                <form action="${pageContext.request.contextPath}/employer/browse_cv" method="GET" class="input-wrapper" style="margin-top: 30px; display: flex; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: var(--radius-full);">
+                    <span class="input-icon" style="font-size: 1.2rem; margin-top: 5px;">🔍</span>
+                    <input type="text" name="keyword" value="${keyword}" class="form-input" 
+                           placeholder="Nhập vị trí ứng tuyển mong muốn (VD: Java, Marketing)..." 
+                           style="padding-right: 20px; flex-grow: 1; font-size: 1.1rem; height: 60px; border: none;">
+                    <button type="submit" class="btn btn-primary" style="border-radius: 0 var(--radius-full) var(--radius-full) 0; padding: 0 40px; font-weight: 700; font-size: 1.1rem; height: 60px;">TÌM KIẾM</button>
+                </form>
             </div>
         </header>
 
         <main class="container main-content">
             <div class="candidate-grid" id="cvGrid">
                 <c:forEach items="${listCV}" var="cv">
-                    <div class="glass-card candidate-card cv-item" 
-                         data-title="${cv.fullName.toLowerCase()} ${cv.targetRole.toLowerCase()} ${cv.cvTitle.toLowerCase()}">
+                        <c:set var="fName" value="${cv.fullName != null ? cv.fullName : 'Ứng viên ẩn danh'}" />
+                        <c:set var="tRole" value="${cv.targetRole != null ? cv.targetRole : 'Chưa cập nhật vị trí'}" />
+                        <c:set var="cTitle" value="${cv.cvTitle != null ? cv.cvTitle : 'CV Tải lên'}" />
 
-                        <div class="avatar-circle-lg">
-                            ${cv.fullName.substring(0,1).toUpperCase()}
-                        </div>
-                        <span class="target-badge">${cv.targetRole}</span>
-                        <h3 style="color: var(--text-primary); margin-bottom: 5px;">${cv.fullName}</h3>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">${cv.cvTitle}</p>
+                        <div class="glass-card candidate-card cv-item" 
+                             data-title="${fn:toLowerCase(fName)} ${fn:toLowerCase(tRole)} ${fn:toLowerCase(cTitle)}">
 
-                        <a href="${pageContext.request.contextPath}/user/cv/view?id=${cv.userCVId}" class="btn btn-outline btn-full">
+                            <div class="avatar-circle-lg">
+                                ${fn:toUpperCase(fn:substring(fName, 0, 1))}
+                            </div>
+                            <span class="target-badge">${tRole}</span>
+                            <h3 style="color: var(--text-primary); margin-bottom: 5px;">${fName}</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">${cTitle}</p>
+
+                        <a href="${pageContext.request.contextPath}/user/cv/preview?id=${cv.userCVId}" class="btn btn-outline btn-full" target="_blank">
                             Xem hồ sơ chi tiết
                         </a>
                     </div>
                 </c:forEach>
             </div>
 
-            <div id="noResults" class="glass-card" style="display: none; text-align: center; padding: 60px; border-style: dashed;">
-                <p style="color: var(--text-secondary);">Không tìm thấy ứng viên nào phù hợp với từ khóa.</p>
-                <button onclick="resetSearch()" class="auth-link" style="background: none; border: none; cursor: pointer; margin-top: 15px;">Xóa tìm kiếm</button>
+            <c:if test="${empty listCV}">
+                <div id="noResults" class="glass-card" style="text-align: center; padding: 60px; border-style: dashed;">
+                    <p style="color: var(--text-secondary);">Không tìm thấy ứng viên nào phù hợp với từ khóa.</p>
+                    <a href="${pageContext.request.contextPath}/employer/browse_cv" class="btn btn-outline mt-3">Xóa tìm kiếm</a>
+                </div>
+            </c:if>
+
+            <div class="pagination mt-5 d-flex justify-content-center gap-2" style="padding-top: 20px;">
+                <c:if test="${totalPages > 1}">
+                    <c:forEach begin="1" end="${totalPages}" var="i">
+                        <a href="?keyword=${keyword}&page=${i}" class="btn ${currentPage == i ? 'btn-primary' : 'btn-outline'}">${i}</a>
+                    </c:forEach>
+                </c:if>
             </div>
         </main>
 
         <script>
-            // Hàm lọc CV giống như manage_cv của bạn
-            function filterCVs() {
-                let input = document.getElementById('cvSearchInput').value.toLowerCase();
-                let cvItems = document.getElementsByClassName('cv-item');
-                let foundCount = 0;
-
-                for (let item of cvItems) {
-                    let searchData = item.getAttribute('data-title');
-                    if (searchData.includes(input)) {
-                        item.style.display = ""; // Hiển thị theo grid
-                        foundCount++;
-                    } else {
-                        item.style.display = "none";
-                    }
-                }
-
-                // Hiển thị thông báo nếu không tìm thấy ai
-                const noResults = document.getElementById('noResults');
-                if (foundCount === 0) {
-                    noResults.style.display = "block";
-                } else {
-                    noResults.style.display = "none";
-                }
-            }
-
-            function resetSearch() {
-                document.getElementById('cvSearchInput').value = "";
-                filterCVs();
-            }
-
             function toggleDropdown() {
                 document.getElementById("userDropdown").classList.toggle("show");
             }

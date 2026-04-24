@@ -40,6 +40,9 @@ public class UploadCVServlet extends HttpServlet {
 
         try {
             String cvTitle = request.getParameter("cvTitle");
+            String targetRole = request.getParameter("targetRole");
+            String isSearchableStr = request.getParameter("isSearchable");
+            int isSearchable = (isSearchableStr != null && isSearchableStr.equals("1")) ? 1 : 0;
             Part filePart = request.getPart("cvFile");
 
             if (filePart != null && filePart.getSize() > 0) {
@@ -60,7 +63,7 @@ public class UploadCVServlet extends HttpServlet {
                 // Khớp với cấu hình webAppMount="/user/cv/uploads/cv_files" trong context.xml của bạn
                 String fileUrlForDB = "user/cv/uploads/cv_files/" + fileName;
 
-                saveCVToDatabase(userId, cvTitle, fileUrlForDB);
+                saveCVToDatabase(userId, cvTitle, targetRole, fileUrlForDB, isSearchable);
                 session.setAttribute("msg", "Tải CV lên thành công!");
 
             } else {
@@ -75,15 +78,17 @@ public class UploadCVServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/user/cv/manage_cv");
     }
 
-    private void saveCVToDatabase(int userId, String title, String fileUrl) {
-        String sql = "INSERT INTO [UserCVs] (UserId, CVTitle, AvatarUrl, CreatedAt, IsUpload, IsAccepted, TemplateId) "
-                + "VALUES (?, ?, ?, GETDATE(), 1, 0, ?)";
+    private void saveCVToDatabase(int userId, String title, String targetRole, String fileUrl, int isSearchable) {
+        String sql = "INSERT INTO [UserCVs] (UserId, CVTitle, TargetRole, AvatarUrl, CreatedAt, IsUpload, IsAccepted, TemplateId, IsSearchable) "
+                + "VALUES (?, ?, ?, ?, GETDATE(), 1, 0, ?, ?)";
 
         try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, title);
-            ps.setString(3, fileUrl); // Lưu: user/cv/uploads/cv_files/cv_123.pdf
-            ps.setNull(4, java.sql.Types.INTEGER);
+            ps.setString(3, targetRole);
+            ps.setString(4, fileUrl); // Lưu: user/cv/uploads/cv_files/cv_123.pdf
+            ps.setNull(5, java.sql.Types.INTEGER);
+            ps.setInt(6, isSearchable);
             ps.executeUpdate();
         } catch (Exception e) {
             System.out.println("Lỗi DB: " + e.getMessage());
