@@ -21,10 +21,20 @@ public class User {
     // Role info (transient - not in Users table)
     private String roleCode;
     private String roleName;
+
     private String cvUrl; // Đường dẫn CV mặc định (Dùng cho Discovery)
+
+
+    private Timestamp DeactivateAt;
 
     public User() {
     }
+
+    public Timestamp getDeactivateAt() {
+        return DeactivateAt;
+    }
+
+ 
 
     public User(long userId, String email, String passwordHash, String fullName,
                 String phoneNumber, String avatarUrl, String gender, Date dateOfBirth,

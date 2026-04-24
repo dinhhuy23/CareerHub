@@ -1,6 +1,7 @@
 package controller;
 
 import dal.JobDAO;
+import dal.ReportTypeDAO;
 import dal.SavedJobDAO;
 import model.Job;
 import jakarta.servlet.ServletException;
@@ -10,6 +11,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
+import model.ReportType;
 
 @WebServlet(name = "JobDetailController", urlPatterns = {"/job-detail"})
 public class JobDetailController extends HttpServlet {
@@ -87,6 +90,9 @@ public class JobDetailController extends HttpServlet {
 
             request.setAttribute("job", job);
             request.setAttribute("isSaved", isSaved);
+            ReportTypeDAO rtDao = new ReportTypeDAO();
+            List<ReportType> reportTypes = rtDao.getAll();
+            request.setAttribute("reportTypes", reportTypes);
             request.getRequestDispatcher("/WEB-INF/views/job_detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
@@ -97,4 +103,3 @@ public class JobDetailController extends HttpServlet {
         }
     }
 }
-
