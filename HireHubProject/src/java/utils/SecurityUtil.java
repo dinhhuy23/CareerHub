@@ -16,7 +16,7 @@ public class SecurityUtil {
      * @return BCrypt hashed password
      */
     public static String hashPassword(String plainPassword) {
-        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(BCRYPT_ROUNDS));
+        return org.mindrot.jbcrypt.BCrypt.hashpw(plainPassword, org.mindrot.jbcrypt.BCrypt.gensalt(BCRYPT_ROUNDS));
     }
 
     /**
@@ -27,7 +27,7 @@ public class SecurityUtil {
      */
     public static boolean checkPassword(String plainPassword, String hashedPassword) {
         try {
-            return BCrypt.checkpw(plainPassword, hashedPassword);
+            return org.mindrot.jbcrypt.BCrypt.checkpw(plainPassword, hashedPassword);
         } catch (Exception e) {
             return false;
         }

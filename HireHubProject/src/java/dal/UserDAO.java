@@ -200,6 +200,34 @@ public class UserDAO {
         return false;
     }
 
+    /**
+     * Lấy danh sách tất cả ứng viên (role CANDIDATE) kèm CV mặc định
+     */
+    public java.util.List<User> findAllCandidates() {
+        java.util.List<User> list = new java.util.ArrayList<>();
+        String sql = "SELECT u.*, r.RoleCode, r.RoleName, "
+                   + "(SELECT TOP 1 cr.FileUrl FROM CandidateResumes cr "
+                   + " JOIN CandidateProfiles cp ON cr.CandidateId = cp.CandidateId "
+                   + " WHERE cp.UserId = u.UserId AND cr.IsDefault = 1) as DefaultCvUrl "
+                   + "FROM Users u "
+                   + "JOIN UserRoles ur ON u.UserId = ur.UserId AND ur.IsActive = 1 "
+                   + "JOIN Roles r ON ur.RoleId = r.RoleId "
+                   + "WHERE r.RoleCode = 'CANDIDATE' "
+                   + "ORDER BY u.CreatedAt DESC";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                User user = mapResultSetToUser(rs);
+                user.setCvUrl(rs.getString("DefaultCvUrl"));
+                list.add(user);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding all candidates", e);
+        }
+        return list;
+    }
+
     // --- Helper method to map ResultSet to User ---
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User user = new User();

@@ -213,9 +213,11 @@
                             <%-- Chỉ cho rút đơn khi còn PENDING --%>
                             <c:if test="${app.status == 'PENDING'}">
                                 <form action="${pageContext.request.contextPath}/user/my-applications" method="POST"
-                                      onsubmit="return confirm('Bạn chắc chắn muốn rút đơn ứng tuyển này?')">
+                                      id="withdrawForm-${app.applicationId}"
+                                      onsubmit="return handleWithdraw(this)">
                                     <input type="hidden" name="action" value="withdraw">
                                     <input type="hidden" name="applicationId" value="${app.applicationId}">
+                                    <input type="hidden" name="reason" id="withdrawReason-${app.applicationId}">
                                     <button type="submit" class="withdraw-btn">Rút đơn</button>
                                 </form>
                             </c:if>
@@ -226,5 +228,23 @@
 
         </div>
     </main>
+    <script>
+        function handleWithdraw(form) {
+            // Lấy ID từ input ẩn trong form
+            const appId = form.querySelector('input[name="applicationId"]').value;
+            
+            const reason = prompt("Vui lòng nhập lý do rút đơn ứng tuyển:");
+            if (reason === null) return false; // Người dùng ấn Hủy
+            
+            if (reason.trim() === "") {
+                alert("Bạn phải nhập lý do để rút đơn.");
+                return false;
+            }
+            
+            // Gán lý do vào input hidden tương ứng
+            form.querySelector('input[name="reason"]').value = reason;
+            return confirm("Xác nhận gửi yêu cầu rút đơn?");
+        }
+    </script>
 </body>
 </html>
