@@ -65,6 +65,10 @@ public class JobDAO {
             job.setCompanyName(rs.getString("CompanyName"));
         } catch (Exception e) {
         }
+        try {
+            job.setCompanyLogoUrl(rs.getString("CompanyLogoUrl"));
+        } catch (Exception e) {
+        }
 
         return job;
     }
@@ -217,12 +221,14 @@ public class JobDAO {
         List<Job> list = new ArrayList<>();
         
         StringBuilder sql = new StringBuilder(
-                  "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName "
+                  "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, c.CompanyName, c.LogoUrl AS CompanyLogoUrl "
                 + "FROM Jobs j "
                 + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
                 + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
                 + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
                 + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
+                + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
                 + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' ");
 
         List<Object> params = new ArrayList<>();
@@ -261,13 +267,15 @@ public class JobDAO {
             int offset, int fetchSize) {
         List<Job> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName "
+                "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName, c.CompanyName, c.LogoUrl AS CompanyLogoUrl "
                         + "FROM Jobs j "
                         + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
                         + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
                         + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
                         + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
                         + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
+                        + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                        + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
                         + "WHERE j.Status = 'PUBLISHED' ");
 
         List<Object> params = new ArrayList<>();

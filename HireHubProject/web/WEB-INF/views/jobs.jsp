@@ -701,6 +701,11 @@
                                 <div class="job-card-top">
                                     <div class="job-logo-badge">
                                         <c:choose>
+                                            <c:when test="${not empty job.companyLogoUrl}">
+                                                <img src="${job.companyLogoUrl}" 
+                                                     alt="${job.companyName}" 
+                                                     style="width:100%;height:100%;object-fit:contain;border-radius:inherit;padding:4px;">
+                                            </c:when>
                                             <c:when test="${not empty job.companyName}">
                                                 ${fn:substring(job.companyName, 0, 1)}
                                             </c:when>

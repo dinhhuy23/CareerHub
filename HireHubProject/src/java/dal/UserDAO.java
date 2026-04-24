@@ -245,6 +245,13 @@ public class UserDAO {
         user.setCreatedAt(rs.getTimestamp("CreatedAt"));
         user.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
 
+        // Cột ContactEmail có thể null nếu chưa thiết lập
+        try {
+            user.setContactEmail(rs.getString("ContactEmail"));
+        } catch (SQLException e) {
+            // column không có trong query này, bỏ qua
+        }
+
         // Role info (may be null if no role assigned)
         try {
             user.setRoleCode(rs.getString("RoleCode"));
@@ -254,5 +261,51 @@ public class UserDAO {
         }
 
         return user;
+    }
+
+    /**
+     * Cập nhật ContactEmail (Gmail liên hệ) của user.
+     * Hoàn toàn độc lập với Email đăng nhập.
+     * @param userId  ID người dùng
+     * @param contactEmail  Giá trị mới (có thể null nếu muốn xóa liên kết)
+     * @return true nếu cập nhật thành công
+     */
+    public boolean updateContactEmail(long userId, String contactEmail) {
+        String sql = "UPDATE Users SET ContactEmail = ?, UpdatedAt = SYSUTCDATETIME() WHERE UserId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (contactEmail == null || contactEmail.trim().isEmpty()) {
+                ps.setNull(1, java.sql.Types.VARCHAR);
+            } else {
+                ps.setString(1, contactEmail.trim().toLowerCase());
+            }
+            ps.setLong(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error updating contactEmail for user: " + userId, e);
+        }
+        return false;
+    }
+
+    /**
+     * Kiểm tra xem ContactEmail đã được sử dụng bởi user khác chưa.
+     * Mọi người chỉ được liên kết 1 ContactEmail duy nhất.
+     * @param contactEmail  Email cần kiểm tra
+     * @param excludeUserId  Trừ user hiện tại khỏi kiểm tra
+     * @return true nếu email đã tồn tại ở user khác
+     */
+    public boolean contactEmailExistsForOtherUser(String contactEmail, long excludeUserId) {
+        String sql = "SELECT COUNT(*) FROM Users WHERE ContactEmail = ? AND UserId != ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, contactEmail.trim().toLowerCase());
+            ps.setLong(2, excludeUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error checking contactEmail uniqueness", e);
+        }
+        return false;
     }
 }
