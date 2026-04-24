@@ -3,6 +3,8 @@ package controller;
 import dal.CompanyDAO;
 import dal.DepartmentDAO;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -43,7 +45,32 @@ public class AdminDepartmentController extends HttpServlet {
                 break;
 
             default:
-                request.setAttribute("list", departmentDAO.getAll());
+                String keyword = nvl(request.getParameter("keyword"));
+                String dStatus = nvl(request.getParameter("status"),  "All");
+                String dComp   = nvl(request.getParameter("company"), "All");
+                int dPage      = parsePage(request.getParameter("page"));
+
+                // Stats (full-DB, không phụ thuộc filter)
+                int dTotal  = departmentDAO.countAll();
+                int dActive = departmentDAO.countActive();
+
+                // Filtered
+                String statusKey = "All".equals(dStatus) ? "" : dStatus;
+                int dFiltered   = departmentDAO.countFiltered(keyword, statusKey, dComp);
+                int dTotalPages = Math.max(1, (int) Math.ceil((double) dFiltered / PAGE_SIZE));
+                dPage = Math.min(dPage, dTotalPages);
+
+                request.setAttribute("list",         departmentDAO.getFiltered(keyword, statusKey, dComp, dPage, PAGE_SIZE));
+                request.setAttribute("keyword",      keyword);
+                request.setAttribute("statusFilter", dStatus);
+                request.setAttribute("companyFilter",dComp);
+                request.setAttribute("currentPage",  dPage);
+                request.setAttribute("totalPages",   dTotalPages);
+                request.setAttribute("totalItems",   dFiltered);
+                request.setAttribute("totalCount",   dTotal);
+                request.setAttribute("activeCount",  dActive);
+                request.setAttribute("pageNums",     buildPageNums(dPage, dTotalPages));
+                request.setAttribute("allCompanies", companyDAO.getAll());
                 request.getRequestDispatcher("/WEB-INF/views/department-list.jsp").forward(request, response);
         }
     }
@@ -91,5 +118,38 @@ public class AdminDepartmentController extends HttpServlet {
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/departments");
+    }
+
+    // ── Pagination helpers ──────────────────────────────────────────────────
+    private static final int PAGE_SIZE = 10;
+
+    private static String nvl(String s) {
+        return s == null ? "" : s.trim();
+    }
+
+    private static String nvl(String s, String def) {
+        return (s == null || s.trim().isEmpty()) ? def : s.trim();
+    }
+
+    private static int parsePage(String s) {
+        try { int p = Integer.parseInt(s); return p < 1 ? 1 : p; }
+        catch (Exception e) { return 1; }
+    }
+
+    static List<Integer> buildPageNums(int current, int total) {
+        List<Integer> nums = new ArrayList<>();
+        if (total <= 1) return nums;
+        if (total <= 7) {
+            for (int i = 1; i <= total; i++) nums.add(i);
+            return nums;
+        }
+        nums.add(1);
+        int start = Math.max(2, current - 2);
+        int end   = Math.min(total - 1, current + 2);
+        if (start > 2)       nums.add(-1);
+        for (int i = start; i <= end; i++) nums.add(i);
+        if (end < total - 1) nums.add(-1);
+        nums.add(total);
+        return nums;
     }
 }

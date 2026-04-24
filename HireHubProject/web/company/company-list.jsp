@@ -46,25 +46,32 @@
             </div>
 
             <div class="list-toolbar">
-                <input type="text" class="search-box" id="searchInput" placeholder="Search company name...">
+                <form method="get" action="" id="filterForm" style="display:contents;">
+                    <input type="text" name="keyword" class="search-box" id="searchInput"
+                           value="<c:out value='${keyword}'/>"
+                           placeholder="Tìm tên công ty...">
 
-                <select class="filter-select" id="industryFilter">
-                    <option value="All">All Industries</option>
-                    <option value="Information Technology">Information Technology</option>
-                    <option value="Technology & Digital Services">Technology & Digital Services</option>
-                    <option value="Finance & Banking">Finance & Banking</option>
-                    <option value="Software Outsourcing">Software Outsourcing</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Human Resources Technology">Human Resources Technology</option>
-                </select>
+                    <select name="industry" class="filter-select" id="industryFilter" onchange="this.form.submit()">
+                        <option value="All" ${industry == 'All' ? 'selected' : ''}>All Industries</option>
+                        <option value="Information Technology"        ${industry == 'Information Technology'        ? 'selected' : ''}>Information Technology</option>
+                        <option value="Technology & Digital Services" ${industry == 'Technology & Digital Services' ? 'selected' : ''}>Technology &amp; Digital Services</option>
+                        <option value="Finance & Banking"             ${industry == 'Finance & Banking'             ? 'selected' : ''}>Finance &amp; Banking</option>
+                        <option value="Software Outsourcing"          ${industry == 'Software Outsourcing'          ? 'selected' : ''}>Software Outsourcing</option>
+                        <option value="Healthcare"                    ${industry == 'Healthcare'                    ? 'selected' : ''}>Healthcare</option>
+                        <option value="Human Resources Technology"    ${industry == 'Human Resources Technology'    ? 'selected' : ''}>Human Resources Technology</option>
+                    </select>
 
-                <select class="filter-select" id="locationFilter">
-                    <option value="All">All Locations</option>
-                    <option value="Ha Noi">Ha Noi</option>
-                    <option value="Ho Chi Minh City">Ho Chi Minh City</option>
-                    <option value="Da Nang">Da Nang</option>
-                </select>
+                    <select name="location" class="filter-select" id="locationFilter" onchange="this.form.submit()">
+                        <option value="All"             ${location == 'All'             ? 'selected' : ''}>All Locations</option>
+                        <option value="Ha Noi"          ${location == 'Ha Noi'          ? 'selected' : ''}>Ha Noi</option>
+                        <option value="Ho Chi Minh City" ${location == 'Ho Chi Minh City' ? 'selected' : ''}>Ho Chi Minh City</option>
+                        <option value="Da Nang"         ${location == 'Da Nang'         ? 'selected' : ''}>Da Nang</option>
+                    </select>
+
+                    <button type="submit" style="padding:10px 18px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;border:none;font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap;">Tìm kiếm</button>
+                </form>
             </div>
+
 
             <div class="company-list-grid" id="companyList">
                 <c:forEach items="${companies}" var="company">
@@ -80,69 +87,66 @@
                                 <span class="status-badge status-active">${company.status}</span>
                             </div>
                         </div>
-
                         <div class="company-card-body">
                             <p><strong>Size:</strong> ${company.companySize}</p>
                             <p><strong>Location:</strong> <c:out value="${not empty company.location ? company.location.locationName : 'N/A'}"/></p>
                             <p><strong>Website:</strong> ${company.websiteUrl}</p>
                             <p class="company-short-desc">${company.description}</p>
                         </div>
-
                         <div class="company-card-footer">
                             <a href="${pageContext.request.contextPath}/company/detail?id=${company.companyId}" class="btn btn-primary">Xem Chi Tiết</a>
                         </div>
                     </div>
                 </c:forEach>
+                <c:if test="${empty companies}">
+                    <p style="text-align:center;padding:48px;color:var(--text-muted);width:100%;">
+                        Không tìm thấy công ty phù hợp.
+                    </p>
+                </c:if>
             </div>
+
+            <%-- Pagination --%>
+            <c:if test="${totalPages > 1}">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:24px 0;flex-wrap:wrap;gap:12px;">
+                <span style="font-size:0.85rem;color:var(--text-muted);">
+                    Hiển thị ${(currentPage-1)*10+1}–${(currentPage*10 > totalItems) ? totalItems : currentPage*10}
+                    trong <strong style="color:var(--text-primary);">${totalItems}</strong> công ty
+                </span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <c:choose>
+                        <c:when test="${currentPage == 1}"><span class="pg-btn disabled">&#8592;</span></c:when>
+                        <c:otherwise><a class="pg-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}">&#8592;</a></c:otherwise>
+                    </c:choose>
+                    <c:forEach var="pn" items="${pageNums}">
+                        <c:choose>
+                            <c:when test="${pn == -1}"><span style="padding:0 6px;color:var(--text-muted);">&#8230;</span></c:when>
+                            <c:when test="${pn == currentPage}"><span class="pg-btn active">${pn}</span></c:when>
+                            <c:otherwise><a class="pg-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}">${pn}</a></c:otherwise>
+                        </c:choose>
+                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${currentPage == totalPages}"><span class="pg-btn disabled">&#8594;</span></c:when>
+                        <c:otherwise><a class="pg-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}">&#8594;</a></c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+            </c:if>
         </div>
 
-        <%-- Script nhúng thẳng vào trang, không dùng file company.js ngoài để tránh cache cũ --%>
+        <%-- Pagination button styles --%>
+        <style>
+            .pg-btn { display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:8px;font-size:0.85rem;font-weight:600;text-decoration:none;background:var(--glass-bg,rgba(255,255,255,0.05));border:1px solid var(--glass-border,rgba(255,255,255,0.1));color:var(--text-secondary,#94a3b8);transition:all 0.15s;cursor:pointer; }
+            .pg-btn:hover:not(.disabled):not(.active){background:rgba(99,102,241,0.1);border-color:#6366f1;color:#818cf8;}
+            .pg-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);border-color:transparent;color:white;box-shadow:0 4px 12px rgba(99,102,241,0.4);}
+            .pg-btn.disabled{opacity:0.35;cursor:not-allowed;pointer-events:none;}
+        </style>
         <script>
-            (function () {
-                var searchInput    = document.getElementById('searchInput');
-                var industryFilter = document.getElementById('industryFilter');
-                var locationFilter = document.getElementById('locationFilter');
-                var container      = document.getElementById('companyList');
-
-                function filterCards() {
-                    if (!container) return;
-                    var search   = searchInput   ? searchInput.value.trim().toLowerCase() : '';
-                    var industry = industryFilter ? industryFilter.value : 'All';
-                    var location = locationFilter ? locationFilter.value : 'All';
-
-                    var cards = container.querySelectorAll('.company-card');
-                    var visible = 0;
-
-                    cards.forEach(function (card) {
-                        var name = (card.getAttribute('data-name') || '').toLowerCase();
-                        var ind  = (card.getAttribute('data-industry') || '');
-                        var loc  = (card.getAttribute('data-location') || '');
-
-                        var ok = name.includes(search)
-                            && (industry === 'All' || ind === industry)
-                            && (location === 'All' || loc === location);
-
-                        card.style.display = ok ? '' : 'none';
-                        if (ok) visible++;
-                    });
-
-                    var msg = container.querySelector('.empty-filter-msg');
-                    if (visible === 0 && cards.length > 0) {
-                        if (!msg) {
-                            msg = document.createElement('p');
-                            msg.className = 'empty-filter-msg empty-text';
-                            msg.style.cssText = 'text-align:center;padding:32px;color:var(--text-muted);width:100%;';
-                            msg.textContent = 'Không tìm thấy công ty phù hợp.';
-                            container.appendChild(msg);
-                        }
-                    } else if (msg) {
-                        msg.remove();
-                    }
-                }
-
-                if (searchInput)    searchInput.addEventListener('input',   filterCards);
-                if (industryFilter) industryFilter.addEventListener('change', filterCards);
-                if (locationFilter) locationFilter.addEventListener('change', filterCards);
+            // Submit on Enter
+            (function(){
+                var si = document.getElementById('searchInput');
+                if (si) si.addEventListener('keydown', function(e){
+                    if (e.key === 'Enter'){ e.preventDefault(); document.getElementById('filterForm').submit(); }
+                });
             })();
         </script>
     </body>
