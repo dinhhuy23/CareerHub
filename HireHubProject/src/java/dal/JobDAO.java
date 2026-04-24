@@ -589,4 +589,59 @@ public class JobDAO {
 
         return 0;
     }
+
+    public List<Job> getRecommendedJobs(String targetRole, int limit) {
+        List<Job> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT TOP (?) j.*, c.CompanyName " +
+            "FROM Jobs j " +
+            "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " +
+            "WHERE j.Status = 'PUBLISHED' "
+        );
+        
+        String[] words = null;
+        if (targetRole != null && !targetRole.trim().isEmpty()) {
+            // Tách các từ, loại bỏ khoảng trắng thừa
+            words = targetRole.trim().split("\\s+");
+            if (words.length > 0) {
+                sql.append("AND (");
+                for (int i = 0; i < words.length; i++) {
+                    if (i > 0) sql.append(" OR ");
+                    sql.append("j.Title LIKE ?");
+                }
+                sql.append(") ");
+            }
+        }
+        
+        sql.append("ORDER BY j.UpdatedAt DESC");
+        
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+             
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, limit);
+            
+            if (words != null && words.length > 0) {
+                for (String word : words) {
+                    ps.setString(paramIndex++, "%" + word + "%");
+                }
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Job job = new Job();
+                    job.setJobId(rs.getLong("JobId"));
+                    job.setTitle(rs.getString("Title"));
+                    job.setSalaryMin(rs.getBigDecimal("SalaryMin"));
+                    job.setSalaryMax(rs.getBigDecimal("SalaryMax"));
+                    job.setCurrencyCode(rs.getString("CurrencyCode"));
+                    try { job.setCompanyName(rs.getString("CompanyName")); } catch(Exception e){}
+                    list.add(job);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

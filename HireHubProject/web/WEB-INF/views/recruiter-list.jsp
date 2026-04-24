@@ -97,13 +97,13 @@
             background: linear-gradient(135deg, var(--primary), var(--accent));
         }
         .rl-table th {
-            padding: 14px 12px; text-align: left;
+            padding: 14px 16px; text-align: left;
             font-size: 0.75rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.5px;
             color: rgba(255,255,255,0.9); white-space: nowrap;
         }
         .rl-table td {
-            padding: 14px 12px; font-size: 0.875rem;
+            padding: 14px 16px; font-size: 0.875rem;
             border-bottom: 1px solid rgba(255,255,255,0.04);
             color: var(--text-primary); vertical-align: middle;
         }
@@ -191,6 +191,7 @@
 
         /* ── Row hidden by filter ── */
         tr.hidden-row { display: none; }
+<<<<<<< HEAD
 
         /* ── Toast notification ── */
         .toast-container {
@@ -344,6 +345,7 @@
                     </c:forEach>
                 </select>
             </div>
+
 
             <!-- Table -->
             <div class="rl-card animate-fadeInUp" style="animation-delay:0.1s;">

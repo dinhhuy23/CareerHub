@@ -95,7 +95,6 @@ public class RecruiterController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         request.setCharacterEncoding("UTF-8");
         String id           = request.getParameter("id");
         String email        = trim(request.getParameter("email"));
@@ -250,7 +249,6 @@ public class RecruiterController extends HttpServlet {
             e.printStackTrace();
             setToast(request, "error", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại.");
         }
-
         response.sendRedirect(request.getContextPath() + "/admin/recruiters");
     }
 
