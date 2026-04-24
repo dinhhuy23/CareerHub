@@ -49,8 +49,8 @@ public class CompanyDAO {
                 + "FoundedYear, CompanySize, Industry, AddressLine, LocationId, Status, CreatedByUserId) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try {
-            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, company.getCompanyName());
             ps.setString(2, company.getTaxCode());
@@ -86,9 +86,8 @@ public class CompanyDAO {
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getLong(1);
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) return rs.getLong(1);
                 }
             }
         } catch (Exception e) {
@@ -167,8 +166,8 @@ public class CompanyDAO {
                 + "UpdatedAt = SYSDATETIME() "
                 + "WHERE CompanyId = ?";
 
-        try {
-            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql);
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, company.getCompanyName());
             ps.setString(2, company.getTaxCode());

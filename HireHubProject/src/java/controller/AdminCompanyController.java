@@ -36,9 +36,22 @@ public class AdminCompanyController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+
+        // Đọc toast flash từ session (do redirect từ Create/Edit để lại)
+        jakarta.servlet.http.HttpSession sess = request.getSession(false);
+        if (sess != null) {
+            String toastType = (String) sess.getAttribute("toastType");
+            String toastMsg  = (String) sess.getAttribute("toastMsg");
+            if (toastType != null) {
+                request.setAttribute("toastType", toastType);
+                request.setAttribute("toastMsg",  toastMsg);
+                sess.removeAttribute("toastType");
+                sess.removeAttribute("toastMsg");
+            }
+        }
+
         List<Company> companies = companyDAO.getAll();
         request.setAttribute("companies", companies);
-
         request.getRequestDispatcher("/company/company-list.jsp").forward(request, response);
     }
 

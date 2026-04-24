@@ -5,34 +5,45 @@ import dal.CompanyDAO;
 import dal.LocationDAO;
 import java.io.IOException;
 import java.time.Year;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import model.Company;
 import model.Location;
 import utils.CloudinaryConfig;
 
 @MultipartConfig(
-        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxFileSize    = 1024 * 1024 * 10,
         maxRequestSize = 1024 * 1024 * 50
 )
 @WebServlet(name = "CompanyEditServlet", urlPatterns = {"/company/edit"})
 public class CompanyEditServlet extends HttpServlet {
+
+    // ── Field length limits (đồng bộ với JSP char counters) ──────────────────
+    private static final int MAX_COMPANY_NAME = 200;
+    private static final int MAX_TAX_CODE     = 50;
+    private static final int MAX_WEBSITE      = 255;
+    private static final int MAX_EMAIL        = 255;
+    private static final int MAX_PHONE        = 20;
+    private static final int MAX_INDUSTRY     = 100;
+    private static final int MAX_ADDRESS      = 300;
+    private static final int MAX_DESCRIPTION  = 3000;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String idRaw = request.getParameter("id");
-
         if (idRaw == null || idRaw.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/company/company-list.jsp");
             return;
@@ -40,22 +51,31 @@ public class CompanyEditServlet extends HttpServlet {
 
         try {
             long companyId = Long.parseLong(idRaw);
-
-            CompanyDAO companyDAO = new CompanyDAO();
+            CompanyDAO companyDAO   = new CompanyDAO();
             LocationDAO locationDAO = new LocationDAO();
-
             Company company = companyDAO.getCompanyById(companyId);
-            List<Location> locations = locationDAO.getAllActive();
 
             if (company == null) {
                 response.sendRedirect(request.getContextPath() + "/company/company-list.jsp");
                 return;
             }
 
-            request.setAttribute("company", company);
-            request.setAttribute("locations", locations);
-            request.setAttribute("mode", "edit");
+            // Đọc toast flash từ session nếu có (do redirect từ POST thất bại)
+            HttpSession sess = request.getSession(false);
+            if (sess != null) {
+                String tt = (String) sess.getAttribute("toastType");
+                String tm = (String) sess.getAttribute("toastMsg");
+                if (tt != null) {
+                    request.setAttribute("toastType", tt);
+                    request.setAttribute("toastMsg",  tm);
+                    sess.removeAttribute("toastType");
+                    sess.removeAttribute("toastMsg");
+                }
+            }
 
+            request.setAttribute("company",   company);
+            request.setAttribute("locations", locationDAO.getAllActive());
+            request.setAttribute("mode",      "edit");
             request.getRequestDispatcher("/company/company-form.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
@@ -69,26 +89,22 @@ public class CompanyEditServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        String companyIdRaw = request.getParameter("companyId");
-        String companyName = request.getParameter("companyName");
-        String taxCode = request.getParameter("taxCode");
-        String websiteUrl = request.getParameter("websiteUrl");
-        String email = request.getParameter("email");
-        String phoneNumber = request.getParameter("phoneNumber");
-//        String logoUrl = request.getParameter("logoUrl");
-        String description = request.getParameter("description");
-        String foundedYearRaw = request.getParameter("foundedYear");
-        String companySize = request.getParameter("companySize");
-        String industry = request.getParameter("industry");
-        String addressLine = request.getParameter("addressLine");
-        String locationIdRaw = request.getParameter("locationId");
-        String status = request.getParameter("status");
+        String companyIdRaw   = trim(request.getParameter("companyId"));
+        String companyName    = trim(request.getParameter("companyName"));
+        String taxCode        = trim(request.getParameter("taxCode"));
+        String websiteUrl     = trim(request.getParameter("websiteUrl"));
+        String email          = trim(request.getParameter("email"));
+        String phoneNumber    = trim(request.getParameter("phoneNumber"));
+        String description    = trim(request.getParameter("description"));
+        String foundedYearRaw = trim(request.getParameter("foundedYear"));
+        String companySize    = trim(request.getParameter("companySize"));
+        String industry       = trim(request.getParameter("industry"));
+        String addressLine    = trim(request.getParameter("addressLine"));
+        String locationIdRaw  = trim(request.getParameter("locationId"));
+        String status         = trim(request.getParameter("status"));
 
-        String error = null;
-        Integer foundedYear = null;
-        Long locationId = null;
-        long companyId = 0;
-
+        // Parse companyId — bắt buộc
+        long companyId;
         try {
             companyId = Long.parseLong(companyIdRaw);
         } catch (Exception e) {
@@ -96,80 +112,145 @@ public class CompanyEditServlet extends HttpServlet {
             return;
         }
 
-        if (companyName == null || companyName.trim().isEmpty()) {
-            error = "Company name is required.";
+        // ── Validation ─────────────────────────────────────────────────────────
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        if (companyName.isEmpty()) {
+            errors.put("companyName", "Tên công ty không được để trống.");
+        } else if (companyName.length() > MAX_COMPANY_NAME) {
+            errors.put("companyName", "Tên công ty không được vượt quá " + MAX_COMPANY_NAME + " ký tự.");
         }
 
-        if (error == null && foundedYearRaw != null && !foundedYearRaw.trim().isEmpty()) {
+        if (!taxCode.isEmpty() && taxCode.length() > MAX_TAX_CODE) {
+            errors.put("taxCode", "Mã số thuế không được vượt quá " + MAX_TAX_CODE + " ký tự.");
+        }
+
+        if (!websiteUrl.isEmpty() && websiteUrl.length() > MAX_WEBSITE) {
+            errors.put("websiteUrl", "Website URL không được vượt quá " + MAX_WEBSITE + " ký tự.");
+        }
+
+        if (!email.isEmpty()) {
+            if (!email.matches("^[\\w._%+\\-]+@[\\w.\\-]+\\.[a-zA-Z]{2,}$")) {
+                errors.put("email", "Email liên hệ không đúng định dạng.");
+            } else if (email.length() > MAX_EMAIL) {
+                errors.put("email", "Email không được vượt quá " + MAX_EMAIL + " ký tự.");
+            }
+        }
+
+        if (!phoneNumber.isEmpty() && phoneNumber.length() > MAX_PHONE) {
+            errors.put("phoneNumber", "Số điện thoại không được vượt quá " + MAX_PHONE + " ký tự.");
+        }
+
+        if (!industry.isEmpty() && industry.length() > MAX_INDUSTRY) {
+            errors.put("industry", "Ngành nghề không được vượt quá " + MAX_INDUSTRY + " ký tự.");
+        }
+
+        if (!addressLine.isEmpty() && addressLine.length() > MAX_ADDRESS) {
+            errors.put("addressLine", "Địa chỉ không được vượt quá " + MAX_ADDRESS + " ký tự.");
+        }
+
+        if (!description.isEmpty() && description.length() > MAX_DESCRIPTION) {
+            errors.put("description", "Mô tả không được vượt quá " + MAX_DESCRIPTION + " ký tự.");
+        }
+
+        Integer foundedYear = null;
+        if (!foundedYearRaw.isEmpty()) {
             try {
                 foundedYear = Integer.parseInt(foundedYearRaw);
                 int currentYear = Year.now().getValue();
                 if (foundedYear < 1800 || foundedYear > currentYear) {
-                    error = "Founded year is invalid.";
+                    errors.put("foundedYear", "Năm thành lập phải từ 1800 đến " + currentYear + ".");
                 }
             } catch (NumberFormatException e) {
-                error = "Founded year must be a number.";
+                errors.put("foundedYear", "Năm thành lập phải là số nguyên.");
             }
         }
 
-        if (error == null && locationIdRaw != null && !locationIdRaw.trim().isEmpty()) {
+        Long locationId = null;
+        if (!locationIdRaw.isEmpty()) {
             try {
                 locationId = Long.parseLong(locationIdRaw);
             } catch (NumberFormatException e) {
-                error = "Location is invalid.";
+                errors.put("locationId", "Địa điểm không hợp lệ.");
             }
         }
 
-        Company company = new Company();
-        company.setCompanyId(companyId);
-        company.setCompanyName(companyName);
-        company.setTaxCode(taxCode);
-        company.setWebsiteUrl(websiteUrl);
-        company.setEmail(email);
-        company.setPhoneNumber(phoneNumber);
-        Part filePart = request.getPart("image");
-        if (filePart != null && filePart.getSize() > 0) {
-            InputStream inputStream = filePart.getInputStream();
+        // Lấy logo hiện tại để giữ nếu không upload ảnh mới
+        String existingLogoUrl = trim(request.getParameter("imageOrigin"));
+        String logoUrl = existingLogoUrl.isEmpty() ? null : existingLogoUrl;
 
-            byte[] bytes = inputStream.readAllBytes();
-            Cloudinary cloudinary = CloudinaryConfig.getCloudinary();
-            Map result = cloudinary.uploader().upload(bytes, new HashMap());
+        // ── Nếu có lỗi → trả form edit ngay, KHÔNG chạm DB ───────────────────
+        if (!errors.isEmpty()) {
+            Company c = buildCompanyBean(companyId, companyName, taxCode, websiteUrl, email,
+                    phoneNumber, description, foundedYear, companySize, industry,
+                    addressLine, locationId, status, logoUrl);
 
-            String logoUrl = (String) result.get("secure_url");
-            company.setLogoUrl(logoUrl);
-        } else {
-            company.setLogoUrl(request.getParameter("imageOrigin"));
-        }
-        company.setDescription(description);
-        company.setFoundedYear(foundedYear);
-        company.setCompanySize(companySize);
-        company.setIndustry(industry);
-        company.setAddressLine(addressLine);
-        company.setLocationId(locationId);
-        company.setStatus((status == null || status.trim().isEmpty()) ? "ACTIVE" : status);
-
-        if (error != null) {
-            LocationDAO locationDAO = new LocationDAO();
-            request.setAttribute("company", company);
-            request.setAttribute("locations", locationDAO.getAllActive());
-            request.setAttribute("mode", "edit");
-            request.setAttribute("error", error);
+            request.setAttribute("company",   c);
+            request.setAttribute("errors",    errors);
+            request.setAttribute("error",     "Vui lòng kiểm tra lại thông tin đã nhập.");
+            request.setAttribute("mode",      "edit");
+            request.setAttribute("locations", new LocationDAO().getAllActive());
             request.getRequestDispatcher("/company/company-form.jsp").forward(request, response);
             return;
         }
 
-        CompanyDAO companyDAO = new CompanyDAO();
-        boolean updated = companyDAO.updateCompany(company);
+        // ── Không có lỗi → xử lý ảnh + DB ────────────────────────────────────
+        try {
+            Part filePart = request.getPart("image");
+            if (filePart != null && filePart.getSize() > 0) {
+                byte[] bytes = filePart.getInputStream().readAllBytes();
+                Cloudinary cloudinary = CloudinaryConfig.getCloudinary();
+                Map result = cloudinary.uploader().upload(bytes, new HashMap());
+                logoUrl = (String) result.get("secure_url");
+            }
 
-        if (updated) {
+            Company company = buildCompanyBean(companyId, companyName, taxCode, websiteUrl, email,
+                    phoneNumber, description, foundedYear, companySize, industry,
+                    addressLine, locationId, status, logoUrl);
+
+            CompanyDAO companyDAO = new CompanyDAO();
+            boolean ok = companyDAO.updateCompany(company);
+
+            setToast(request, ok ? "success" : "error",
+                ok ? "Cập nhật công ty thành công!"
+                   : "Cập nhật thất bại. Vui lòng thử lại.");
             response.sendRedirect(request.getContextPath() + "/company/detail?id=" + companyId);
-        } else {
-            LocationDAO locationDAO = new LocationDAO();
-            request.setAttribute("company", company);
-            request.setAttribute("locations", locationDAO.getAllActive());
-            request.setAttribute("mode", "edit");
-            request.setAttribute("error", "Failed to update company.");
-            request.getRequestDispatcher("/company/company-form.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            setToast(request, "error", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại.");
+            response.sendRedirect(request.getContextPath() + "/company/detail?id=" + companyId);
         }
+    }
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    private static String trim(String s) { return s == null ? "" : s.trim(); }
+
+    private static void setToast(HttpServletRequest request, String type, String msg) {
+        HttpSession sess = request.getSession(true);
+        sess.setAttribute("toastType", type);
+        sess.setAttribute("toastMsg",  msg);
+    }
+
+    private static Company buildCompanyBean(long id, String name, String taxCode,
+            String websiteUrl, String email, String phone, String description,
+            Integer foundedYear, String companySize, String industry,
+            String addressLine, Long locationId, String status, String logoUrl) {
+        Company c = new Company();
+        c.setCompanyId(id);
+        c.setCompanyName(name);
+        c.setTaxCode(taxCode.isEmpty()        ? null : taxCode);
+        c.setWebsiteUrl(websiteUrl.isEmpty()  ? null : websiteUrl);
+        c.setEmail(email.isEmpty()            ? null : email);
+        c.setPhoneNumber(phone.isEmpty()      ? null : phone);
+        c.setDescription(description.isEmpty()? null : description);
+        c.setFoundedYear(foundedYear);
+        c.setCompanySize(companySize.isEmpty()? null : companySize);
+        c.setIndustry(industry.isEmpty()      ? null : industry);
+        c.setAddressLine(addressLine.isEmpty()? null : addressLine);
+        c.setLocationId(locationId);
+        c.setStatus(status == null || status.isEmpty() ? "ACTIVE" : status);
+        c.setLogoUrl(logoUrl);
+        return c;
     }
 }
