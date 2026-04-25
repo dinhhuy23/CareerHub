@@ -113,4 +113,29 @@ public class Job {
     public void setCompanyName(String companyName) { this.companyName = companyName; }
     public String getCompanyLogoUrl() { return companyLogoUrl; }
     public void setCompanyLogoUrl(String companyLogoUrl) { this.companyLogoUrl = companyLogoUrl; }
+
+    public String getFormattedSalary() {
+        if (salaryMin == null || salaryMax == null) return "Thỏa thuận";
+        long min = salaryMin.longValue();
+        long max = salaryMax.longValue();
+        
+        String minStr = formatCurrency(min);
+        String maxStr = formatCurrency(max);
+        
+        if (minStr.equals(maxStr)) return minStr;
+        return minStr + " - " + maxStr;
+    }
+    
+    private String formatCurrency(long amount) {
+        if (amount >= 1000000) {
+            long tr = amount / 1000000;
+            long le = (amount % 1000000) / 100000;
+            if (le > 0) return tr + "." + le + "tr";
+            return tr + "tr";
+        }
+        if (amount >= 1000) {
+            return (amount / 1000) + "k";
+        }
+        return amount + "";
+    }
 }

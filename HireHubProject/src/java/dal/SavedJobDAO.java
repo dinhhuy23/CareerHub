@@ -1,4 +1,4 @@
-package dal;
+﻿package dal;
 
 import model.Job;
 import model.SavedJob;
@@ -17,6 +17,9 @@ public class SavedJobDAO {
     private static final Logger LOGGER = Logger.getLogger(SavedJobDAO.class.getName());
     private final DBContext dbContext = new DBContext();
 
+    /**
+     * Tìm CandidateId thật từ UserId đăng nhập
+     */
     private Long getCandidateIdByUserId(Connection conn, long userId) throws SQLException {
         String sql = "SELECT TOP 1 CandidateId FROM CandidateProfiles WHERE UserId = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -67,6 +70,10 @@ public class SavedJobDAO {
         return false;
     }
 
+    /**
+     * Kiểm tra job đã được lưu chưa
+     * Tham số truyền vào là UserId của user đang đăng nhập
+     */
     public boolean isJobSaved(long candidateUserId, long jobId) {
         try (Connection conn = dbContext.getConnection()) {
             Long candidateId = getCandidateIdByUserId(conn, candidateUserId);
@@ -81,6 +88,10 @@ public class SavedJobDAO {
         }
     }
 
+    /**
+     * Lưu việc làm
+     * Tham số truyền vào là UserId của candidate
+     */
     public boolean saveJob(long candidateUserId, long jobId) {
         String sql = "INSERT INTO SavedJobs (CandidateId, JobId, SavedAt, IsFavorite) " +
                 "VALUES (?, ?, SYSUTCDATETIME(), 0)";
@@ -109,6 +120,10 @@ public class SavedJobDAO {
         }
     }
 
+    /**
+     * Bỏ lưu việc làm
+     * Tham số truyền vào là UserId của candidate
+     */
     public boolean unsaveJob(long candidateUserId, long jobId) {
         String sql = "DELETE FROM SavedJobs WHERE CandidateId = ? AND JobId = ?";
 
@@ -167,22 +182,24 @@ public class SavedJobDAO {
         }
     }
 
+    /**
+     * Lấy danh sách việc làm đã lưu theo UserId của candidate
+     */
     public List<SavedJob> getSavedJobsByCandidateId(long candidateUserId) {
         List<SavedJob> list = new ArrayList<>();
 
         String sql = "SELECT sj.SavedJobId, sj.CandidateId, sj.JobId, sj.SavedAt, ISNULL(sj.IsFavorite, 0) AS IsFavorite, "
-                +
-                "       j.Title, j.SalaryMin, j.SalaryMax, j.CurrencyCode, j.Status, " +
-                "       u.FullName AS EmployerName, c.CompanyName, l.LocationName, et.TypeName " +
-                "FROM SavedJobs sj " +
-                "INNER JOIN Jobs j ON sj.JobId = j.JobId " +
-                "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId " +
-                "LEFT JOIN Users u ON rp.UserId = u.UserId " +
-                "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " +
-                "LEFT JOIN Locations l ON j.LocationId = l.LocationId " +
-                "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId " +
-                "WHERE sj.CandidateId = ? " +
-                "ORDER BY ISNULL(sj.IsFavorite, 0) DESC, sj.SavedAt DESC";
+                + "       j.Title, j.SalaryMin, j.SalaryMax, j.CurrencyCode, j.Status, " 
+                + "       u.FullName AS EmployerName, c.CompanyName, l.LocationName, et.TypeName " 
+                + "FROM SavedJobs sj " 
+                + "INNER JOIN Jobs j ON sj.JobId = j.JobId " 
+                + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId " 
+                + "LEFT JOIN Users u ON rp.UserId = u.UserId " 
+                + "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " 
+                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId " 
+                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId " 
+                + "WHERE sj.CandidateId = ? " 
+                + "ORDER BY ISNULL(sj.IsFavorite, 0) DESC, sj.SavedAt DESC";
 
         try (Connection conn = dbContext.getConnection()) {
             Long candidateId = getCandidateIdByUserId(conn, candidateUserId);
@@ -220,7 +237,6 @@ public class SavedJobDAO {
                     }
                 }
             }
-
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error getting saved jobs", e);
         }
@@ -228,3 +244,4 @@ public class SavedJobDAO {
         return list;
     }
 }
+

@@ -97,13 +97,13 @@
             background: linear-gradient(135deg, var(--primary), var(--accent));
         }
         .rl-table th {
-            padding: 14px 12px; text-align: left;
+            padding: 14px 16px; text-align: left;
             font-size: 0.75rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.5px;
             color: rgba(255,255,255,0.9); white-space: nowrap;
         }
         .rl-table td {
-            padding: 14px 12px; font-size: 0.875rem;
+            padding: 14px 16px; font-size: 0.875rem;
             border-bottom: 1px solid rgba(255,255,255,0.04);
             color: var(--text-primary); vertical-align: middle;
         }
@@ -191,6 +191,44 @@
 
         /* ── Row hidden by filter ── */
         tr.hidden-row { display: none; }
+<<<<<<< HEAD
+
+        /* ── Toast notification ── */
+        .toast-container {
+            position: fixed; top: 24px; right: 24px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 20px; border-radius: 12px;
+            font-size: 0.88rem; font-weight: 600;
+            min-width: 280px; max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            animation: toastIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        .toast.success {
+            background: rgba(16,185,129,0.18); color: #34d399;
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+        .toast.error {
+            background: rgba(239,68,68,0.18); color: #f87171;
+            border: 1px solid rgba(239,68,68,0.3);
+        }
+        .toast-close {
+            margin-left: auto; cursor: pointer; opacity: 0.7;
+            background: none; border: none; color: inherit;
+            font-size: 1rem; line-height: 1; padding: 0;
+        }
+        .toast-close:hover { opacity: 1; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(30px); }
+        }
     </style>
 </head>
 <body class="app-page">
@@ -198,6 +236,34 @@
 
     <main class="main-content">
         <div class="rl-container">
+
+            <%-- Toast notification (flash from session) --%>
+            <c:if test="${not empty toastType}">
+                <div class="toast-container" id="toastContainer">
+                    <div class="toast ${toastType}" id="mainToast">
+                        <c:choose>
+                            <c:when test="${toastType == 'success'}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>
+                            </c:when>
+                            <c:otherwise>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            </c:otherwise>
+                        </c:choose>
+                        <span><c:out value="${toastMsg}"/></span>
+                        <button class="toast-close" onclick="this.closest('.toast').remove()">&times;</button>
+                    </div>
+                </div>
+                <script>
+                    (function(){
+                        var t = document.getElementById('mainToast');
+                        if (!t) return;
+                        setTimeout(function(){
+                            t.style.animation = 'toastOut 0.3s ease forwards';
+                            setTimeout(function(){ t.remove(); }, 320);
+                        }, 4000);
+                    })();
+                </script>
+            </c:if>
 
             <!-- Header -->
             <div class="rl-header">
@@ -227,7 +293,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     </div>
                     <div>
-                        <span class="rl-stat-num">${list.size()}</span>
+                        <span class="rl-stat-num">${totalCount}</span>
                         <span class="rl-stat-lbl">Tổng nhà tuyển dụng</span>
                     </div>
                 </div>
@@ -236,15 +302,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
                     <div>
-                        <span class="rl-stat-num">
-                            <c:set var="activeCount" value="0"/>
-                            <c:forEach var="r" items="${list}">
-                                <c:if test="${r.status == 'ACTIVE'}">
-                                    <c:set var="activeCount" value="${activeCount + 1}"/>
-                                </c:if>
-                            </c:forEach>
-                            ${activeCount}
-                        </span>
+                        <span class="rl-stat-num">${activeCount}</span>
                         <span class="rl-stat-lbl">Đang hoạt động</span>
                     </div>
                 </div>
@@ -253,32 +311,40 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                     </div>
                     <div>
-                        <span class="rl-stat-num">${list.size() - activeCount}</span>
+                        <span class="rl-stat-num">${totalCount - activeCount}</span>
                         <span class="rl-stat-lbl">Không hoạt động</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Toolbar -->
-            <div class="rl-toolbar animate-fadeInUp" style="animation-delay:0.05s;">
+            <!-- Toolbar – server-side filter form -->
+            <form method="get" action="" id="filterForm" class="rl-toolbar animate-fadeInUp" style="animation-delay:0.05s;">
                 <div class="search-wrap">
                     <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     </svg>
-                    <input type="text" class="rl-search" id="searchInput" placeholder="Tìm theo tên, email, công ty...">
+                    <input type="text" name="keyword" class="rl-search" id="searchInput"
+                           value="<c:out value='${keyword}'/>"
+                           placeholder="Tìm theo tên, email, công ty...">
                 </div>
-                <select class="rl-filter" id="statusFilter">
-                    <option value="All">Tất cả trạng thái</option>
-                    <option value="ACTIVE">Đang hoạt động</option>
-                    <option value="INACTIVE">Không hoạt động</option>
+                <select name="status" class="rl-filter" id="statusFilter" onchange="this.form.submit()">
+                    <option value="All" ${statusFilter == 'All' ? 'selected' : ''}>Tất cả trạng thái</option>
+                    <option value="ACTIVE"   ${statusFilter == 'ACTIVE'   ? 'selected' : ''}>Đang hoạt động</option>
+                    <option value="INACTIVE" ${statusFilter == 'INACTIVE' ? 'selected' : ''}>Không hoạt động</option>
                 </select>
-                <select class="rl-filter" id="companyFilter">
-                    <option value="All">Tất cả công ty</option>
-                    <c:forEach var="r" items="${list}">
-                        <option value="${fn:escapeXml(r.companyName)}"><c:out value="${r.companyName}"/></option>
+                <select name="company" class="rl-filter" id="companyFilter" onchange="this.form.submit()">
+                    <option value="All" ${companyFilter == 'All' ? 'selected' : ''}>Tất cả công ty</option>
+                    <c:forEach var="c" items="${allCompanies}">
+                        <option value="${fn:escapeXml(c.companyName)}" ${companyFilter == c.companyName ? 'selected' : ''}>
+                            <c:out value="${c.companyName}"/>
+                        </option>
                     </c:forEach>
                 </select>
-            </div>
+                <button type="submit" class="btn btn-primary" style="padding:10px 18px;white-space:nowrap;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:5px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Tìm kiếm
+                </button>
+            </form>
+
 
             <!-- Table -->
             <div class="rl-card animate-fadeInUp" style="animation-delay:0.1s;">
@@ -305,7 +371,7 @@
                                             data-company="${fn:escapeXml(r.companyName)}"
                                             data-jobtitle="${fn:escapeXml(fn:toLowerCase(r.jobTitle))}"
                                             data-status="${r.status}">
-                                            <td style="color:var(--text-muted); font-size:0.8rem;">${loop.index + 1}</td>
+                                            <td style="color:var(--text-muted); font-size:0.8rem;">${(currentPage - 1) * 10 + loop.index + 1}</td>
                                             <td>
                                                 <div class="name-cell">
                                                     <div class="rec-avatar">${initial}</div>
@@ -376,69 +442,84 @@
                 </div>
             </div>
 
+            <%-- Pagination --%>
+            <c:if test="${totalPages > 1}">
+            <div class="pagination-wrap animate-fadeInUp" style="animation-delay:0.15s;">
+                <span class="pagination-info">
+                    Hiển thị ${(currentPage-1)*10+1}–${(currentPage*10 > totalItems) ? totalItems : currentPage*10}
+                    trong <strong>${totalItems}</strong> kết quả
+                </span>
+                <div class="pagination-controls">
+                    <%-- Prev --%>
+                    <c:choose>
+                        <c:when test="${currentPage == 1}">
+                            <span class="page-btn disabled">&#8592;</span>
+                        </c:when>
+                        <c:otherwise>
+                            <a class="page-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8592;</a>
+                        </c:otherwise>
+                    </c:choose>
+                    <%-- Page numbers --%>
+                    <c:forEach var="pn" items="${pageNums}">
+                        <c:choose>
+                            <c:when test="${pn == -1}"><span class="page-ellipsis">&#8230;</span></c:when>
+                            <c:when test="${pn == currentPage}"><span class="page-btn active">${pn}</span></c:when>
+                            <c:otherwise><a class="page-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">${pn}</a></c:otherwise>
+                        </c:choose>
+                    </c:forEach>
+                    <%-- Next --%>
+                    <c:choose>
+                        <c:when test="${currentPage == totalPages}">
+                            <span class="page-btn disabled">&#8594;</span>
+                        </c:when>
+                        <c:otherwise>
+                            <a class="page-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8594;</a>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+            </c:if>
+
         </div>
     </main>
 
+    <style>
+        /* ── Pagination ── */
+        .pagination-wrap {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: var(--space-lg) 0; flex-wrap: wrap; gap: 12px;
+        }
+        .pagination-info { font-size: 0.85rem; color: var(--text-muted); }
+        .pagination-info strong { color: var(--text-primary); }
+        .pagination-controls { display: flex; align-items: center; gap: 6px; }
+        .page-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 36px; height: 36px; padding: 0 10px;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem; font-weight: 600; text-decoration: none;
+            background: var(--glass-bg); border: 1px solid var(--glass-border);
+            color: var(--text-secondary); transition: all 0.15s; cursor: pointer;
+        }
+        .page-btn:hover:not(.disabled):not(.active) {
+            background: rgba(99,102,241,0.1); border-color: var(--primary);
+            color: var(--primary-light);
+        }
+        .page-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-color: transparent; color: white;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+        }
+        .page-btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+        .page-ellipsis { display: inline-flex; align-items: center; justify-content: center;
+            min-width: 36px; height: 36px; color: var(--text-muted); font-size: 0.85rem; }
+    </style>
     <script>
-        (function () {
-            var searchInput    = document.getElementById('searchInput');
-            var statusFilter   = document.getElementById('statusFilter');
-            var companyFilter  = document.getElementById('companyFilter');
-            var tbody          = document.getElementById('recruiterBody');
-
-            // De-duplicate company options
-            var seen = {};
-            companyFilter.querySelectorAll('option').forEach(function(opt) {
-                if (opt.value === 'All') return;
-                if (seen[opt.value]) opt.remove();
-                else seen[opt.value] = true;
+        // Auto-submit form on Enter in search box
+        (function(){
+            var si = document.getElementById('searchInput');
+            if (si) si.addEventListener('keydown', function(e){
+                if (e.key === 'Enter') { e.preventDefault(); document.getElementById('filterForm').submit(); }
             });
-
-            function filterRows() {
-                if (!tbody) return;
-                var search  = searchInput   ? searchInput.value.trim().toLowerCase() : '';
-                var status  = statusFilter  ? statusFilter.value  : 'All';
-                var company = companyFilter ? companyFilter.value : 'All';
-
-                var rows = tbody.querySelectorAll('tr[data-name]');
-                var visible = 0;
-
-                rows.forEach(function (row) {
-                    var name    = (row.getAttribute('data-name')    || '').toLowerCase();
-                    var comp    = (row.getAttribute('data-company') || '');
-                    var job     = (row.getAttribute('data-jobtitle') || '');
-                    var stat    = (row.getAttribute('data-status')  || '');
-
-                    // Search across name/email AND company name AND job title
-                    var searchOk = search === ''
-                        || name.includes(search)
-                        || comp.toLowerCase().includes(search)
-                        || job.includes(search);
-
-                    var ok = searchOk
-                        && (status  === 'All' || stat === status)
-                        && (company === 'All' || comp === company);
-
-                    row.style.display = ok ? '' : 'none';
-                    if (ok) visible++;
-                });
-
-                var emptyMsg = tbody.querySelector('.filter-empty-row');
-                if (visible === 0 && rows.length > 0) {
-                    if (!emptyMsg) {
-                        var tr = document.createElement('tr');
-                        tr.className = 'filter-empty-row';
-                        tr.innerHTML = '<td colspan="8"><div class="rl-empty"><p>Không tìm thấy nhà tuyển dụng phù hợp.</p></div></td>';
-                        tbody.appendChild(tr);
-                    }
-                } else if (emptyMsg) {
-                    emptyMsg.remove();
-                }
-            }
-
-            if (searchInput)   searchInput.addEventListener('input',   filterRows);
-            if (statusFilter)  statusFilter.addEventListener('change', filterRows);
-            if (companyFilter) companyFilter.addEventListener('change', filterRows);
         })();
     </script>
 </body>
