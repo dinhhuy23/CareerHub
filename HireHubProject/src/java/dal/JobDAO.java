@@ -334,7 +334,7 @@ public class JobDAO {
                         + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
                         + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
                         + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
-                        + "WHERE j.Status = 'PUBLISHED' ");
+                        + "WHERE j.Status = 'PUBLISHED' AND c.Status = 'ACTIVE' ");
 
 
         List<Object> params = new ArrayList<>();
@@ -396,7 +396,9 @@ public class JobDAO {
 
                 + "FROM Jobs j "
                 + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
-                + "WHERE j.Status = 'PUBLISHED' "
+                + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
+                + "WHERE j.Status = 'PUBLISHED' AND c.Status = 'ACTIVE' "
         );
 
         List<Object> params = new ArrayList<>();
@@ -626,7 +628,7 @@ public class JobDAO {
             "SELECT TOP (?) j.*, c.CompanyName " +
             "FROM Jobs j " +
             "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " +
-            "WHERE j.Status = 'PUBLISHED' "
+            "WHERE j.Status = 'PUBLISHED' AND c.Status = 'ACTIVE' "
         );
         
         String[] words = null;

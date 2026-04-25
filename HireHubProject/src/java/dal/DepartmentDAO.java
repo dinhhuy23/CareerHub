@@ -128,7 +128,7 @@ public class DepartmentDAO {
 
     // UPDATE
     public void update(Department d) {
-        String sql = "UPDATE Departments SET DepartmentName = ?, Description = ?, CompanyId = ?, ManagerName = ?, ContactEmail = ?, PhoneNumber = ?, Location = ? WHERE DepartmentId = ?";
+        String sql = "UPDATE Departments SET DepartmentName = ?, Description = ?, CompanyId = ?, ManagerName = ?, ContactEmail = ?, PhoneNumber = ?, Location = ?, IsActive = ? WHERE DepartmentId = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -139,7 +139,8 @@ public class DepartmentDAO {
             ps.setString(5, d.getContactEmail());
             ps.setString(6, d.getPhoneNumber());
             ps.setString(7, d.getLocation());
-            ps.setLong(8, d.getDepartmentId());
+            ps.setBoolean(8, d.isIsActive());
+            ps.setLong(9, d.getDepartmentId());
             ps.executeUpdate();
 
         } catch (Exception e) {

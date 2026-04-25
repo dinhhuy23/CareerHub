@@ -122,6 +122,13 @@ public class AdminDepartmentController extends HttpServlet {
         d.setContactEmail(contactEmail != null ? contactEmail.trim() : "");
         d.setPhoneNumber(phoneNumber != null ? phoneNumber.trim() : "");
         d.setLocation(location != null ? location.trim() : "");
+        
+        String isActiveStr = request.getParameter("isActive");
+        if (isActiveStr != null) {
+            d.setIsActive("1".equals(isActiveStr));
+        } else {
+            d.setIsActive(true); // default for new
+        }
 
         String[] recruiterIds = request.getParameterValues("recruiterIds");
 

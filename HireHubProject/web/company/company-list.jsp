@@ -53,19 +53,30 @@
 
                     <select name="industry" class="filter-select" id="industryFilter" onchange="this.form.submit()">
                         <option value="All" ${industry == 'All' ? 'selected' : ''}>All Industries</option>
-                        <option value="Information Technology"        ${industry == 'Information Technology'        ? 'selected' : ''}>Information Technology</option>
-                        <option value="Technology & Digital Services" ${industry == 'Technology & Digital Services' ? 'selected' : ''}>Technology &amp; Digital Services</option>
-                        <option value="Finance & Banking"             ${industry == 'Finance & Banking'             ? 'selected' : ''}>Finance &amp; Banking</option>
-                        <option value="Software Outsourcing"          ${industry == 'Software Outsourcing'          ? 'selected' : ''}>Software Outsourcing</option>
-                        <option value="Healthcare"                    ${industry == 'Healthcare'                    ? 'selected' : ''}>Healthcare</option>
-                        <option value="Human Resources Technology"    ${industry == 'Human Resources Technology'    ? 'selected' : ''}>Human Resources Technology</option>
+                        <c:forEach items="${industriesList}" var="ind">
+                            <option value="${ind}" ${industry == ind ? 'selected' : ''}>${ind}</option>
+                        </c:forEach>
                     </select>
 
                     <select name="location" class="filter-select" id="locationFilter" onchange="this.form.submit()">
-                        <option value="All"             ${location == 'All'             ? 'selected' : ''}>All Locations</option>
-                        <option value="Ha Noi"          ${location == 'Ha Noi'          ? 'selected' : ''}>Ha Noi</option>
-                        <option value="Ho Chi Minh City" ${location == 'Ho Chi Minh City' ? 'selected' : ''}>Ho Chi Minh City</option>
-                        <option value="Da Nang"         ${location == 'Da Nang'         ? 'selected' : ''}>Da Nang</option>
+                        <option value="All" ${location == 'All' ? 'selected' : ''}>All Locations</option>
+                        <c:forEach items="${locationsList}" var="loc">
+                            <option value="${loc.locationName}" ${location == loc.locationName ? 'selected' : ''}>${loc.locationName}</option>
+                        </c:forEach>
+                    </select>
+
+                    <select name="size" class="filter-select" id="sizeFilter" onchange="this.form.submit()">
+                        <option value="All" ${size == 'All' ? 'selected' : ''}>All Sizes</option>
+                        <c:forEach items="${sizesList}" var="s">
+                            <option value="${s}" ${size == s ? 'selected' : ''}>${s}</option>
+                        </c:forEach>
+                    </select>
+
+                    <select name="status" class="filter-select" id="statusFilter" onchange="this.form.submit()">
+                        <option value="All" ${status == 'All' ? 'selected' : ''}>All Statuses</option>
+                        <c:forEach items="${statusesList}" var="st">
+                            <option value="${st}" ${status == st ? 'selected' : ''}>${st}</option>
+                        </c:forEach>
                     </select>
 
                     <button type="submit" style="padding:10px 18px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--accent));color:white;border:none;font-size:0.875rem;font-weight:600;cursor:pointer;white-space:nowrap;">Tìm kiếm</button>
@@ -84,7 +95,7 @@
                             <div class="company-card-info">
                                 <h2>${company.companyName}</h2>
                                 <p>${company.industry}</p>
-                                <span class="status-badge status-active">${company.status}</span>
+                                <span class="status-badge ${company.status == 'ACTIVE' ? 'status-active' : (company.status == 'PENDING' ? 'status-pending' : 'status-inactive')}">${company.status}</span>
                             </div>
                         </div>
                         <div class="company-card-body">
@@ -115,18 +126,18 @@
                 <div style="display:flex;align-items:center;gap:6px;">
                     <c:choose>
                         <c:when test="${currentPage == 1}"><span class="pg-btn disabled">&#8592;</span></c:when>
-                        <c:otherwise><a class="pg-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}">&#8592;</a></c:otherwise>
+                        <c:otherwise><a class="pg-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}&size=${fn:escapeXml(size)}&status=${fn:escapeXml(status)}">&#8592;</a></c:otherwise>
                     </c:choose>
                     <c:forEach var="pn" items="${pageNums}">
                         <c:choose>
                             <c:when test="${pn == -1}"><span style="padding:0 6px;color:var(--text-muted);">&#8230;</span></c:when>
                             <c:when test="${pn == currentPage}"><span class="pg-btn active">${pn}</span></c:when>
-                            <c:otherwise><a class="pg-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}">${pn}</a></c:otherwise>
+                            <c:otherwise><a class="pg-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}&size=${fn:escapeXml(size)}&status=${fn:escapeXml(status)}">${pn}</a></c:otherwise>
                         </c:choose>
                     </c:forEach>
                     <c:choose>
                         <c:when test="${currentPage == totalPages}"><span class="pg-btn disabled">&#8594;</span></c:when>
-                        <c:otherwise><a class="pg-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}">&#8594;</a></c:otherwise>
+                        <c:otherwise><a class="pg-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&industry=${fn:escapeXml(industry)}&location=${fn:escapeXml(location)}&size=${fn:escapeXml(size)}&status=${fn:escapeXml(status)}">&#8594;</a></c:otherwise>
                     </c:choose>
                 </div>
             </div>

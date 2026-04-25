@@ -240,7 +240,6 @@
                             </select>
                         </div>
 
-                        <!-- Mô tả -->
                         <div class="df-group">
                             <label class="df-label">Mô tả</label>
                             <textarea name="description" class="df-textarea char-input"
@@ -250,6 +249,17 @@
                                 <small class="df-chars">0/500</small>
                             </div>
                         </div>
+
+                        <!-- Trạng thái -->
+                        <c:if test="${department != null}">
+                            <div class="df-group" style="margin-top: 10px;">
+                                <label class="df-label">Trạng thái hoạt động</label>
+                                <select name="isActive" class="df-select">
+                                    <option value="1" ${department.isActive ? 'selected' : ''}>Đang hoạt động (ACTIVE)</option>
+                                    <option value="0" ${!department.isActive ? 'selected' : ''}>Ngừng hoạt động (INACTIVE)</option>
+                                </select>
+                            </div>
+                        </c:if>
 
                         <div class="df-section-title" style="margin-top: var(--space-md);">Thông tin liên hệ & Khác</div>
 

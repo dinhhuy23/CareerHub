@@ -32,7 +32,7 @@ public class CompanyController extends HttpServlet {
             long companyId = Long.parseLong(idParam);
             Company company = companyDAO.findById(companyId);
 
-            if (company == null) {
+            if (company == null || !"ACTIVE".equals(company.getStatus())) {
                 response.sendRedirect(request.getContextPath() + "/jobs");
                 return;
             }

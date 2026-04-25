@@ -134,6 +134,7 @@ public class RecruiterController extends HttpServlet {
         String bio          = trim(request.getParameter("bio"));
         String companyIdStr = trim(request.getParameter("companyId"));
         String deptIdStr    = trim(request.getParameter("departmentId"));
+        String status       = trim(request.getParameter("status"));
 
         boolean isCreate = (id == null || id.trim().isEmpty());
 
@@ -178,6 +179,7 @@ public class RecruiterController extends HttpServlet {
             r.setFullName(fullName);
             r.setJobTitle(jobTitle);
             r.setBio(bio);
+            r.setStatus(status.isEmpty() ? "ACTIVE" : status);
             if (!companyIdStr.isEmpty()) {
                 try { r.setCompanyId(Long.parseLong(companyIdStr)); } catch (NumberFormatException ignored) {}
             }
@@ -252,7 +254,7 @@ public class RecruiterController extends HttpServlet {
                 if (!deptIdStr.isEmpty()) r.setDepartmentId(Long.parseLong(deptIdStr));
                 r.setJobTitle(jobTitle);
                 r.setBio(bio.isEmpty() ? null : bio);
-                r.setStatus("ACTIVE");
+                r.setStatus(status.isEmpty() ? "ACTIVE" : status);
 
                 boolean ok = recruiterDAO.insert(r);
                 setToast(request, ok ? "success" : "error",
@@ -270,6 +272,9 @@ public class RecruiterController extends HttpServlet {
                 }
                 r.setJobTitle(jobTitle);
                 r.setBio(bio.isEmpty() ? null : bio);
+                if (!status.isEmpty()) {
+                    r.setStatus(status);
+                }
 
                 boolean ok = recruiterDAO.update(r);
                 setToast(request, ok ? "success" : "error",

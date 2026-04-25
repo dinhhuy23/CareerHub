@@ -279,6 +279,16 @@
                                     </select>
                                 </div>
 
+                                <c:if test="${not isCreate}">
+                                    <div class="rf-group">
+                                        <label class="rf-label">Trạng thái <span class="req">*</span></label>
+                                        <select name="status" class="rf-select" required>
+                                            <option value="ACTIVE" ${recruiter.status == 'ACTIVE' ? 'selected' : ''}>Đang hoạt động (ACTIVE)</option>
+                                            <option value="INACTIVE" ${recruiter.status == 'INACTIVE' ? 'selected' : ''}>Ngừng hoạt động (INACTIVE)</option>
+                                        </select>
+                                    </div>
+                                </c:if>
+
                             </div>
                         </div>
 

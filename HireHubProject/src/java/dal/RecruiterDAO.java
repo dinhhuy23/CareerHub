@@ -143,7 +143,7 @@ public class RecruiterDAO {
     // UPDATE – trả về true nếu thành công
     public boolean update(Recruiter r) {
         String sql = "UPDATE RecruiterProfiles "
-                + "SET CompanyId=?, DepartmentId=?, JobTitle=?, Bio=? "
+                + "SET CompanyId=?, DepartmentId=?, JobTitle=?, Bio=?, Status=? "
                 + "WHERE RecruiterId=?";
 
         try (Connection conn = dbContext.getConnection();
@@ -164,9 +164,12 @@ public class RecruiterDAO {
 
             // Bio (có thể null)
             ps.setString(4, r.getBio());
+            
+            // Status
+            ps.setString(5, r.getStatus());
 
             // Where
-            ps.setLong(5, r.getRecruiterId());
+            ps.setLong(6, r.getRecruiterId());
 
             return ps.executeUpdate() > 0;
 
