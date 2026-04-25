@@ -25,6 +25,10 @@
                    class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
                     Việc làm
                 </a>
+                <a href="${pageContext.request.contextPath}/interview-questions"
+                   class="nav-link ${currentUri.contains('/interview-questions') ? 'active' : ''}">
+                    Câu hỏi PV
+                </a>
             </c:if>
 
             <c:if test="${not empty sessionScope.userRole}">
@@ -93,13 +97,13 @@
                            class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
                             Việc làm đã lưu
                         </a>
-                        <a href="${pageContext.request.contextPath}/user/saved-jobs" 
-                           class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
-                           Việc làm đã lưu
-                        </a>
                         <a href="${pageContext.request.contextPath}/user/interview-results" 
                            class="nav-link ${currentUri.contains('/user/interview-results') ? 'active' : ''}">
                            Kết quả phỏng vấn
+                        </a>
+                        <a href="${pageContext.request.contextPath}/interview-questions"
+                           class="nav-link ${currentUri.contains('/interview-questions') ? 'active' : ''}">
+                            Câu hỏi PV
                         </a>
                     </c:otherwise>
                 </c:choose>

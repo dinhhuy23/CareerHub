@@ -71,16 +71,25 @@ public class UserCVDAO {
     }
 
     /**
-     * Lấy danh sách CV theo UserId bao gồm cả trạng thái Upload và Accepted
+     * Lấy danh sách CV theo UserId. JOIN với Applications để lấy trạng thái
+     * tuyển dụng mới nhất (OFFERED / INTERVIEWING) nhằm hiển thị "Đã tuyển" trên UI.
      */
     public List<UserCV> getCVsByUserId(int userId) {
         List<UserCV> list = new ArrayList<>();
-        // Lọc thêm điều kiện isDeleted = 0
-        String sql = "SELECT [UserCVId], [UserId], [TemplateId], [CVTitle], [TargetRole], "
-                + "[IsUpload], [IsAccepted], [IsSearchable], [CreatedAt], [UpdatedAt] "
-                + "FROM [dbo].[UserCVs] "
-                + "WHERE [UserId] = ? AND ([isDeleted] = 0 OR [isDeleted] IS NULL) " // Thêm lọc ở đây
-                + "ORDER BY [UpdatedAt] DESC";
+        // Subquery lấy StatusCode mới nhất của đơn ứng tuyển liên quan đến CV này
+        // a.ResumeId = u.UserId là mapping hiện tại trong hệ thống
+        String sql = "SELECT u.[UserCVId], u.[UserId], u.[TemplateId], u.[CVTitle], u.[TargetRole], "
+                + "u.[IsUpload], u.[IsAccepted], u.[IsSearchable], u.[CreatedAt], u.[UpdatedAt], "
+                + "( SELECT TOP 1 ast.StatusCode "
+                + "  FROM Applications a "
+                + "  JOIN ApplicationStatuses ast ON a.CurrentStatusId = ast.ApplicationStatusId "
+                + "  WHERE a.ResumeId = u.UserCVId "
+                + "    AND ast.StatusCode IN ('OFFERED', 'INTERVIEWING') "
+                + "  ORDER BY a.LastStatusChangedAt DESC "
+                + ") AS HireStatusCode "
+                + "FROM [dbo].[UserCVs] u "
+                + "WHERE u.[UserId] = ? AND (u.[isDeleted] = 0 OR u.[isDeleted] IS NULL) "
+                + "ORDER BY u.[UpdatedAt] DESC";
 
         if (this.conn == null) {
             return list;
@@ -101,6 +110,7 @@ public class UserCVDAO {
                     cv.setCreatedAt(rs.getTimestamp("CreatedAt"));
                     cv.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
                     cv.setIsSearchable(rs.getInt("IsSearchable"));
+                    cv.setHireStatusCode(rs.getString("HireStatusCode")); // null nếu chưa có đơn OFFERED/INTERVIEWING
                     list.add(cv);
                 }
             }

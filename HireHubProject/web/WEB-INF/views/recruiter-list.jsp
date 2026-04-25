@@ -191,7 +191,7 @@
 
         /* ── Row hidden by filter ── */
         tr.hidden-row { display: none; }
-<<<<<<< HEAD
+
 
         /* ── Toast notification ── */
         .toast-container {

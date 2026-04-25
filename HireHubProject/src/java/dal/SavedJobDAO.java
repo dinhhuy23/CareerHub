@@ -1,4 +1,4 @@
-﻿package dal;
+package dal;
 
 import model.Job;
 import model.SavedJob;

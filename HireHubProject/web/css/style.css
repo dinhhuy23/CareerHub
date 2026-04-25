@@ -676,6 +676,8 @@ a:hover {
     top: 0;
     z-index: 100;
     border-bottom: 1px solid var(--glass-border);
+    padding: 0 !important;
+    display: block !important;
 }
 
 .glass-nav {
@@ -685,6 +687,7 @@ a:hover {
 }
 
 .nav-container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--space-lg);
