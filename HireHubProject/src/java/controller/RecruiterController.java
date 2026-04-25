@@ -92,6 +92,7 @@ public class RecruiterController extends HttpServlet {
                 String keyword = trim(request.getParameter("keyword"));
                 String status  = nvl(request.getParameter("status"),  "All");
                 String company = nvl(request.getParameter("company"), "All");
+                String department = nvl(request.getParameter("department"), "All");
                 int rPage      = parsePage(request.getParameter("page"));
 
                 // Stats (full-DB)
@@ -99,14 +100,15 @@ public class RecruiterController extends HttpServlet {
                 int rActive = recruiterDAO.countActive();
 
                 // Filtered
-                int rFiltered   = recruiterDAO.countFiltered(keyword, status, company);
+                int rFiltered   = recruiterDAO.countFiltered(keyword, status, company, department);
                 int rTotalPages = Math.max(1, (int) Math.ceil((double) rFiltered / PAGE_SIZE));
                 rPage = Math.min(rPage, rTotalPages);
 
-                request.setAttribute("list",         recruiterDAO.getFiltered(keyword, status, company, rPage, PAGE_SIZE));
+                request.setAttribute("list",         recruiterDAO.getFiltered(keyword, status, company, department, rPage, PAGE_SIZE));
                 request.setAttribute("keyword",      keyword);
                 request.setAttribute("statusFilter", status);
                 request.setAttribute("companyFilter",company);
+                request.setAttribute("departmentFilter", department);
                 request.setAttribute("currentPage",  rPage);
                 request.setAttribute("totalPages",   rTotalPages);
                 request.setAttribute("totalItems",   rFiltered);
@@ -114,6 +116,7 @@ public class RecruiterController extends HttpServlet {
                 request.setAttribute("activeCount",  rActive);
                 request.setAttribute("pageNums",     buildPageNums(rPage, rTotalPages));
                 request.setAttribute("allCompanies", companyDAO.getAll());
+                request.setAttribute("allDepartments", departmentDAO.getAll());
                 request.getRequestDispatcher("/WEB-INF/views/recruiter-list.jsp")
                        .forward(request, response);
         }

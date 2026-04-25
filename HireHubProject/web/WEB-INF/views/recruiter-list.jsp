@@ -191,8 +191,8 @@
 
         /* ── Row hidden by filter ── */
         tr.hidden-row { display: none; }
-<<<<<<< HEAD
 
+<<<<<HEAD
         /* ── Toast notification ── */
         .toast-container {
             position: fixed; top: 24px; right: 24px; z-index: 9999;
@@ -340,6 +340,14 @@
                         </option>
                     </c:forEach>
                 </select>
+                <select name="department" class="rl-filter" id="departmentFilter" onchange="this.form.submit()">
+                    <option value="All" ${departmentFilter == 'All' ? 'selected' : ''}>Tất cả phòng ban</option>
+                    <c:forEach var="d" items="${allDepartments}">
+                        <option value="${fn:escapeXml(d.departmentName)}" ${departmentFilter == d.departmentName ? 'selected' : ''}>
+                            <c:out value="${d.departmentName}"/>
+                        </option>
+                    </c:forEach>
+                </select>
                 <button type="submit" class="btn btn-primary" style="padding:10px 18px;white-space:nowrap;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:5px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Tìm kiếm
                 </button>
@@ -456,7 +464,7 @@
                             <span class="page-btn disabled">&#8592;</span>
                         </c:when>
                         <c:otherwise>
-                            <a class="page-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8592;</a>
+                            <a class="page-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}&department=${fn:escapeXml(departmentFilter)}">&#8592;</a>
                         </c:otherwise>
                     </c:choose>
                     <%-- Page numbers --%>
@@ -464,7 +472,7 @@
                         <c:choose>
                             <c:when test="${pn == -1}"><span class="page-ellipsis">&#8230;</span></c:when>
                             <c:when test="${pn == currentPage}"><span class="page-btn active">${pn}</span></c:when>
-                            <c:otherwise><a class="page-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">${pn}</a></c:otherwise>
+                            <c:otherwise><a class="page-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}&department=${fn:escapeXml(departmentFilter)}">${pn}</a></c:otherwise>
                         </c:choose>
                     </c:forEach>
                     <%-- Next --%>
@@ -473,7 +481,7 @@
                             <span class="page-btn disabled">&#8594;</span>
                         </c:when>
                         <c:otherwise>
-                            <a class="page-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8594;</a>
+                            <a class="page-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}&department=${fn:escapeXml(departmentFilter)}">&#8594;</a>
                         </c:otherwise>
                     </c:choose>
                 </div>

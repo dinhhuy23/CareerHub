@@ -35,6 +35,7 @@ public class RecruiterDAO {
                 r.setRecruiterId(rs.getLong("RecruiterId"));
                 r.setUserId(rs.getLong("UserId"));
                 r.setCompanyId(rs.getLong("CompanyId"));
+                r.setDepartmentId(rs.getLong("DepartmentId"));
                 r.setJobTitle(rs.getString("JobTitle"));
                 r.setStatus(rs.getString("Status"));
                 r.setCompanyName(rs.getString("CompanyName"));
@@ -175,6 +176,42 @@ public class RecruiterDAO {
         }
     }
 
+    // Xóa departmentId khỏi tất cả recruiters của department này
+    public void clearDepartment(long departmentId) {
+        String sql = "UPDATE RecruiterProfiles SET DepartmentId = NULL WHERE DepartmentId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, departmentId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Gán departmentId cho một danh sách recruiter
+    public void assignDepartment(long departmentId, String[] recruiterIds) {
+        if (recruiterIds == null || recruiterIds.length == 0) return;
+        
+        StringBuilder sql = new StringBuilder("UPDATE RecruiterProfiles SET DepartmentId = ? WHERE RecruiterId IN (");
+        for (int i = 0; i < recruiterIds.length; i++) {
+            sql.append("?");
+            if (i < recruiterIds.length - 1) sql.append(",");
+        }
+        sql.append(")");
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            ps.setLong(1, departmentId);
+            for (int i = 0; i < recruiterIds.length; i++) {
+                ps.setLong(i + 2, Long.parseLong(recruiterIds[i]));
+            }
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public List<Recruiter> getRecruitersByCompanyId(long companyId) {
         List<Recruiter> list = new ArrayList<>();
 
@@ -272,7 +309,7 @@ public class RecruiterDAO {
 
     /** Trả về một trang recruiter đã lọc (keyword, status, companyName). */
     public List<Recruiter> getFiltered(String keyword, String status,
-                                       String company, int page, int pageSize) {
+                                       String company, String department, int page, int pageSize) {
         List<Recruiter> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT r.*, c.CompanyName, d.DepartmentName, u.FullName, u.Email " +
@@ -281,7 +318,7 @@ public class RecruiterDAO {
             "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId " +
             "LEFT JOIN Users u ON r.UserId = u.UserId WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-        applyRecruiterFilters(sql, params, keyword, status, company);
+        applyRecruiterFilters(sql, params, keyword, status, company, department);
         sql.append("ORDER BY r.RecruiterId DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         params.add((page - 1) * pageSize);
         params.add(pageSize);
@@ -309,13 +346,14 @@ public class RecruiterDAO {
     }
 
     /** Đếm recruiter thỏa filter – dùng tính totalPages. */
-    public int countFiltered(String keyword, String status, String company) {
+    public int countFiltered(String keyword, String status, String company, String department) {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) FROM RecruiterProfiles r " +
             "LEFT JOIN Companies c ON r.CompanyId = c.CompanyId " +
+            "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId " +
             "LEFT JOIN Users u ON r.UserId = u.UserId WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-        applyRecruiterFilters(sql, params, keyword, status, company);
+        applyRecruiterFilters(sql, params, keyword, status, company, department);
 
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -327,7 +365,7 @@ public class RecruiterDAO {
     }
 
     private void applyRecruiterFilters(StringBuilder sql, List<Object> params,
-                                       String keyword, String status, String company) {
+                                       String keyword, String status, String company, String department) {
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ? OR c.CompanyName LIKE ?) ");
             params.add("%" + keyword.trim() + "%");
@@ -341,6 +379,10 @@ public class RecruiterDAO {
         if (company != null && !company.isEmpty() && !"All".equals(company)) {
             sql.append("AND c.CompanyName = ? ");
             params.add(company);
+        }
+        if (department != null && !department.isEmpty() && !"All".equals(department)) {
+            sql.append("AND d.DepartmentName = ? ");
+            params.add(department);
         }
     }
 }

@@ -2,6 +2,7 @@ package controller;
 
 import dal.CompanyDAO;
 import dal.DepartmentDAO;
+import dal.RecruiterDAO;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ public class AdminDepartmentController extends HttpServlet {
 
     private final DepartmentDAO departmentDAO = new DepartmentDAO();
     private final CompanyDAO companyDAO = new CompanyDAO();
+    private final RecruiterDAO recruiterDAO = new RecruiterDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -28,13 +30,21 @@ public class AdminDepartmentController extends HttpServlet {
         switch (action) {
             case "create":
                 request.setAttribute("companies", companyDAO.getAll());
+                request.setAttribute("allRecruiters", recruiterDAO.getAll());
                 request.getRequestDispatcher("/WEB-INF/views/department-form.jsp").forward(request, response);
+                break;
+
+            case "view":
+                long viewId = Long.parseLong(request.getParameter("id"));
+                request.setAttribute("department", departmentDAO.getById(viewId));
+                request.getRequestDispatcher("/WEB-INF/views/department-detail.jsp").forward(request, response);
                 break;
 
             case "edit":
                 long editId = Long.parseLong(request.getParameter("id"));
                 request.setAttribute("department", departmentDAO.getById(editId));
                 request.setAttribute("companies", companyDAO.getAll());
+                request.setAttribute("allRecruiters", recruiterDAO.getAll());
                 request.getRequestDispatcher("/WEB-INF/views/department-form.jsp").forward(request, response);
                 break;
 
@@ -82,6 +92,11 @@ public class AdminDepartmentController extends HttpServlet {
         String name = request.getParameter("departmentName");
         String desc = request.getParameter("description");
         String companyIdStr = request.getParameter("companyId");
+        
+        String managerName = request.getParameter("managerName");
+        String contactEmail = request.getParameter("contactEmail");
+        String phoneNumber = request.getParameter("phoneNumber");
+        String location = request.getParameter("location");
 
         // Validate
         String errorMsg = null;
@@ -102,19 +117,35 @@ public class AdminDepartmentController extends HttpServlet {
         if (companyIdStr != null && !companyIdStr.isEmpty()) {
             try { d.setCompanyId(Long.parseLong(companyIdStr)); } catch (NumberFormatException ignored) {}
         }
+        
+        d.setManagerName(managerName != null ? managerName.trim() : "");
+        d.setContactEmail(contactEmail != null ? contactEmail.trim() : "");
+        d.setPhoneNumber(phoneNumber != null ? phoneNumber.trim() : "");
+        d.setLocation(location != null ? location.trim() : "");
+
+        String[] recruiterIds = request.getParameterValues("recruiterIds");
 
         if (errorMsg != null) {
             request.setAttribute("error", errorMsg);
             request.setAttribute("companies", companyDAO.getAll());
+            request.setAttribute("allRecruiters", recruiterDAO.getAll());
             request.setAttribute("department", d);
             request.getRequestDispatcher("/WEB-INF/views/department-form.jsp").forward(request, response);
             return;
         }
 
         if (id == null || id.isEmpty()) {
-            departmentDAO.insert(d);
+            long newDeptId = departmentDAO.insert(d);
+            if (newDeptId > 0 && recruiterIds != null && recruiterIds.length > 0) {
+                recruiterDAO.assignDepartment(newDeptId, recruiterIds);
+            }
         } else {
+            long deptId = d.getDepartmentId();
             departmentDAO.update(d);
+            recruiterDAO.clearDepartment(deptId);
+            if (recruiterIds != null && recruiterIds.length > 0) {
+                recruiterDAO.assignDepartment(deptId, recruiterIds);
+            }
         }
 
         response.sendRedirect(request.getContextPath() + "/admin/departments");

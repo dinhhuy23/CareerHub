@@ -310,17 +310,10 @@ public class JobDAO {
                 ps.setObject(i + 1, params.get(i));
             }
 
-                + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' "
-                + "ORDER BY j.CreatedAt DESC";
-
-
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, trueRecruiterId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapResultSetToJob(rs));
                 }
-
             }
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error finding filtered jobs by employer ID", e);
@@ -342,17 +335,6 @@ public class JobDAO {
                         + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
                         + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
                         + "WHERE j.Status = 'PUBLISHED' ");
-                "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName "
-
-
-                + "FROM Jobs j "
-                + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
-                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
-                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
-                + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-                + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
-                + "WHERE j.Status = 'PUBLISHED' "
-        );
 
 
         List<Object> params = new ArrayList<>();

@@ -28,6 +28,10 @@ public class DepartmentDAO {
                 d.setIsActive(rs.getBoolean("IsActive"));
                 d.setCompanyId(rs.getLong("CompanyId"));
                 d.setCompanyName(rs.getString("CompanyName"));
+                d.setManagerName(rs.getString("ManagerName"));
+                d.setContactEmail(rs.getString("ContactEmail"));
+                d.setPhoneNumber(rs.getString("PhoneNumber"));
+                d.setLocation(rs.getString("Location"));
                 list.add(d);
             }
 
@@ -51,6 +55,10 @@ public class DepartmentDAO {
                 d.setDepartmentId(rs.getLong("DepartmentId"));
                 d.setDepartmentName(rs.getString("DepartmentName"));
                 d.setCompanyId(rs.getLong("CompanyId"));
+                d.setManagerName(rs.getString("ManagerName"));
+                d.setContactEmail(rs.getString("ContactEmail"));
+                d.setPhoneNumber(rs.getString("PhoneNumber"));
+                d.setLocation(rs.getString("Location"));
                 list.add(d);
             }
 
@@ -78,6 +86,10 @@ public class DepartmentDAO {
                 d.setIsActive(rs.getBoolean("IsActive"));
                 d.setCompanyId(rs.getLong("CompanyId"));
                 d.setCompanyName(rs.getString("CompanyName"));
+                d.setManagerName(rs.getString("ManagerName"));
+                d.setContactEmail(rs.getString("ContactEmail"));
+                d.setPhoneNumber(rs.getString("PhoneNumber"));
+                d.setLocation(rs.getString("Location"));
                 return d;
             }
 
@@ -88,31 +100,46 @@ public class DepartmentDAO {
     }
 
     // INSERT
-    public void insert(Department d) {
-        String sql = "INSERT INTO Departments (DepartmentName, Description, CompanyId, IsActive) VALUES (?, ?, ?, 1)";
+    public long insert(Department d) {
+        String sql = "INSERT INTO Departments (DepartmentName, Description, CompanyId, ManagerName, ContactEmail, PhoneNumber, Location, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, 1)";
         try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, d.getDepartmentName());
             ps.setString(2, d.getDescription());
             ps.setLong(3, d.getCompanyId());
+            ps.setString(4, d.getManagerName());
+            ps.setString(5, d.getContactEmail());
+            ps.setString(6, d.getPhoneNumber());
+            ps.setString(7, d.getLocation());
             ps.executeUpdate();
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return -1;
     }
 
     // UPDATE
     public void update(Department d) {
-        String sql = "UPDATE Departments SET DepartmentName = ?, Description = ?, CompanyId = ? WHERE DepartmentId = ?";
+        String sql = "UPDATE Departments SET DepartmentName = ?, Description = ?, CompanyId = ?, ManagerName = ?, ContactEmail = ?, PhoneNumber = ?, Location = ? WHERE DepartmentId = ?";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, d.getDepartmentName());
             ps.setString(2, d.getDescription());
             ps.setLong(3, d.getCompanyId());
-            ps.setLong(4, d.getDepartmentId());
+            ps.setString(4, d.getManagerName());
+            ps.setString(5, d.getContactEmail());
+            ps.setString(6, d.getPhoneNumber());
+            ps.setString(7, d.getLocation());
+            ps.setLong(8, d.getDepartmentId());
             ps.executeUpdate();
 
         } catch (Exception e) {
@@ -183,6 +210,10 @@ public class DepartmentDAO {
                 d.setIsActive(rs.getBoolean("IsActive"));
                 d.setCompanyId(rs.getLong("CompanyId"));
                 d.setCompanyName(rs.getString("CompanyName"));
+                d.setManagerName(rs.getString("ManagerName"));
+                d.setContactEmail(rs.getString("ContactEmail"));
+                d.setPhoneNumber(rs.getString("PhoneNumber"));
+                d.setLocation(rs.getString("Location"));
                 list.add(d);
             }
         } catch (Exception e) { e.printStackTrace(); }

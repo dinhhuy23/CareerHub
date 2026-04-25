@@ -12,6 +12,12 @@ public class Department {
     // Extra fields (JOIN)
     private long companyId;
     private String companyName;
+    
+    // New fields
+    private String managerName;
+    private String contactEmail;
+    private String phoneNumber;
+    private String location;
 
     public Department() {}
 
@@ -43,4 +49,16 @@ public class Department {
 
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
+    
+    public String getManagerName() { return managerName; }
+    public void setManagerName(String managerName) { this.managerName = managerName; }
+
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
+
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 }
