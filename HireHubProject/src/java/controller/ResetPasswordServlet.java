@@ -4,8 +4,6 @@
  */
 package controller;
 
-import dal.JobDAO;
-import dal.ReportDAO;
 import dal.UserDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -14,16 +12,17 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import java.util.List;
-import model.Report;
+import model.User;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
  * @author ADMIN
  */
-@WebServlet(name = "AdminServlet", urlPatterns = {"/admin"})
-public class AdminServlet extends HttpServlet {
+@WebServlet(name = "ResetPasswordServlet", urlPatterns = {"/reset-password"})
+public class ResetPasswordServlet extends HttpServlet {
+
+    UserDAO userDAO = new UserDAO();
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -42,10 +41,10 @@ public class AdminServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet AdminServlet</title>");
+            out.println("<title>Servlet ResetPasswordServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet AdminServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet ResetPasswordServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -63,82 +62,69 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+        String token = request.getParameter("token");
 
-//         🔐 CHECK LOGIN
-        if (session == null || session.getAttribute("userRole") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+        User user = userDAO.findByToken(token);
+
+        if (user == null) {
+            response.getWriter().println("Link hết hạn hoặc sai!");
             return;
         }
+        request.setAttribute("email", user.getEmail());
+        request.setAttribute("token", token);
+        request.getRequestDispatcher("reset-password.jsp").forward(request, response);
+    }
 
-        String role = (String) session.getAttribute("userRole");
-
-//         🔐 CHECK ADMIN
-//        System.out.println("SESSION ROLE = " + session.getAttribute("userRole"));
-        if (!"ADMIN".equals(role)) {
-            response.sendRedirect(request.getContextPath() + "/jobs");
-            return;
-        }
-
-        // 👉 load data
-        UserDAO userDAO = new UserDAO();
-        JobDAO jobDAO = new JobDAO();
-        ReportDAO reportDAO = new ReportDAO();
-
-        int totalUsers = userDAO.getAllUsers().size();
-        int totalJobs = jobDAO.getAllJobs().size();
-        int totalReports = reportDAO.getAll().size();
-
-        List<Report> reports = reportDAO.getAll();
-
-        // 👉 set attribute
-        request.setAttribute("totalUsers", totalUsers);
-        request.setAttribute("totalJobs", totalJobs);
-        request.setAttribute("totalReports", totalReports);
-        request.setAttribute("reports", reports);
-
-        // 👉 forward
-        request.getRequestDispatcher("admin_dashboard.jsp").forward(request, response);
-    
-
-
-    } 
-
-    /** 
+    /**
      * Handles the HTTP <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
     @Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        String action = request.getParameter("action");
-        
-        // 👉 xử lý report
-        if ("updateReport".equals(action)) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-            long reportId = Long.parseLong(request.getParameter("id"));
-            String status = request.getParameter("status");
+        String token = request.getParameter("token");
+        String newPass = request.getParameter("password");
+        String confirm = request.getParameter("confirm");
 
-            HttpSession session = request.getSession();
-            long adminId = (Long) session.getAttribute("userId");
+        User user = userDAO.findByToken(token);
 
-            ReportDAO dao = new ReportDAO();
-            dao.updateStatus(reportId, status, adminId);
+        if (user == null) {
+            request.setAttribute("error", "Token không hợp lệ!");
+            request.getRequestDispatcher("reset-password.jsp").forward(request, response);
+            return;
         }
 
-        response.sendRedirect("AdminServlet");
-    
+// ❌ mật khẩu không khớp
+        if (!newPass.equals(confirm)) {
+            request.setAttribute("error", "Mật khẩu nhập lại không khớp!");
+            request.setAttribute("token", token);
+            request.setAttribute("email", user.getEmail());
+            request.getRequestDispatcher("reset-password.jsp").forward(request, response);
+            return;
+        }
+
+// 🔐 hash password
+        String hashed = BCrypt.hashpw(newPass, BCrypt.gensalt());
+
+        userDAO.updatePassword(user.getUserId(), hashed);
+
+        request.setAttribute("success", "Đổi mật khẩu thành công!");
+        request.getRequestDispatcher("login.jsp").forward(request, response);
+
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override
-public String getServletInfo() {
+    public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 

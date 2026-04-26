@@ -38,7 +38,131 @@ public class NotificationDAO {
         }
         return false;
     }
+  public List<Notification> searchNotifications(String keyword, int offset, int limit) {
+    List<Notification> list = new ArrayList<>();
 
+    String sql = "SELECT * FROM Notifications "
+            + "WHERE Title LIKE ? "
+            + "ORDER BY CreatedAt DESC "
+            + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try (Connection con = dbContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, "%" + keyword + "%");
+        ps.setInt(2, offset);
+        ps.setInt(3, limit);
+
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Notification n = new Notification();
+
+            n.setNotificationId(rs.getLong("NotificationId"));
+            n.setTitle(rs.getString("Title"));
+            n.setMessage(rs.getString("Content"));
+            n.setCreatedAt(rs.getTimestamp("CreatedAt"));
+
+            list.add(n);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+public int getTotalSearchNotifications(String keyword) {
+    String sql = "SELECT COUNT(*) FROM Notifications WHERE Title LIKE ?";
+
+    try (Connection con = dbContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, "%" + keyword + "%");
+
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+
+    public List<Notification> getNotificationsPaging(int offset, int limit) {
+    List<Notification> list = new ArrayList<>();
+
+    String sql = "SELECT * FROM Notifications "
+               + "ORDER BY CreatedAt DESC "
+               + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, offset);
+        ps.setInt(2, limit);
+
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            Notification n = new Notification();
+            n.setNotificationId(rs.getLong("NotificationId"));
+            n.setTitle(rs.getString("Title"));
+            n.setMessage(rs.getString("Content"));
+            n.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            list.add(n);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+    public int getTotalNotifications() {
+    String sql = "SELECT COUNT(*) FROM Notifications";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+
+public List<Notification> getAllNotifications() {
+    List<Notification> list = new ArrayList<>();
+
+    String sql = "SELECT * FROM Notifications ORDER BY CreatedAt DESC";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+            Notification n = new Notification();
+            n.setNotificationId(rs.getLong("NotificationId"));
+            n.setTitle(rs.getString("Title"));
+            n.setMessage(rs.getString("Content"));
+            n.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            list.add(n);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
     // ==========================================
     // Lấy tất cả thông báo của người dùng (mới nhất trước)
     // ==========================================

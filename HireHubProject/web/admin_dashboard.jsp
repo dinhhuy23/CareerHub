@@ -74,104 +74,118 @@
                         <a href="jobmanager" class="btn btn-primary">Quản lý Job</a>
                     </div>
                     <div class="stat-card glass-card">
-                        <div class="card-icon">🚨</div>
-                        <h3>Reports</h3>
-                        <p class="stat-value">${totalReports}</p>
-                        <a href="report" class="btn btn-primary">Xem Reports</a>
-                    </div>    
+                        <h3>Quản lí nhà tuyển dụng</h3>
+                        <a href="/HireHubProject/admin/recruiters" class="btn btn-primary">Xem</a>
+                    </div>  
+                    <div class="stat-card glass-card">
+                        <h3>Quản   lí   Công  ty     </h3>
+                        <a href="company" class="btn btn-primary">Xem</a>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <h3>Quản lí CV        </h3>
+                        <a href="/user/cv/manage_cv" class="btn btn-primary">Xem</a>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <h3>Quản lí Recruiters     </h3>
+                        <a href="/admin/recruiters" class="btn btn-primary">Xem</a>
+                    </div>
                 </div>
-
-                <!-- Quick Actions -->
                 <div class="section-header">
-                    <h2>Thao tác nhanh</h2>
-                </div>
-
-                <div class="actions-grid">
-
-                    <a href="${pageContext.request.contextPath}/usermanager" class="action-card glass-card">
-                        <h3>➕ Tạo User</h3>
-                        <p>Thêm người dùng mới</p>
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/jobmanager" class="action-card glass-card">
-                        <h3>➕ Tạo Job</h3>
-                        <p>Thêm công việc mới</p>
-                    </a>
-                    <div class="action-card glass-card" onclick="openNotiModal()">
-                        <h3>➕ Tạo Thông báo</h3>
-                        <p>Gửi thông báo tới người dùng</p>
-                    </div>
-                </div>
-
-                <!-- Activity -->
-                <div class="section-header">
-                    <h2>Hoạt động gần đây</h2>
-                </div>
-
-                <div class="token-card glass-card">
-                    <p>✔ Admin đã đăng nhập</p>
-                    <p>✔ Hệ thống hoạt động bình thường</p>
-                    <p>✔ Có thể quản lý user & job</p>
-                </div>
-
+                <h2>Thông Báo</h2>
             </div>
-        </main>
-        <!-- 🔔 Notification Modal -->
-        <div id="notiModal" class="modal-overlay" style="display:none;" onclick="closeNotiModal()">
 
-            <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="actions-grid">
 
-                <h2 style="text-align:center; margin-bottom:15px;">🔔 Tạo Thông báo</h2>
+                <a href="notification?view=sent" class="action-card glass-card">
+                    <h3>Thông báo</h3>
+                    <p>Tất cả thông báo đã gửi</p>
+                </a>
 
-                <form id="notiForm" action="notification" method="post">
-
-                    <input type="hidden" name="action" value="create">
-
-                    <div class="form-group">
-                        <label>Tiêu đề</label>
-                        <input type="text" name="title" class="form-input" required minlength="3">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Nội dung</label>
-                        <textarea name="content" rows="4" class="form-input" required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Gửi tới</label>
-                        <select name="role" class="form-input">
-                            <option value="ALL">🌍 Tất cả hệ thống</option>
-                            <option value="USER">User</option>
-                            <option value="RECRUITER">Recruiter</option>
-                            <option value="null">riêng</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Hoặc gửi riêng userId</label>
-                        <input type="number" name="userId" class="form-input" placeholder="Nhập userId (nếu muốn gửi riêng)">
-                    </div>
-
-                    <div style="text-align:center; margin-top:15px;">
-                        <button type="submit" class="btn btn-primary">🚀 Gửi</button>
-                        <button type="button" class="btn btn-outline" onclick="closeNotiModal()">Huỷ</button>
-                    </div>
-
-                </form>
-
+                <div class="action-card glass-card" onclick="openNotiModal()">
+                    <h3>➕ Tạo Thông báo</h3>
+                    <p>Gửi thông báo tới người dùng</p>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="card-icon">🚨</div>
+                    <h3>Reports</h3>
+                    <p class="stat-value">${totalReports}</p>
+                    <a href="report" class="btn btn-primary">Xem Reports</a>
+                </div>
+            </div>        
             </div>
-        </div>             
-    </body>
-    <script>
-        function openNotiModal() {
-            document.getElementById("notiModal").style.display = "flex";
-        }
 
-        function closeNotiModal() {
-            document.getElementById("notiModal").style.display = "none";
-        }
-        document.getElementById("notiForm").addEventListener("submit", function () {
-            closeNotiModal();
-        });
-    </script>
+            <!-- Quick Actions -->
+            
+
+            <!-- Activity -->
+            <div class="section-header">
+                <h2>Hoạt động gần đây</h2>
+            </div>
+
+            <div class="token-card glass-card">
+                <p>✔ Admin đã đăng nhập</p>
+                <p>✔ Hệ thống hoạt động bình thường</p>
+                <p>✔ Có thể quản lý user & job</p>
+            </div>
+
+        </div>
+    </main>
+    <!-- 🔔 Notification Modal -->
+    <div id="notiModal" class="modal-overlay" style="display:none;" onclick="closeNotiModal()">
+
+        <div class="modal-box" onclick="event.stopPropagation()">
+
+            <h2 style="text-align:center; margin-bottom:15px;">🔔 Tạo Thông báo</h2>
+
+            <form id="notiForm" action="notification" method="post">
+
+                <input type="hidden" name="action" value="create">
+
+                <div class="form-group">
+                    <label>Tiêu đề</label>
+                    <input type="text" name="title" class="form-input" required minlength="3">
+                </div>
+
+                <div class="form-group">
+                    <label>Nội dung</label>
+                    <textarea name="content" rows="4" class="form-input" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Gửi tới</label>
+                    <select name="role" class="form-input">
+                        <option value="ALL">🌍 Tất cả hệ thống</option>
+                        <option value="USER">User</option>
+                        <option value="RECRUITER">Recruiter</option>
+                        <option value="null">riêng</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Hoặc gửi riêng userId</label>
+                    <input type="number" name="userId" class="form-input" placeholder="Nhập userId (nếu muốn gửi riêng)">
+                </div>
+
+                <div style="text-align:center; margin-top:15px;">
+                    <button type="submit" class="btn btn-primary">🚀 Gửi</button>
+                    <button type="button" class="btn btn-outline" onclick="closeNotiModal()">Huỷ</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>             
+</body>
+<script>
+    function openNotiModal() {
+        document.getElementById("notiModal").style.display = "flex";
+    }
+
+    function closeNotiModal() {
+        document.getElementById("notiModal").style.display = "none";
+    }
+    document.getElementById("notiForm").addEventListener("submit", function () {
+        closeNotiModal();
+    });
+</script>
 </html>
