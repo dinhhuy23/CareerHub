@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import model.Company;
+import model.Location;
 
 public class CompanyDAO {
 
@@ -15,7 +16,7 @@ public class CompanyDAO {
 
     public List<Company> getAll() {
         List<Company> list = new ArrayList<>();
-        String sql = "SELECT CompanyId, CompanyName FROM Companies";
+        String sql = "SELECT C.*, L.LocationName FROM Companies C left join Locations L on C.LocationId = L.LocationId";
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
@@ -23,6 +24,15 @@ public class CompanyDAO {
                 Company c = new Company();
                 c.setCompanyId(rs.getLong("CompanyId"));
                 c.setCompanyName(rs.getString("CompanyName"));
+                c.setIndustry(rs.getString("Industry"));
+                c.setCompanySize(rs.getString("CompanySize"));
+                Location location = new Location();
+                location.setLocationName(rs.getString("LocationName"));
+                c.setLocation(location);
+                c.setWebsiteUrl(rs.getString("WebsiteUrl"));
+                c.setStatus(rs.getString("Status"));
+                c.setLogoUrl(rs.getString("LogoUrl"));
+                c.setDescription(rs.getString("Description"));
                 list.add(c);
             }
 
@@ -39,8 +49,8 @@ public class CompanyDAO {
                 + "FoundedYear, CompanySize, Industry, AddressLine, LocationId, Status, CreatedByUserId) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try {
-            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, company.getCompanyName());
             ps.setString(2, company.getTaxCode());
@@ -76,9 +86,8 @@ public class CompanyDAO {
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    return rs.getLong(1);
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) return rs.getLong(1);
                 }
             }
         } catch (Exception e) {
@@ -157,8 +166,8 @@ public class CompanyDAO {
                 + "UpdatedAt = SYSDATETIME() "
                 + "WHERE CompanyId = ?";
 
-        try {
-            PreparedStatement ps = dbContext.getConnection().prepareStatement(sql);
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, company.getCompanyName());
             ps.setString(2, company.getTaxCode());
@@ -198,5 +207,102 @@ public class CompanyDAO {
 
     public Company findById(long id) {
         return getCompanyById(id);
+    }
+
+    // ── Pagination & filtering ────────────────────────────────────────────────
+
+    /** Total companies in DB – dùng cho stats strip (không phụ thuộc filter). */
+    public int countAll() {
+        String sql = "SELECT COUNT(*) FROM Companies";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    /** Active companies – dùng cho stats strip. */
+    public int countActive() {
+        String sql = "SELECT COUNT(*) FROM Companies WHERE Status = 'ACTIVE'";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    /**
+     * Trả về một trang công ty đã được lọc.
+     * Truyền null/""/""All"" để bỏ qua một điều kiện lọc.
+     */
+    public List<Company> getFiltered(String keyword, String industry,
+                                     String location, int page, int pageSize) {
+        List<Company> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT C.*, L.LocationName FROM Companies C " +
+            "LEFT JOIN Locations L ON C.LocationId = L.LocationId WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        applyCompanyFilters(sql, params, keyword, industry, location);
+        sql.append("ORDER BY C.CompanyId DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add((page - 1) * pageSize);
+        params.add(pageSize);
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Company c = new Company();
+                c.setCompanyId(rs.getLong("CompanyId"));
+                c.setCompanyName(rs.getString("CompanyName"));
+                c.setIndustry(rs.getString("Industry"));
+                c.setCompanySize(rs.getString("CompanySize"));
+                Location loc = new Location();
+                loc.setLocationName(rs.getString("LocationName"));
+                c.setLocation(loc);
+                c.setWebsiteUrl(rs.getString("WebsiteUrl"));
+                c.setStatus(rs.getString("Status"));
+                c.setLogoUrl(rs.getString("LogoUrl"));
+                c.setDescription(rs.getString("Description"));
+                list.add(c);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    /** Đếm số công ty thỏa filter – dùng để tính totalPages. */
+    public int countFiltered(String keyword, String industry, String location) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) FROM Companies C " +
+            "LEFT JOIN Locations L ON C.LocationId = L.LocationId WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        applyCompanyFilters(sql, params, keyword, industry, location);
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    private void applyCompanyFilters(StringBuilder sql, List<Object> params,
+                                     String keyword, String industry, String location) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (C.CompanyName LIKE ? OR C.Industry LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+        if (industry != null && !industry.isEmpty() && !"All".equals(industry)) {
+            sql.append("AND C.Industry = ? ");
+            params.add(industry);
+        }
+        if (location != null && !location.isEmpty() && !"All".equals(location)) {
+            sql.append("AND L.LocationName = ? ");
+            params.add(location);
+        }
     }
 }

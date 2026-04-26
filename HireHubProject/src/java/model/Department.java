@@ -1,15 +1,7 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
 import java.sql.Timestamp;
 
-/**
- *
- * @author Admin
- */
 public class Department {
     private long departmentId;
     private String departmentName;
@@ -17,8 +9,11 @@ public class Department {
     private boolean isActive;
     private Timestamp createdAt;
 
-    public Department() {
-    }
+    // Extra fields (JOIN)
+    private long companyId;
+    private String companyName;
+
+    public Department() {}
 
     public Department(long departmentId, String departmentName, String description, boolean isActive, Timestamp createdAt) {
         this.departmentId = departmentId;
@@ -28,44 +23,24 @@ public class Department {
         this.createdAt = createdAt;
     }
 
-    public long getDepartmentId() {
-        return departmentId;
-    }
+    public long getDepartmentId() { return departmentId; }
+    public void setDepartmentId(long departmentId) { this.departmentId = departmentId; }
 
-    public void setDepartmentId(long departmentId) {
-        this.departmentId = departmentId;
-    }
+    public String getDepartmentName() { return departmentName; }
+    public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
 
-    public String getDepartmentName() {
-        return departmentName;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setDepartmentName(String departmentName) {
-        this.departmentName = departmentName;
-    }
+    public boolean isIsActive() { return isActive; }
+    public void setIsActive(boolean isActive) { this.isActive = isActive; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public long getCompanyId() { return companyId; }
+    public void setCompanyId(long companyId) { this.companyId = companyId; }
 
-    public boolean isIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-    
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
 }

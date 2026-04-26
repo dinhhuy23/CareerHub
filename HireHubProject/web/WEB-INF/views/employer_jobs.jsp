@@ -414,6 +414,47 @@
                 </div>
             </div>
 
+            <!-- Thanh Filter -->
+            <div style="background: var(--bg-secondary); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <form action="${pageContext.request.contextPath}/employer/jobs" method="GET" style="display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap;">
+                    
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                        <span style="font-weight: 700; color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Bộ lọc:</span>
+                    </div>
+
+                    <!-- Lọc theo Trạng thái -->
+                    <select name="status" class="form-control" style="min-width: 180px; background: var(--bg-primary);" onchange="this.form.submit()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="PUBLISHED" ${searchStatus == 'PUBLISHED' ? 'selected' : ''}>Đang mở (Published)</option>
+                        <option value="DRAFT" ${searchStatus == 'DRAFT' ? 'selected' : ''}>Bản nháp (Draft)</option>
+                        <option value="CLOSED" ${searchStatus == 'CLOSED' ? 'selected' : ''}>Đã đóng (Closed)</option>
+                    </select>
+
+                    <!-- Lọc theo Text (Từ khóa) -->
+                    <div style="position: relative; flex: 1; min-width: 250px;">
+                        <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <input type="text" name="keyword" class="form-control" placeholder="Tìm theo tên công việc..." value="${searchKeyword}" style="width: 100%; padding-left: 40px; background: var(--bg-primary);">
+                    </div>
+                    
+                    <!-- Nút Tìm kiếm -->
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Tìm kiếm</button>
+                    
+                    <!-- Nút Xóa lọc -->
+                    <c:if test="${not empty searchStatus or not empty searchKeyword}">
+                        <a href="${pageContext.request.contextPath}/employer/jobs" 
+                           style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 4px; padding: 10px 16px; border-radius: 8px; background: var(--bg-primary); border: 1px solid var(--border-color); transition: all 0.2s;"
+                           onmouseover="this.style.color='var(--primary)'; this.style.borderColor='var(--primary)'"
+                           onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--border-color)'">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            Xóa lọc
+                        </a>
+                    </c:if>
+                </form>
+            </div>
+
             <div class="glass-card jobs-board">
                 <div class="jobs-board-header">
                     <div>
@@ -623,6 +664,13 @@
                                 </div>
                             </c:forEach>
                         </div>
+                        
+                        <%-- Component Phân trang --%>
+                        <jsp:include page="/WEB-INF/views/components/pagination.jsp">
+                            <jsp:param name="currentPage" value="${currentPage}" />
+                            <jsp:param name="totalPages" value="${totalPages}" />
+                            <jsp:param name="actionUrl" value="${pageContext.request.contextPath}/employer/jobs?keyword=${searchKeyword}&status=${searchStatus}" />
+                        </jsp:include>
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -745,10 +793,181 @@
 
     <script src="${pageContext.request.contextPath}/js/main.js"></script>
     <script>
+        // =====================================================
+        // Validation Helper
+        // =====================================================
+        function setFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            field.style.borderColor = '#EF4444';
+            field.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+            let errEl = document.getElementById('err-' + fieldId);
+            if (!errEl) {
+                errEl = document.createElement('div');
+                errEl.id = 'err-' + fieldId;
+                errEl.style.cssText = 'color:#EF4444;font-size:0.82rem;margin-top:5px;font-weight:500;';
+                field.parentNode.appendChild(errEl);
+            }
+            errEl.textContent = '⚠ ' + message;
+        }
+
+        function clearFieldError(fieldId) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            field.style.borderColor = '';
+            field.style.boxShadow = '';
+            const errEl = document.getElementById('err-' + fieldId);
+            if (errEl) errEl.remove();
+        }
+
+        function clearAllErrors() {
+            ['modalTitleInput','modalCategory','modalLocation','modalType','modalLevel',
+             'modalMin','modalMax','modalDeadline','modalStatus','modalDesc','modalReq','modalResp']
+            .forEach(id => clearFieldError(id));
+        }
+
+        // =====================================================
+        // Client-side Validation khi submit form
+        // =====================================================
+        function validateJobForm() {
+            clearAllErrors();
+            let isValid = true;
+
+            // [1] Tiêu đề: bắt buộc, 5-200 ký tự
+            const title = document.getElementById('modalTitleInput').value.trim();
+            if (!title) {
+                setFieldError('modalTitleInput', 'Tiêu đề công việc không được để trống.');
+                isValid = false;
+            } else if (title.length < 5) {
+                setFieldError('modalTitleInput', 'Tiêu đề phải có ít nhất 5 ký tự.');
+                isValid = false;
+            } else if (title.length > 200) {
+                setFieldError('modalTitleInput', 'Tiêu đề không được vượt quá 200 ký tự.');
+                isValid = false;
+            }
+
+            // [2] Danh mục: bắt buộc
+            if (!document.getElementById('modalCategory').value) {
+                setFieldError('modalCategory', 'Vui lòng chọn Danh mục công việc.');
+                isValid = false;
+            }
+
+            // [3] Địa điểm: bắt buộc
+            if (!document.getElementById('modalLocation').value) {
+                setFieldError('modalLocation', 'Vui lòng chọn Địa điểm làm việc.');
+                isValid = false;
+            }
+
+            // [4] Hình thức: bắt buộc
+            if (!document.getElementById('modalType').value) {
+                setFieldError('modalType', 'Vui lòng chọn Hình thức làm việc.');
+                isValid = false;
+            }
+
+            // [5] Kinh nghiệm: bắt buộc
+            if (!document.getElementById('modalLevel').value) {
+                setFieldError('modalLevel', 'Vui lòng chọn yêu cầu Kinh nghiệm.');
+                isValid = false;
+            }
+
+            // [6] Lương: không âm, nếu có 1 thì phải có 2, min < max
+            const minVal = document.getElementById('modalMin').value.trim();
+            const maxVal = document.getElementById('modalMax').value.trim();
+            const hasMin = minVal !== '';
+            const hasMax = maxVal !== '';
+
+            if (hasMin && parseFloat(minVal) < 0) {
+                setFieldError('modalMin', 'Mức lương tối thiểu không được là số âm.');
+                isValid = false;
+            } else if (hasMin && parseFloat(minVal) < 100000) {
+                setFieldError('modalMin', 'Mức lương tối thiểu phải từ 100,000 VND trở lên.');
+                isValid = false;
+            }
+            if (hasMax && parseFloat(maxVal) < 0) {
+                setFieldError('modalMax', 'Mức lương tối đa không được là số âm.');
+                isValid = false;
+            }
+            if (hasMin && !hasMax) {
+                setFieldError('modalMax', 'Vui lòng nhập thêm mức lương tối đa (hoặc để trống cả hai).');
+                isValid = false;
+            }
+            if (!hasMin && hasMax) {
+                setFieldError('modalMin', 'Vui lòng nhập thêm mức lương tối thiểu (hoặc để trống cả hai).');
+                isValid = false;
+            }
+            if (hasMin && hasMax && parseFloat(minVal) >= parseFloat(maxVal)) {
+                setFieldError('modalMax', 'Mức lương tối đa phải lớn hơn mức lương tối thiểu.');
+                isValid = false;
+            }
+
+            // [7] Hạn nộp hồ sơ: bắt buộc, phải từ hôm nay trở đi, không quá 1 năm
+            const deadlineVal = document.getElementById('modalDeadline').value;
+            if (!deadlineVal) {
+                setFieldError('modalDeadline', 'Vui lòng chọn Hạn nộp hồ sơ.');
+                isValid = false;
+            } else {
+                const deadlineDate = new Date(deadlineVal);
+                deadlineDate.setHours(0, 0, 0, 0);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const maxDate = new Date(today);
+                maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+                if (deadlineDate < today) {
+                    setFieldError('modalDeadline', 'Hạn nộp hồ sơ phải là ngày hôm nay hoặc trong tương lai.');
+                    isValid = false;
+                } else if (deadlineDate > maxDate) {
+                    setFieldError('modalDeadline', 'Hạn nộp hồ sơ không được quá 1 năm kể từ hôm nay.');
+                    isValid = false;
+                }
+            }
+
+            // [8] Mô tả công việc: bắt buộc, tối thiểu 30 ký tự
+            const desc = document.getElementById('modalDesc').value.trim();
+            if (!desc) {
+                setFieldError('modalDesc', 'Mô tả công việc không được để trống.');
+                isValid = false;
+            } else if (desc.length < 30) {
+                setFieldError('modalDesc', `Mô tả phải có ít nhất 30 ký tự (hiện tại: ${desc.length}).`);
+                isValid = false;
+            }
+
+            // [9] Yêu cầu ứng viên: bắt buộc, tối thiểu 20 ký tự
+            const req = document.getElementById('modalReq').value.trim();
+            if (!req) {
+                setFieldError('modalReq', 'Yêu cầu ứng viên không được để trống.');
+                isValid = false;
+            } else if (req.length < 20) {
+                setFieldError('modalReq', `Yêu cầu phải có ít nhất 20 ký tự (hiện tại: ${req.length}).`);
+                isValid = false;
+            }
+
+            // [10] Quyền lợi: không bắt buộc, nhưng nếu có thì ít nhất 10 ký tự
+            const resp = document.getElementById('modalResp').value.trim();
+            if (resp && resp.length < 10) {
+                setFieldError('modalResp', 'Quyền lợi nếu nhập phải có ít nhất 10 ký tự.');
+                isValid = false;
+            }
+
+            // Scroll lên lỗi đầu tiên nếu có
+            if (!isValid) {
+                const firstErr = document.querySelector('[id^="err-"]');
+                if (firstErr) {
+                    firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            return isValid;
+        }
+
+        // =====================================================
+        // Modal Controls
+        // =====================================================
         function openModal(btn) {
             const modal = document.getElementById('jobModal');
             document.body.style.overflow = 'hidden';
             modal.style.display = 'flex';
+            clearAllErrors();
 
             if (btn) {
                 document.getElementById('modalTitle').textContent = 'Chỉnh sửa tin tuyển dụng';
@@ -779,7 +998,30 @@
         function closeModal() {
             document.getElementById('jobModal').style.display = 'none';
             document.body.style.overflow = 'auto';
+            clearAllErrors();
         }
+
+        // Gắn validation vào nút Submit
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('jobForm');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    if (!validateJobForm()) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Đặt min date cho ô Hạn nộp = hôm nay
+            const deadlineInput = document.getElementById('modalDeadline');
+            if (deadlineInput) {
+                const today = new Date().toISOString().split('T')[0];
+                deadlineInput.setAttribute('min', today);
+                const maxDate = new Date();
+                maxDate.setFullYear(maxDate.getFullYear() + 1);
+                deadlineInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+            }
+        });
     </script>
 </body>
 </html>

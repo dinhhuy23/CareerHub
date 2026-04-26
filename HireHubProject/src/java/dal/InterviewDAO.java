@@ -39,4 +39,30 @@ public class InterviewDAO {
         }
         return false;
     }
+
+    public Interview findByApplicationId(long appId) {
+        String sql = "SELECT TOP 1 * FROM Interviews WHERE ApplicationId = ? ORDER BY CreatedAt DESC";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, appId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Interview interview = new Interview();
+                    interview.setInterviewId(rs.getLong("InterviewId"));
+                    interview.setApplicationId(rs.getLong("ApplicationId"));
+                    interview.setInterviewTypeId(rs.getLong("InterviewTypeId"));
+                    interview.setStartAt(rs.getTimestamp("StartAt"));
+                    interview.setEndAt(rs.getTimestamp("EndAt"));
+                    interview.setMeetingLink(rs.getString("MeetingLink"));
+                    interview.setLocationText(rs.getString("LocationText"));
+                    interview.setStatus(rs.getString("Status"));
+                    interview.setNote(rs.getString("Note"));
+                    return interview;
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error finding interview by appId=" + appId, e);
+        }
+        return null;
+    }
 }

@@ -121,7 +121,7 @@ a:hover {
     max-width: 100%;
 }
 
-.auth-container:has(.register-card) {
+.auth-container:has(register-card) {
     max-width: 640px;
 }
 

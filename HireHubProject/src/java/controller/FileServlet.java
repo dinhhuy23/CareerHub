@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,6 +28,12 @@ public class FileServlet extends HttpServlet {
         // 0. Security check: User must be logged in to view any files in /uploads/
         // (AuthenticationFilter should have set these attributes)
         Object userId = request.getAttribute("userId");
+        if (userId == null) {
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                userId = session.getAttribute("userId");
+            }
+        }
         if (userId == null) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Please log in to access this file.");
             return;

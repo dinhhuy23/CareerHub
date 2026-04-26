@@ -83,7 +83,7 @@ public class JWTUtil {
             }
 
             // Decode payload
-            String payloadJson = new String(base64UrlDecode(parts[1]), StandardCharsets.UTF_8);
+String payloadJson = new String(base64UrlDecode(parts[1]), StandardCharsets.UTF_8);
             JSONObject payload = new JSONObject(payloadJson);
 
             // Check expiration
