@@ -44,6 +44,7 @@ public class Job {
     private String employmentTypeName;
     private String experienceLevelName;
     private String companyName;
+    private String companyLogoUrl; // Logo công ty (từ cột Companies.LogoUrl)
 
     public long getJobId() { return jobId; }
     public void setJobId(long jobId) { this.jobId = jobId; }
@@ -110,6 +111,8 @@ public class Job {
     public void setExperienceLevelName(String experienceLevelName) { this.experienceLevelName = experienceLevelName; }
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
+    public String getCompanyLogoUrl() { return companyLogoUrl; }
+    public void setCompanyLogoUrl(String companyLogoUrl) { this.companyLogoUrl = companyLogoUrl; }
 
     public String getFormattedSalary() {
         if (salaryMin == null || salaryMax == null) return "Thỏa thuận";

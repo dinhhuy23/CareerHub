@@ -41,7 +41,7 @@ public class EditCVServlet extends HttpServlet {
         try {
             String idStr = request.getParameter("id");
             if (idStr == null) {
-                response.sendRedirect(request.getContextPath() + "/user/cv/manage");
+                response.sendRedirect(request.getContextPath() + "/user/cv/manage_cv");
                 return;
             }
             int id = Integer.parseInt(idStr);
@@ -52,10 +52,10 @@ public class EditCVServlet extends HttpServlet {
                 request.setAttribute("listT", listT);
                 request.getRequestDispatcher("/WEB-INF/views/edit_cv.jsp").forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/user/cv/manage?error=notfound");
+                response.sendRedirect(request.getContextPath() + "/user/cv/manage_cv?error=notfound");
             }
         } catch (NumberFormatException e) {
-            response.sendRedirect(request.getContextPath() + "/user/cv/manage");
+            response.sendRedirect(request.getContextPath() + "/user/cv/manage_cv");
         }
     }
 
@@ -139,7 +139,7 @@ public class EditCVServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            response.sendRedirect(request.getContextPath() + "/error/500.jsp");
         }
     }
 }

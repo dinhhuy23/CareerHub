@@ -47,7 +47,7 @@ public class JobListingController extends HttpServlet {
 
         // Pagination
         int page = 1;
-        int pageSize = 10;
+        int pageSize = 6;
         String pageParam = request.getParameter("page");
         if (pageParam != null) {
             try { page = Integer.parseInt(pageParam); } catch (NumberFormatException e) {}

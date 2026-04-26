@@ -66,6 +66,10 @@ public class JobDAO {
             job.setCompanyName(rs.getString("CompanyName"));
         } catch (Exception e) {
         }
+        try {
+            job.setCompanyLogoUrl(rs.getString("CompanyLogoUrl"));
+        } catch (Exception e) {
+        }
 
         return job;
     }
@@ -263,29 +267,56 @@ public class JobDAO {
         return null;
     }
 
+    // Hàm gốc: Lấy tất cả job không lọc
     public List<Job> findByEmployerId(long employerUserId) {
+        return findByEmployerId(employerUserId, null, null);
+    }
+
+    // Hàm mở rộng: Lấy job có hỗ trợ lọc theo Keyword (Tiêu đề) và Status (Trạng thái)
+    public List<Job> findByEmployerId(long employerUserId, String keyword, String status) {
         long trueRecruiterId = getActualRecruiterId(employerUserId);
         List<Job> list = new ArrayList<>();
-        String sql = "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName "
+        
+        StringBuilder sql = new StringBuilder(
+                  "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, c.CompanyName, c.LogoUrl AS CompanyLogoUrl "
                 + "FROM Jobs j "
                 + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
                 + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
                 + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
                 + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-                + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' "
-                + "ORDER BY j.CreatedAt DESC";
+                + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
+                + "WHERE j.PostedByRecruiterId = ? AND j.Status != 'DELETED' ");
 
+        List<Object> params = new ArrayList<>();
+        params.add(trueRecruiterId);
 
-        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, trueRecruiterId);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND j.Title LIKE ? ");
+            params.add("%" + keyword.trim() + "%");
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            sql.append("AND j.Status = ? ");
+            params.add(status.trim());
+        }
+
+        sql.append("ORDER BY j.CreatedAt DESC");
+
+        try (Connection conn = dbContext.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapResultSetToJob(rs));
                 }
-
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error finding jobs by employer ID", e);
+            LOGGER.log(Level.SEVERE, "Error finding filtered jobs by employer ID", e);
         }
         return list;
     }
@@ -294,18 +325,16 @@ public class JobDAO {
             int offset, int fetchSize) {
         List<Job> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName "
-
-
-                + "FROM Jobs j "
-                + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
-                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
-                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
-                + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
-                + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
-                + "WHERE j.Status = 'PUBLISHED' "
-        );
-
+                "SELECT j.*, jc.CategoryName, l.LocationName, et.TypeName, el.LevelName, u.FullName, c.CompanyName, c.LogoUrl AS CompanyLogoUrl "
+                        + "FROM Jobs j "
+                        + "LEFT JOIN JobCategories jc ON j.CategoryId = jc.CategoryId "
+                        + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
+                        + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
+                        + "LEFT JOIN ExperienceLevels el ON j.ExperienceLevelId = el.ExperienceLevelId "
+                        + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
+                        + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                        + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
+                        + "WHERE j.Status = 'PUBLISHED' ");
 
         List<Object> params = new ArrayList<>();
 
@@ -589,7 +618,111 @@ public class JobDAO {
 
         return 0;
     }
+public List<Job> searchJobs(String keyword, String status, String sortSalary, int offset, int pageSize) {
 
+    List<Job> list = new ArrayList<>();
+
+    // 👉 clean input
+    if (keyword != null && keyword.trim().isEmpty()) {
+        keyword = null;
+    }
+
+    if (status != null && status.trim().isEmpty()) {
+        status = null;
+    }
+
+    // 👉 xử lý sort (an toàn hơn CASE WHEN)
+    String orderBy = "ORDER BY JobId DESC"; // default
+    if ("asc".equalsIgnoreCase(sortSalary)) {
+        orderBy = "ORDER BY SalaryMax ASC";
+    } else if ("desc".equalsIgnoreCase(sortSalary)) {
+        orderBy = "ORDER BY SalaryMax DESC";
+    }
+
+    String sql = """
+        SELECT * FROM Jobs
+        WHERE 1=1
+        AND (? IS NULL OR Title LIKE ?)
+        AND (? IS NULL OR Status = ?)
+    """ + orderBy + """
+        OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+    """;
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, keyword);
+        ps.setString(2, keyword == null ? null : "%" + keyword + "%");
+
+        ps.setString(3, status);
+        ps.setString(4, status);
+
+        ps.setInt(5, offset);
+        ps.setInt(6, pageSize);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+
+                Job job = new Job();
+                job.setJobId(rs.getLong("JobId"));
+                job.setTitle(rs.getString("Title"));
+                job.setSalaryMin(rs.getBigDecimal("SalaryMin"));
+                job.setSalaryMax(rs.getBigDecimal("SalaryMax"));
+                job.setStatus(rs.getString("Status"));
+                job.setResponsibilities(rs.getString("Responsibilities"));
+                job.setRequirements(rs.getString("Requirements"));
+                job.setPostedByRecruiterId(rs.getLong("PostedByRecruiterId"));
+
+                list.add(job);
+            }
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+
+public int countSearchJobs(String keyword, String status) {
+
+    String sql = """
+        SELECT COUNT(*) FROM Jobs
+        WHERE 1=1
+        AND (? IS NULL OR Title LIKE ?)
+        AND (? IS NULL OR Status = ?)
+    """;
+
+    // 👉 clean dữ liệu
+    if (keyword != null && keyword.trim().isEmpty()) {
+        keyword = null;
+    }
+
+    if (status != null && status.trim().isEmpty()) {
+        status = null;
+    }
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, keyword);
+        ps.setString(2, keyword == null ? null : "%" + keyword + "%");
+
+        ps.setString(3, status);
+        ps.setString(4, status);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
     public List<Job> getRecommendedJobs(String targetRole, int limit) {
         List<Job> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(

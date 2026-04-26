@@ -36,8 +36,6 @@ public class UserCV {
     private boolean isAccepted;
     private java.sql.Timestamp updatedAt;
     private int isSearchable;
-    /** Trạng thái ứng tuyển mới nhất dẫn đến isAccepted=1 (OFFERED / INTERVIEWING). Không lưu DB. */
-    private String hireStatusCode;
 
     public UserCV() {
     }
@@ -201,7 +199,7 @@ public class UserCV {
         this.createdAt = createdAt;
     }
 
-    public boolean getIsAccepted() {
+    public boolean isIsAccepted() {
         return isAccepted;
     }
 
@@ -217,9 +215,11 @@ public class UserCV {
         this.updatedAt = updatedAt;
     }
 
-    public int getIsSearchable() { return isSearchable; }
-    public void setIsSearchable(int isSearchable) { this.isSearchable = isSearchable; }
+    public int getIsSearchable() {
+        return isSearchable;
+    }
 
-    public String getHireStatusCode() { return hireStatusCode; }
-    public void setHireStatusCode(String hireStatusCode) { this.hireStatusCode = hireStatusCode; }
+    public void setIsSearchable(int isSearchable) {
+        this.isSearchable = isSearchable;
+    }
 }

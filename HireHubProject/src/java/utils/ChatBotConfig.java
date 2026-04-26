@@ -19,20 +19,28 @@ public class ChatBotConfig {
         if (key != null && !key.trim().isEmpty()) return key.trim();
 
         // 3. Thử đọc từ file local gemini_key.txt (Dùng để test máy cá nhân, đã gitignored)
-        try {
-            // Đường dẫn tương đối từ thư mục chạy của Server
-            // Bạn có thể cần chỉnh lại đường dẫn tuyệt đối nếu Server không tìm thấy
-            String path = "C:\\Users\\ThinkPad\\Desktop\\New folder\\CareerHub\\HireHubProject\\gemini_key.txt";
-            key = new String(Files.readAllBytes(Paths.get(path))).trim();
-            if (!key.isEmpty()) return key;
-        } catch (Exception e) {
-            // Im lặng nếu không tìm thấy file
+        String[] candidatePaths = {
+            "gemini_key.txt",
+            System.getProperty("user.home") + "/gemini_key.txt",
+            System.getProperty("user.dir") + "/gemini_key.txt",
+            System.getProperty("user.dir") + "/gemini_key.txt".replace("/", java.io.File.separator),
+        };
+        for (String path : candidatePaths) {
+            try {
+                java.io.File f = new java.io.File(path);
+                if (f.exists()) {
+                    key = new String(Files.readAllBytes(f.toPath())).trim();
+                    if (!key.isEmpty()) return key;
+                }
+            } catch (Exception e) {
+                // Im lặng nếu không tìm thấy file
+            }
         }
 
         return "";
     }
 
-    public static final String MODEL = "gemini-2.5-flash";
+    public static final String MODEL = "gemini-1.5-flash";
 
     public static final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/" + MODEL
             + ":generateContent?key=";

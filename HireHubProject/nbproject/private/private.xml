@@ -3,34 +3,7 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/SaveJobController.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/employer_dashboard.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/web.xml</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/dal/NotificationDAO.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/JobDetailController.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/admin-application-list.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/employer_applications.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/recruiter-list.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/header.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/AIChatController.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/department-form.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/filter/AuthenticationFilter.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/EmployerJobController.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/dal/DBContext.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/jobs.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/ManageCVServlet.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/RecruiterController.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/model/Job.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/manage_cv.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/AdminCompanyController.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/employer_candidate_discovery.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/controller/EmployerApplicationController.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/dal/SavedJobDAO.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/dal/ApplicationDAO.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/dashboard.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/dal/JobDAO.java</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/web/WEB-INF/views/employer_jobs.jsp</file>
-            <file>file:/D:/Users/ADMIN/Downloads/SPW391/CareerHub-main/CareerHub-main/HireHubProject/HireHubProject/src/java/dal/UserCVDAO.java</file>
+            <file>file:/D:/SWP/CareerHub/HireHubProject/src/java/controller/ChatbotController.java</file>
         </group>
     </open-files>
 </project-private>

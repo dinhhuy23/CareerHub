@@ -25,10 +25,6 @@
                    class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
                     Việc làm
                 </a>
-                <a href="${pageContext.request.contextPath}/interview-questions"
-                   class="nav-link ${currentUri.contains('/interview-questions') ? 'active' : ''}">
-                    Câu hỏi PV
-                </a>
             </c:if>
 
             <c:if test="${not empty sessionScope.userRole}">
@@ -46,6 +42,10 @@
                         <a href="${pageContext.request.contextPath}/jobs" 
                            class="nav-link ${currentUri.endsWith('/jobs') || currentUri.endsWith('/jobs/') ? 'active' : ''}">
                             Tất cả việc làm
+                        </a>
+                        <a href="${pageContext.request.contextPath}/admin" 
+                           class="nav-link ${currentUri.endsWith('/admin') || currentUri.endsWith('/admin/') ? 'active' : ''}">
+                            Admin Quản lý
                         </a>
                         
                         <a href="${pageContext.request.contextPath}/admin/company"
@@ -97,13 +97,13 @@
                            class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
                             Việc làm đã lưu
                         </a>
+                        <a href="${pageContext.request.contextPath}/user/saved-jobs" 
+                           class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
+                           Việc làm đã lưu
+                        </a>
                         <a href="${pageContext.request.contextPath}/user/interview-results" 
                            class="nav-link ${currentUri.contains('/user/interview-results') ? 'active' : ''}">
                            Kết quả phỏng vấn
-                        </a>
-                        <a href="${pageContext.request.contextPath}/interview-questions"
-                           class="nav-link ${currentUri.contains('/interview-questions') ? 'active' : ''}">
-                            Câu hỏi PV
                         </a>
                     </c:otherwise>
                 </c:choose>
@@ -119,7 +119,7 @@
                 <c:otherwise>
 
                     <%-- Icon chuông thông báo (chỉ hiện cho CANDIDATE) --%>
-                    <c:if test="${sessionScope.userRole == 'CANDIDATE'}">
+                    <c:if test="${sessionScope.userRole == 'CANDIDATE'|| sessionScope.userRole == 'RECRUITER'}">
                         <a href="${pageContext.request.contextPath}/notification" id="notifBell"
                            style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); border: 1px solid var(--border-color); margin-right: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s;"
                            onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
@@ -138,7 +138,7 @@
                             <div class="user-avatar">
                                 ${sessionScope.userFullName.substring(0,1).toUpperCase()}
                                 <%-- Badge thông báo kiểu tin nhắn: nằm đè lên góc avatar --%>
-                                <c:if test="${sessionScope.userRole == 'CANDIDATE'}">
+                                <c:if test="${sessionScope.userRole == 'CANDIDATE'|| sessionScope.userRole == 'RECRUITER'}">
                                     <span id="notifCount" style="display:none; position: absolute; top: -5px; right: -5px; background: var(--error); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 0.6rem; font-weight: 800; align-items: center; justify-content: center; border: 2px solid var(--bg-secondary); box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></span>
                                 </c:if>
                             </div>

@@ -192,11 +192,7 @@
                 </a>
             </div>
 
-            <!-- Stats -->
-            <c:set var="activeCount" value="0"/>
-            <c:forEach var="d" items="${list}">
-                <c:if test="${d.isActive}"><c:set var="activeCount" value="${activeCount + 1}"/></c:if>
-            </c:forEach>
+            <c:set var="activeCount" value="${activeCount}"/>
 
             <div class="dl-stats animate-fadeInUp">
                 <div class="dl-stat">
@@ -204,7 +200,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                     </div>
                     <div>
-                        <span class="dl-stat-num">${list.size()}</span>
+                        <span class="dl-stat-num">${totalCount}</span>
                         <span class="dl-stat-lbl">Tổng phòng ban</span>
                     </div>
                 </div>
@@ -222,32 +218,39 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                     </div>
                     <div>
-                        <span class="dl-stat-num">${list.size() - activeCount}</span>
+                        <span class="dl-stat-num">${totalCount - activeCount}</span>
                         <span class="dl-stat-lbl">Không hoạt động</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Toolbar -->
-            <div class="dl-toolbar animate-fadeInUp" style="animation-delay:0.05s;">
+            <!-- Toolbar – server-side filter form -->
+            <form method="get" action="" id="filterForm" class="dl-toolbar animate-fadeInUp" style="animation-delay:0.05s;">
                 <div class="search-wrap">
                     <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     </svg>
-                    <input type="text" class="dl-search" id="searchInput" placeholder="Tìm tên phòng ban hoặc công ty...">
+                    <input type="text" name="keyword" class="dl-search" id="searchInput"
+                           value="<c:out value='${keyword}'/>"
+                           placeholder="Tìm tên phòng ban hoặc công ty...">
                 </div>
-                <select class="dl-filter" id="companyFilter">
-                    <option value="All">Tất cả công ty</option>
-                    <c:forEach var="d" items="${list}">
-                        <option value="${fn:escapeXml(d.companyName)}"><c:out value="${d.companyName}"/></option>
+                <select name="company" class="dl-filter" id="companyFilter" onchange="this.form.submit()">
+                    <option value="All" ${companyFilter == 'All' ? 'selected' : ''}>Tất cả công ty</option>
+                    <c:forEach var="c" items="${allCompanies}">
+                        <option value="${fn:escapeXml(c.companyName)}" ${companyFilter == c.companyName ? 'selected' : ''}>
+                            <c:out value="${c.companyName}"/>
+                        </option>
                     </c:forEach>
                 </select>
-                <select class="dl-filter" id="statusFilter">
-                    <option value="All">Tất cả trạng thái</option>
-                    <option value="true">Đang hoạt động</option>
-                    <option value="false">Không hoạt động</option>
+                <select name="status" class="dl-filter" id="statusFilter" onchange="this.form.submit()">
+                    <option value="All"      ${statusFilter == 'All'      ? 'selected' : ''}>Tất cả trạng thái</option>
+                    <option value="active"   ${statusFilter == 'active'   ? 'selected' : ''}>Đang hoạt động</option>
+                    <option value="inactive" ${statusFilter == 'inactive' ? 'selected' : ''}>Không hoạt động</option>
                 </select>
-            </div>
+                <button type="submit" class="btn btn-primary" style="padding:10px 18px;white-space:nowrap;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:5px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Tìm kiếm
+                </button>
+            </form>
 
             <!-- Table -->
             <div class="dl-card animate-fadeInUp" style="animation-delay:0.1s;">
@@ -271,7 +274,7 @@
                                         <tr data-name="${fn:escapeXml(fn:toLowerCase(d.departmentName))}"
                                             data-company="${fn:escapeXml(d.companyName)}"
                                             data-active="${d.isActive}">
-                                            <td style="color:var(--text-muted); font-size:0.8rem;">${loop.index + 1}</td>
+                                            <td style="color:var(--text-muted); font-size:0.8rem;">${(currentPage - 1) * 10 + loop.index + 1}</td>
                                             <td>
                                                 <div class="name-cell">
                                                     <div class="dept-icon">${initial}</div>
@@ -333,63 +336,53 @@
                 </div>
             </div>
 
+            <%-- Pagination --%>
+            <c:if test="${totalPages > 1}">
+            <div class="pagination-wrap animate-fadeInUp" style="animation-delay:0.15s;">
+                <span class="pagination-info">
+                    Hiển thị ${(currentPage-1)*10+1}–${(currentPage*10 > totalItems) ? totalItems : currentPage*10}
+                    trong <strong>${totalItems}</strong> kết quả
+                </span>
+                <div class="pagination-controls">
+                    <c:choose>
+                        <c:when test="${currentPage == 1}"><span class="page-btn disabled">&#8592;</span></c:when>
+                        <c:otherwise><a class="page-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8592;</a></c:otherwise>
+                    </c:choose>
+                    <c:forEach var="pn" items="${pageNums}">
+                        <c:choose>
+                            <c:when test="${pn == -1}"><span class="page-ellipsis">&#8230;</span></c:when>
+                            <c:when test="${pn == currentPage}"><span class="page-btn active">${pn}</span></c:when>
+                            <c:otherwise><a class="page-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">${pn}</a></c:otherwise>
+                        </c:choose>
+                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${currentPage == totalPages}"><span class="page-btn disabled">&#8594;</span></c:when>
+                        <c:otherwise><a class="page-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8594;</a></c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+            </c:if>
+
         </div>
     </main>
 
+    <style>
+        .pagination-wrap { display:flex; align-items:center; justify-content:space-between; padding:var(--space-lg) 0; flex-wrap:wrap; gap:12px; }
+        .pagination-info { font-size:0.85rem; color:var(--text-muted); }
+        .pagination-info strong { color:var(--text-primary); }
+        .pagination-controls { display:flex; align-items:center; gap:6px; }
+        .page-btn { display:inline-flex; align-items:center; justify-content:center; min-width:36px; height:36px; padding:0 10px; border-radius:var(--radius-md); font-size:0.85rem; font-weight:600; text-decoration:none; background:var(--glass-bg); border:1px solid var(--glass-border); color:var(--text-secondary); transition:all 0.15s; cursor:pointer; }
+        .page-btn:hover:not(.disabled):not(.active) { background:rgba(99,102,241,0.1); border-color:var(--primary); color:var(--primary-light); }
+        .page-btn.active { background:linear-gradient(135deg,var(--primary),var(--accent)); border-color:transparent; color:white; box-shadow:0 4px 12px rgba(99,102,241,0.4); }
+        .page-btn.disabled { opacity:0.35; cursor:not-allowed; pointer-events:none; }
+        .page-ellipsis { display:inline-flex; align-items:center; justify-content:center; min-width:36px; height:36px; color:var(--text-muted); font-size:0.85rem; }
+    </style>
     <script>
-        (function () {
-            var searchInput   = document.getElementById('searchInput');
-            var companyFilter = document.getElementById('companyFilter');
-            var statusFilter  = document.getElementById('statusFilter');
-            var tbody         = document.getElementById('deptBody');
-
-            // De-duplicate company options
-            var seen = {};
-            companyFilter.querySelectorAll('option').forEach(function (opt) {
-                if (opt.value === 'All') return;
-                if (seen[opt.value]) opt.remove();
-                else seen[opt.value] = true;
+        (function(){
+            var si = document.getElementById('searchInput');
+            if (si) si.addEventListener('keydown', function(e){
+                if (e.key === 'Enter') { e.preventDefault(); document.getElementById('filterForm').submit(); }
             });
-
-            function filterRows() {
-                if (!tbody) return;
-                var search  = searchInput   ? searchInput.value.trim().toLowerCase() : '';
-                var company = companyFilter ? companyFilter.value : 'All';
-                var status  = statusFilter  ? statusFilter.value  : 'All';
-
-                var rows = tbody.querySelectorAll('tr[data-name]');
-                var visible = 0;
-
-                rows.forEach(function (row) {
-                    var name   = (row.getAttribute('data-name')    || '').toLowerCase();
-                    var comp   = (row.getAttribute('data-company') || '');
-                    var active = (row.getAttribute('data-active')  || '');
-
-                    var searchOk = search === '' || name.includes(search) || comp.toLowerCase().includes(search);
-                    var compOk   = company === 'All' || comp === company;
-                    var statOk   = status  === 'All' || active === status;
-
-                    var ok = searchOk && compOk && statOk;
-                    row.style.display = ok ? '' : 'none';
-                    if (ok) visible++;
-                });
-
-                var msg = tbody.querySelector('.filter-empty-row');
-                if (visible === 0 && rows.length > 0) {
-                    if (!msg) {
-                        var tr = document.createElement('tr');
-                        tr.className = 'filter-empty-row';
-                        tr.innerHTML = '<td colspan="6"><div class="dl-empty"><p>Không tìm thấy phòng ban phù hợp.</p></div></td>';
-                        tbody.appendChild(tr);
-                    }
-                } else if (msg) {
-                    msg.remove();
-                }
-            }
-
-            if (searchInput)   searchInput.addEventListener('input',   filterRows);
-            if (companyFilter) companyFilter.addEventListener('change', filterRows);
-            if (statusFilter)  statusFilter.addEventListener('change',  filterRows);
         })();
     </script>
 </body>

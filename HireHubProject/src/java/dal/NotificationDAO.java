@@ -20,45 +20,149 @@ public class NotificationDAO {
     // Tạo một thông báo mới
     // ==========================================
     public boolean insert(Notification n) {
-        // 1. Chèn vào bảng Notifications (Thông tin chung)
-        String sqlNoti = "INSERT INTO Notifications (NotificationType, Title, Content, ReferenceId, CreatedAt) "
-                + "VALUES (?, ?, ?, ?, SYSUTCDATETIME())";
-
-        // 2. Chèn vào bảng NotificationRecipients (Ai là người nhận)
-        String sqlRec = "INSERT INTO NotificationRecipients (NotificationId, UserId, IsRead, CreatedAt) "
-                + "VALUES (?, ?, 0, SYSUTCDATETIME())";
-
-        try (Connection conn = dbContext.getConnection()) {
-            conn.setAutoCommit(false); // Đảm bảo tính atomic
-
-            try (PreparedStatement ps1 = conn.prepareStatement(sqlNoti, Statement.RETURN_GENERATED_KEYS)) {
-                ps1.setString(1, n.getType() != null ? n.getType() : "SYSTEM");
-                ps1.setString(2, n.getTitle());
-                ps1.setString(3, n.getMessage());
-                ps1.setLong(4, n.getRelatedId());
-                ps1.executeUpdate();
-
-                ResultSet rs = ps1.getGeneratedKeys();
-                if (rs.next()) {
-                    long notiId = rs.getLong(1);
-                    try (PreparedStatement ps2 = conn.prepareStatement(sqlRec)) {
-                        ps2.setLong(1, notiId);
-                        ps2.setLong(2, n.getUserId()); // ID của ứng viên nhận thông báo
-                        ps2.executeUpdate();
-                    }
-                }
-                conn.commit();
-                return true;
-            } catch (SQLException e) {
-                conn.rollback();
-                LOGGER.log(Level.SEVERE, "Lỗi khi chèn thông báo cho UserId=" + n.getUserId(), e);
+        String sql = "INSERT INTO Notifications (UserId, Title, Content, Type, RelatedId, IsRead, CreatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, 0, SYSUTCDATETIME())";
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, n.getUserId());
+            ps.setString(2, n.getTitle());
+            ps.setString(3, n.getMessage());
+            ps.setString(4, n.getType() != null ? n.getType() : "SYSTEM");
+            if (n.getRelatedId() > 0) {
+                ps.setLong(5, n.getRelatedId());
+            } else {
+                ps.setNull(5, Types.BIGINT);
             }
+            return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi kết nối DB", e);
+            LOGGER.log(Level.SEVERE, "Error inserting notification for userId=" + n.getUserId(), e);
         }
         return false;
     }
+  public List<Notification> searchNotifications(String keyword, int offset, int limit) {
+    List<Notification> list = new ArrayList<>();
 
+    String sql = "SELECT * FROM Notifications "
+            + "WHERE Title LIKE ? "
+            + "ORDER BY CreatedAt DESC "
+            + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try (Connection con = dbContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, "%" + keyword + "%");
+        ps.setInt(2, offset);
+        ps.setInt(3, limit);
+
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Notification n = new Notification();
+
+            n.setNotificationId(rs.getLong("NotificationId"));
+            n.setTitle(rs.getString("Title"));
+            n.setMessage(rs.getString("Content"));
+            n.setCreatedAt(rs.getTimestamp("CreatedAt"));
+
+            list.add(n);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+public int getTotalSearchNotifications(String keyword) {
+    String sql = "SELECT COUNT(*) FROM Notifications WHERE Title LIKE ?";
+
+    try (Connection con = dbContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, "%" + keyword + "%");
+
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+
+    public List<Notification> getNotificationsPaging(int offset, int limit) {
+    List<Notification> list = new ArrayList<>();
+
+    String sql = "SELECT * FROM Notifications "
+               + "ORDER BY CreatedAt DESC "
+               + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, offset);
+        ps.setInt(2, limit);
+
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            Notification n = new Notification();
+            n.setNotificationId(rs.getLong("NotificationId"));
+            n.setTitle(rs.getString("Title"));
+            n.setMessage(rs.getString("Content"));
+            n.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            list.add(n);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+    public int getTotalNotifications() {
+    String sql = "SELECT COUNT(*) FROM Notifications";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        if (rs.next()) {
+            return rs.getInt(1);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
+
+public List<Notification> getAllNotifications() {
+    List<Notification> list = new ArrayList<>();
+
+    String sql = "SELECT * FROM Notifications ORDER BY CreatedAt DESC";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        while (rs.next()) {
+            Notification n = new Notification();
+            n.setNotificationId(rs.getLong("NotificationId"));
+            n.setTitle(rs.getString("Title"));
+            n.setMessage(rs.getString("Content"));
+            n.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            list.add(n);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
     // ==========================================
     // Lấy tất cả thông báo của người dùng (mới nhất trước)
     // ==========================================
@@ -204,8 +308,7 @@ public class NotificationDAO {
 
         return false;
     }
-
-    public void scheduleDeactivate(long userId) {
+     public void scheduleDeactivate(long userId) {
 
         String sql = "UPDATE Users SET DeactivateAt = DATEADD(day, 1, GETDATE()) WHERE UserId = ?";
 
@@ -224,7 +327,6 @@ public class NotificationDAO {
             e.printStackTrace();
         }
     }
-
     public void sendToUser(long userId, String title, String content) {
 
         String insertNoti = "INSERT INTO Notifications (Title, Content, NotificationType, CreatedAt) VALUES (?, ?, ?, GETDATE())";
@@ -436,6 +538,8 @@ public class NotificationDAO {
             e.printStackTrace();
         }
     }
+
+   
 
     public void autoDeactivateUsers() {
 

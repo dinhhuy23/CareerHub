@@ -262,12 +262,15 @@
 
                                                         <div class="job-meta">
                                                             <span class="salary-badge">
-                                                                <fmt:formatNumber value="${sj.job.salaryMin}"
-                                                                    maxFractionDigits="0" />
-                                                                -
-                                                                <fmt:formatNumber value="${sj.job.salaryMax}"
-                                                                    maxFractionDigits="0" />
-                                                                ${sj.job.currencyCode}
+                                                                <c:choose>
+                                                                    <c:when test="${sj.job.salaryMin != null and sj.job.salaryMax != null}">
+                                                                        <fmt:formatNumber value="${sj.job.salaryMin}" maxFractionDigits="0" />
+                                                                        -
+                                                                        <fmt:formatNumber value="${sj.job.salaryMax}" maxFractionDigits="0" />
+                                                                        ${sj.job.currencyCode}
+                                                                    </c:when>
+                                                                    <c:otherwise>Thỏa thuận</c:otherwise>
+                                                                </c:choose>
                                                             </span>
                                                             <span>${sj.job.locationName}</span>
                                                         </div>
@@ -320,12 +323,15 @@
 
                                                         <div class="job-meta">
                                                             <span class="salary-badge">
-                                                                <fmt:formatNumber value="${sj.job.salaryMin}"
-                                                                    maxFractionDigits="0" />
-                                                                -
-                                                                <fmt:formatNumber value="${sj.job.salaryMax}"
-                                                                    maxFractionDigits="0" />
-                                                                ${sj.job.currencyCode}
+                                                                <c:choose>
+                                                                    <c:when test="${sj.job.salaryMin != null and sj.job.salaryMax != null}">
+                                                                        <fmt:formatNumber value="${sj.job.salaryMin}" maxFractionDigits="0" />
+                                                                        -
+                                                                        <fmt:formatNumber value="${sj.job.salaryMax}" maxFractionDigits="0" />
+                                                                        ${sj.job.currencyCode}
+                                                                    </c:when>
+                                                                    <c:otherwise>Thỏa thuận</c:otherwise>
+                                                                </c:choose>
                                                             </span>
                                                             <span>${sj.job.locationName}</span>
                                                         </div>
@@ -351,6 +357,13 @@
                                     </c:if>
 
                                 </div>
+                                
+                                <%-- Component Phân trang --%>
+                                <jsp:include page="/WEB-INF/views/components/pagination.jsp">
+                                    <jsp:param name="currentPage" value="${currentPage}" />
+                                    <jsp:param name="totalPages" value="${totalPages}" />
+                                    <jsp:param name="actionUrl" value="${pageContext.request.contextPath}/user/saved-jobs" />
+                                </jsp:include>
                             </c:if>
 
                         </div>

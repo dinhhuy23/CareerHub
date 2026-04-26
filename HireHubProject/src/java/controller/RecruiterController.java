@@ -1,6 +1,6 @@
 /*
  * Recruiter management controller with full validation,
- * per-field error messages, and toast flash notifications.
+ * per-field error messages, toast flash notifications, and server-side pagination.
  */
 package controller;
 
@@ -10,6 +10,7 @@ import dal.RecruiterDAO;
 import dal.RoleDAO;
 import dal.UserDAO;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import jakarta.servlet.ServletException;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import model.Recruiter;
 import model.Role;
 import model.User;
@@ -85,7 +87,33 @@ public class RecruiterController extends HttpServlet {
                         sess.removeAttribute("toastMsg");
                     }
                 }
-                request.setAttribute("list", recruiterDAO.getAll());
+
+                // ── Filter params ─────────────────────────────────────────────
+                String keyword = trim(request.getParameter("keyword"));
+                String status  = nvl(request.getParameter("status"),  "All");
+                String company = nvl(request.getParameter("company"), "All");
+                int rPage      = parsePage(request.getParameter("page"));
+
+                // Stats (full-DB)
+                int rTotal  = recruiterDAO.countAll();
+                int rActive = recruiterDAO.countActive();
+
+                // Filtered
+                int rFiltered   = recruiterDAO.countFiltered(keyword, status, company);
+                int rTotalPages = Math.max(1, (int) Math.ceil((double) rFiltered / PAGE_SIZE));
+                rPage = Math.min(rPage, rTotalPages);
+
+                request.setAttribute("list",         recruiterDAO.getFiltered(keyword, status, company, rPage, PAGE_SIZE));
+                request.setAttribute("keyword",      keyword);
+                request.setAttribute("statusFilter", status);
+                request.setAttribute("companyFilter",company);
+                request.setAttribute("currentPage",  rPage);
+                request.setAttribute("totalPages",   rTotalPages);
+                request.setAttribute("totalItems",   rFiltered);
+                request.setAttribute("totalCount",   rTotal);
+                request.setAttribute("activeCount",  rActive);
+                request.setAttribute("pageNums",     buildPageNums(rPage, rTotalPages));
+                request.setAttribute("allCompanies", companyDAO.getAll());
                 request.getRequestDispatcher("/WEB-INF/views/recruiter-list.jsp")
                        .forward(request, response);
         }
@@ -253,9 +281,38 @@ public class RecruiterController extends HttpServlet {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+    private static final int PAGE_SIZE = 10;
+
     /** null-safe trim */
     private static String trim(String s) {
         return s == null ? "" : s.trim();
+    }
+
+    private static String nvl(String s, String def) {
+        return (s == null || s.trim().isEmpty()) ? def : s.trim();
+    }
+
+    private static int parsePage(String s) {
+        try { int p = Integer.parseInt(s); return p < 1 ? 1 : p; }
+        catch (Exception e) { return 1; }
+    }
+
+    /** Xây dựng danh sách số trang, -1 = ellipsis. */
+    static List<Integer> buildPageNums(int current, int total) {
+        List<Integer> nums = new ArrayList<>();
+        if (total <= 1) return nums;
+        if (total <= 7) {
+            for (int i = 1; i <= total; i++) nums.add(i);
+            return nums;
+        }
+        nums.add(1);
+        int start = Math.max(2, current - 2);
+        int end   = Math.min(total - 1, current + 2);
+        if (start > 2)       nums.add(-1);
+        for (int i = start; i <= end; i++) nums.add(i);
+        if (end < total - 1) nums.add(-1);
+        nums.add(total);
+        return nums;
     }
 
     /** Lưu toast vào session để hiện sau redirect */

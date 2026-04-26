@@ -23,6 +23,7 @@ public class User {
     private String roleName;
 
     private String cvUrl; // Đường dẫn CV mặc định (Dùng cho Discovery)
+    private String contactEmail; // Gmail liên hệ — tách biệt với email đăng nhập
 
 
     private Timestamp DeactivateAt;
@@ -103,4 +104,7 @@ public class User {
 
     public String getCvUrl() { return cvUrl; }
     public void setCvUrl(String cvUrl) { this.cvUrl = cvUrl; }
+
+    public String getContactEmail() { return contactEmail; }
+    public void setContactEmail(String contactEmail) { this.contactEmail = contactEmail; }
 }

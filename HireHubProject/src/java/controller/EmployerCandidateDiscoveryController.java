@@ -34,13 +34,37 @@ public class EmployerCandidateDiscoveryController extends HttpServlet {
             return;
         }
 
-        // Lấy danh sách ứng viên
-        List<User> candidates = userDAO.findAllCandidates();
+        // Lấy danh sách toàn bộ ứng viên
+        List<User> allCandidates = userDAO.findAllCandidates();
+        
+        // --- Xử lý phân trang In-Memory ---
+        int pageSize = 6;
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.trim().isEmpty()) {
+            try { currentPage = Integer.parseInt(pageParam); } catch (Exception e) {}
+        }
+        
+        int totalItems = allCandidates.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(start + pageSize, totalItems);
+        
+        List<User> pagedCandidates = new java.util.ArrayList<>();
+        if (start < totalItems) {
+            pagedCandidates = allCandidates.subList(start, end);
+        }
+        
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
         
         // Lấy danh sách công việc đang đăng của nhà tuyển dụng này (để chọn khi mời)
         List<Job> myJobs = jobDAO.findByEmployerId(userId);
 
-        request.setAttribute("candidates", candidates);
+        request.setAttribute("candidates", pagedCandidates);
         request.setAttribute("myJobs", myJobs);
         request.getRequestDispatcher("/WEB-INF/views/employer_candidate_discovery.jsp").forward(request, response);
     }

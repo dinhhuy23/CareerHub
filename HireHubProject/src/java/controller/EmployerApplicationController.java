@@ -3,6 +3,7 @@ package controller;
 import dal.ApplicationDAO;
 import dal.NotificationDAO;
 import model.Application;
+import model.Job;
 import model.Notification;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,12 +19,12 @@ public class EmployerApplicationController extends HttpServlet {
 
     private final ApplicationDAO appDAO = new ApplicationDAO();
     private final NotificationDAO notifDAO = new NotificationDAO();
+    private final dal.JobDAO jobDAO = new dal.JobDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Lấy userId từ sessionScope (AuthorizationFilter đã kiểm tra quyền RECRUITER)
         HttpSession session = request.getSession(false);
         Long userId = (session != null) ? (Long) session.getAttribute("userId") : null;
 
@@ -32,9 +33,52 @@ public class EmployerApplicationController extends HttpServlet {
             return;
         }
 
-        // Lấy danh sách hồ sơ ứng tuyển của tất cả các job do người này đăng
-        List<Application> applications = appDAO.findByEmployerId(userId);
-        request.setAttribute("applications", applications);
+        // Lọc theo JobId nếu có
+        Long jobId = null;
+        String jobIdStr = request.getParameter("jobId");
+        if (jobIdStr != null && !jobIdStr.isEmpty()) {
+            try {
+                jobId = Long.parseLong(jobIdStr);
+            } catch (NumberFormatException e) {}
+        }
+
+        // Lấy keyword tìm kiếm (tên, email ứng viên hoặc tên job)
+        String keyword = request.getParameter("keyword");
+
+        // 1. Lấy danh sách hồ sơ ứng tuyển (có lọc và tìm kiếm)
+        List<Application> allApplications = appDAO.findByEmployerId(userId, jobId, keyword);
+        
+        // --- Xử lý phân trang In-Memory ---
+        int pageSize = 6;
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.trim().isEmpty()) {
+            try { currentPage = Integer.parseInt(pageParam); } catch (Exception e) {}
+        }
+        
+        int totalItems = allApplications.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(start + pageSize, totalItems);
+        
+        List<Application> pagedApplications = new java.util.ArrayList<>();
+        if (start < totalItems) {
+            pagedApplications = allApplications.subList(start, end);
+        }
+        
+        // 2. Lấy danh sách các Job của nhà tuyển dụng này để đổ vào Dropdown filter
+        List<Job> jobs = jobDAO.findByEmployerId(userId);
+
+        request.setAttribute("applications", pagedApplications);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("jobs", jobs);
+        request.setAttribute("selectedJobId", jobId);
+        request.setAttribute("searchKeyword", keyword);
+        
         request.getRequestDispatcher("/WEB-INF/views/employer_applications.jsp").forward(request, response);
     }
 
@@ -61,10 +105,11 @@ public class EmployerApplicationController extends HttpServlet {
                 appDAO.updateHRNote(appId, hrNote.trim());
             }
 
-            // Nếu trạng thái là phỏng vấn, tạo record phỏng vấn luôn
-            if (success && "INTERVIEWING".equals(status)) {
+            // Nếu trạng thái là phỏng vấn (Vòng 1 hoặc Vòng 2), tạo record phỏng vấn luôn
+            if (success && ("INTERVIEWING".equals(status) || "INTERVIEW_ROUND_2".equals(status))) {
                 String startAtStr = request.getParameter("startAt");
                 String meetingLink = request.getParameter("meetingLink");
+                String locationText = request.getParameter("locationText");
                 String interviewNote = request.getParameter("interviewNote");
                 
                 if (startAtStr != null && !startAtStr.trim().isEmpty()) {
@@ -82,8 +127,16 @@ public class EmployerApplicationController extends HttpServlet {
                         
                         interview.setScheduledByUserId(userId);
                         interview.setMeetingLink(meetingLink);
+                        interview.setLocationText(locationText);
                         interview.setNote(interviewNote);
                         interview.setStatus("SCHEDULED");
+                        
+                        // Nếu là Vòng 2 thì set Type là Offline (2)
+                        if ("INTERVIEW_ROUND_2".equals(status)) {
+                            interview.setInterviewTypeId(2); 
+                        } else {
+                            interview.setInterviewTypeId(1); // Online
+                        }
                         
                         dal.InterviewDAO interviewDAO = new dal.InterviewDAO();
                         interviewDAO.insert(interview);
@@ -115,8 +168,9 @@ public class EmployerApplicationController extends HttpServlet {
     private String getNotificationTitle(String status) {
         switch (status) {
             case "REVIEWING":    return "📋 Hồ sơ đang được xem xét";
-            case "INTERVIEWING": return "📅 Bạn được mời phỏng vấn!";
-            case "OFFERED":      return "🎉 Chúc mừng! Bạn đã trúng tuyển!";
+            case "INTERVIEWING":      return "📅 Bạn được mời phỏng vấn!";
+            case "INTERVIEW_ROUND_2": return "🏢 Mời phỏng vấn trực tiếp (Vòng 2)";
+            case "OFFERED":           return "🎉 Chúc mừng! Bạn đã trúng tuyển!";
             case "REJECTED":     return "📩 Thông báo kết quả ứng tuyển";
             case "WITHDRAWN":    return "✅ Chấp nhận rút hồ sơ";
             default:             return "🔔 Cập nhật trạng thái ứng tuyển";

@@ -130,26 +130,35 @@
                 </div>
             </c:if>
 
-            <div class="candidate-grid">
-                <c:forEach var="c" items="${candidates}">
-                    <div class="candidate-card">
-                        <div class="candidate-avatar">
-                            ${c.fullName.substring(0,1).toUpperCase()}
+            <c:if test="${not empty candidates}">
+                <div class="candidate-grid">
+                    <c:forEach var="c" items="${candidates}">
+                        <div class="candidate-card">
+                            <div class="candidate-avatar">
+                                ${c.fullName.substring(0,1).toUpperCase()}
+                            </div>
+                            <div class="candidate-name">${c.fullName}</div>
+                            <div class="candidate-email">${c.email}</div>
+                            
+                            <div class="candidate-actions">
+                                <c:if test="${not empty c.cvUrl}">
+                                    <a href="${c.cvUrl}" target="_blank" class="btn-cv">Xem CV</a>
+                                </c:if>
+                                <button class="btn-invite" onclick="openInviteModal('${c.userId}', '${c.fullName}')">
+                                    📩 Mời ứng tuyển
+                                </button>
+                            </div>
                         </div>
-                        <div class="candidate-name">${c.fullName}</div>
-                        <div class="candidate-email">${c.email}</div>
-                        
-                        <div class="candidate-actions">
-                            <c:if test="${not empty c.cvUrl}">
-                                <a href="${c.cvUrl}" target="_blank" class="btn-cv">Xem CV</a>
-                            </c:if>
-                            <button class="btn-invite" onclick="openInviteModal('${c.userId}', '${c.fullName}')">
-                                📩 Mời ứng tuyển
-                            </button>
-                        </div>
-                    </div>
-                </c:forEach>
-            </div>
+                    </c:forEach>
+                </div>
+                
+                <%-- Component Phân trang --%>
+                <jsp:include page="/WEB-INF/views/components/pagination.jsp">
+                    <jsp:param name="currentPage" value="${currentPage}" />
+                    <jsp:param name="totalPages" value="${totalPages}" />
+                    <jsp:param name="actionUrl" value="${pageContext.request.contextPath}/employer/candidates" />
+                </jsp:include>
+            </c:if>
 
             <c:if test="${empty candidates}">
                 <div class="glass-card" style="padding: 60px; text-align: center;">

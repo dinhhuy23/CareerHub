@@ -42,9 +42,39 @@ public class CandidateApplicationController extends HttpServlet {
             return;
         }
 
-        // Lấy danh sách đơn của ứng viên này
-        List<Application> applications = appDAO.findByCandidateId(userId);
-        request.setAttribute("applications", applications);
+        // Lấy bộ lọc từ URL (nếu có)
+        String status = request.getParameter("status");
+        String keyword = request.getParameter("keyword");
+
+        // Lấy danh sách toàn bộ đơn của ứng viên này (có lọc theo trạng thái và từ khóa)
+        List<Application> allApplications = appDAO.findByCandidateId(userId, status, keyword);
+        
+        // --- Xử lý phân trang In-Memory ---
+        int pageSize = 6;
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.trim().isEmpty()) {
+            try { currentPage = Integer.parseInt(pageParam); } catch (Exception e) {}
+        }
+        
+        int totalItems = allApplications.size();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (currentPage < 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(start + pageSize, totalItems);
+        
+        List<Application> pagedApplications = new java.util.ArrayList<>();
+        if (start < totalItems) {
+            pagedApplications = allApplications.subList(start, end);
+        }
+        
+        request.setAttribute("applications", pagedApplications);
+        request.setAttribute("currentPage", currentPage);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("searchStatus", status);
+        request.setAttribute("searchKeyword", keyword);
 
         // Đánh dấu đã đọc các thông báo khi vào trang này
         notifDAO.markAllAsRead(userId);

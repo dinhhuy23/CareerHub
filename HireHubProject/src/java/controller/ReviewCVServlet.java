@@ -62,7 +62,7 @@ public class ReviewCVServlet extends HttpServlet {
                 System.out.println("DEBUG: Lỗi doGet: " + e.getMessage());
             }
         }
-        response.sendRedirect(request.getContextPath() + "/user/cv/manage?msg=error");
+        response.sendRedirect(request.getContextPath() + "/user/cv/manage_cv?msg=error");
     }
 
     @Override
@@ -148,7 +148,7 @@ public class ReviewCVServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
                 request.setAttribute("error", "Lỗi: " + e.getMessage());
-                request.getRequestDispatcher("/cv_form.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/views/cv_form.jsp").forward(request, response);
             }
         } else {
             // Nhánh Preview: Lấy dữ liệu động từ database
