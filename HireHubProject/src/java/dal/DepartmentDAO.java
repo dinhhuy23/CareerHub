@@ -255,5 +255,73 @@ public class DepartmentDAO {
             params.add(company);
         }
     }
-}
 
+    public List<Department> getFilteredByCompanyId(long companyId, String keyword, String status, int page, int pageSize) {
+        List<Department> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM Departments WHERE CompanyId = ? ");
+        List<Object> params = new ArrayList<>();
+        params.add(companyId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (DepartmentName LIKE ? OR Description LIKE ? OR ManagerName LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+        if ("active".equals(status)) {
+            sql.append("AND IsActive = 1 ");
+        } else if ("inactive".equals(status)) {
+            sql.append("AND IsActive = 0 ");
+        }
+
+        sql.append("ORDER BY DepartmentId ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        params.add((page - 1) * pageSize);
+        params.add(pageSize);
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Department d = new Department();
+                d.setDepartmentId(rs.getLong("DepartmentId"));
+                d.setDepartmentName(rs.getString("DepartmentName"));
+                d.setDescription(rs.getString("Description"));
+                d.setIsActive(rs.getBoolean("IsActive"));
+                d.setCompanyId(rs.getLong("CompanyId"));
+                d.setManagerName(rs.getString("ManagerName"));
+                d.setContactEmail(rs.getString("ContactEmail"));
+                d.setPhoneNumber(rs.getString("PhoneNumber"));
+                d.setLocation(rs.getString("Location"));
+                list.add(d);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
+
+    public int countFilteredByCompanyId(long companyId, String keyword, String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Departments WHERE CompanyId = ? ");
+        List<Object> params = new ArrayList<>();
+        params.add(companyId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (DepartmentName LIKE ? OR Description LIKE ? OR ManagerName LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+        if ("active".equals(status)) {
+            sql.append("AND IsActive = 1 ");
+        } else if ("inactive".equals(status)) {
+            sql.append("AND IsActive = 0 ");
+        }
+
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+}
