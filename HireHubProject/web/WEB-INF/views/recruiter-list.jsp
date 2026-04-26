@@ -39,10 +39,11 @@
         }
         .rl-search {
             flex: 1; min-width: 240px;
-            padding: 11px 16px 11px 40px;
+            padding: 9px 16px 9px 40px;
             background: var(--glass-bg); backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border); border-radius: var(--radius-md);
-            color: var(--text-primary); font-size: 0.9rem; outline: none;
+            color: var(--text-primary); font-size: 0.85rem; outline: none;
+            font-family: inherit;
             transition: border-color 0.2s;
             position: relative;
         }
@@ -54,10 +55,11 @@
             color: var(--text-muted); pointer-events: none;
         }
         .rl-filter {
-            padding: 11px 16px; min-width: 160px;
+            padding: 9px 14px; min-width: 140px;
             background: var(--glass-bg); backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border); border-radius: var(--radius-md);
-            color: var(--text-primary); font-size: 0.9rem; outline: none;
+            color: var(--text-primary); font-size: 0.85rem; outline: none;
+            font-family: inherit;
             cursor: pointer; transition: border-color 0.2s;
         }
         .rl-filter:focus { border-color: var(--primary); }
@@ -97,13 +99,13 @@
             background: linear-gradient(135deg, var(--primary), var(--accent));
         }
         .rl-table th {
-            padding: 14px 16px; text-align: left;
-            font-size: 0.75rem; font-weight: 700;
+            padding: 10px 14px; text-align: left;
+            font-size: 0.72rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.5px;
             color: rgba(255,255,255,0.9); white-space: nowrap;
         }
         .rl-table td {
-            padding: 14px 16px; font-size: 0.875rem;
+            padding: 10px 14px; font-size: 0.85rem;
             border-bottom: 1px solid rgba(255,255,255,0.04);
             color: var(--text-primary); vertical-align: middle;
         }
@@ -113,10 +115,10 @@
 
         /* ── Avatar ── */
         .rec-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
+            width: 32px; height: 32px; border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--accent));
             display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.8rem; color: white;
+            font-weight: 700; font-size: 0.75rem; color: white;
             flex-shrink: 0; margin-right: 10px;
         }
         .name-cell { display: flex; align-items: center; }
@@ -165,9 +167,9 @@
         /* ── Actions ── */
         .action-btns { display: flex; gap: 8px; }
         .btn-icon {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 6px 12px; border-radius: var(--radius-sm);
-            font-size: 0.78rem; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 10px; border-radius: var(--radius-sm);
+            font-size: 0.75rem; font-weight: 600;
             text-decoration: none; transition: all 0.15s; border: none; cursor: pointer;
         }
         .btn-icon.edit {

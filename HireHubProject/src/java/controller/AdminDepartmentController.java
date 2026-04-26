@@ -37,6 +37,24 @@ public class AdminDepartmentController extends HttpServlet {
             case "view":
                 long viewId = Long.parseLong(request.getParameter("id"));
                 request.setAttribute("department", departmentDAO.getById(viewId));
+                
+                String rKeyword = nvl(request.getParameter("rKeyword"));
+                String rStatus = nvl(request.getParameter("rStatus"), "All");
+                int rPage = parsePage(request.getParameter("rPage"));
+                
+                int rTotal = recruiterDAO.countFilteredByDepartmentId(viewId, rKeyword, rStatus);
+                int RECRUITER_PAGE_SIZE = 4;
+                int rTotalPages = Math.max(1, (int) Math.ceil((double) rTotal / RECRUITER_PAGE_SIZE));
+                rPage = Math.min(rPage, rTotalPages);
+                
+                request.setAttribute("recruiters", recruiterDAO.getFilteredByDepartmentId(viewId, rKeyword, rStatus, rPage, RECRUITER_PAGE_SIZE));
+                request.setAttribute("rKeyword", rKeyword);
+                request.setAttribute("rStatus", rStatus);
+                request.setAttribute("rCurrentPage", rPage);
+                request.setAttribute("rTotalPages", rTotalPages);
+                request.setAttribute("rTotalItems", rTotal);
+                request.setAttribute("rPageNums", buildPageNums(rPage, rTotalPages));
+                
                 request.getRequestDispatcher("/WEB-INF/views/department-detail.jsp").forward(request, response);
                 break;
 
