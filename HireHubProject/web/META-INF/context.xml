@@ -1,8 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context path="/HireHubProject">
-    <Resources allowLinking="true">
-        <PreResources className="org.apache.catalina.webresources.DirResourceSet"
-                      base="D:\HireHub_Uploads\cv_files"
-                      webAppMount="/user/cv/uploads/cv_files" />
-    </Resources>
-</Context>
+<Context path="/HireHubProject"/>

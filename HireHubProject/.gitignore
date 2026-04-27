@@ -1,2 +1,5 @@
 
 gemini_key.txt
+build/
+dist/
+nbproject/private/

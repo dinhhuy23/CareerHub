@@ -88,12 +88,12 @@
 
                 <div class="actions-grid">
 
-                    <a href="users?action=new" class="action-card glass-card">
+                    <a href="${pageContext.request.contextPath}/usermanager" class="action-card glass-card">
                         <h3>➕ Tạo User</h3>
                         <p>Thêm người dùng mới</p>
                     </a>
 
-                    <a href="jobservlet?action=new" class="action-card glass-card">
+                    <a href="${pageContext.request.contextPath}/jobmanager" class="action-card glass-card">
                         <h3>➕ Tạo Job</h3>
                         <p>Thêm công việc mới</p>
                     </a>

@@ -22,9 +22,6 @@ import jakarta.servlet.http.Part;
 )
 public class UploadCVServlet extends HttpServlet {
 
-    // 1. Đường dẫn vật lý tuyệt đối để Java ghi file vào ổ đĩa
-    private static final String PHYSICAL_PATH = "D:/HireHub_Uploads/cv_files";
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -46,8 +43,7 @@ public class UploadCVServlet extends HttpServlet {
             Part filePart = request.getPart("cvFile");
 
             if (filePart != null && filePart.getSize() > 0) {
-                // 2. Kiểm tra và tạo thư mục ổ D nếu chưa có
-                File uploadDir = new File(PHYSICAL_PATH);
+                File uploadDir = new File(utils.FileUtil.getUploadPath("cv_files"));
                 if (!uploadDir.exists()) {
                     uploadDir.mkdirs();
                 }
@@ -55,13 +51,11 @@ public class UploadCVServlet extends HttpServlet {
                 // 3. Đặt tên file duy nhất
                 String fileName = "cv_" + userId + "_" + System.currentTimeMillis() + ".pdf";
 
-                // 4. Ghi file vật lý vào ổ D (D:/HireHub_Uploads/cv_files/cv_1_...pdf)
-                String fullPath = PHYSICAL_PATH + File.separator + fileName;
+                String fullPath = uploadDir.getAbsolutePath() + File.separator + fileName;
                 filePart.write(fullPath);
 
-                // 5. QUAN TRỌNG: Lưu đường dẫn ẢO vào Database để Web hiển thị
-                // Khớp với cấu hình webAppMount="/user/cv/uploads/cv_files" trong context.xml của bạn
-                String fileUrlForDB = "user/cv/uploads/cv_files/" + fileName;
+                // Luu URL ao de phuc vu qua FileServlet (/uploads/*)
+                String fileUrlForDB = "uploads/cv_files/" + fileName;
 
                 saveCVToDatabase(userId, cvTitle, targetRole, fileUrlForDB, isSearchable);
                 session.setAttribute("msg", "Tải CV lên thành công!");

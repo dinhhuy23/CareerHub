@@ -191,8 +191,6 @@
 
         /* ── Row hidden by filter ── */
         tr.hidden-row { display: none; }
-<<<<<<< HEAD
-
         /* ── Toast notification ── */
         .toast-container {
             position: fixed; top: 24px; right: 24px; z-index: 9999;

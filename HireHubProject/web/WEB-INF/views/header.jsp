@@ -92,10 +92,6 @@
                            class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
                             Việc làm đã lưu
                         </a>
-                        <a href="${pageContext.request.contextPath}/user/saved-jobs" 
-                           class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
-                           Việc làm đã lưu
-                        </a>
                         <a href="${pageContext.request.contextPath}/user/interview-results" 
                            class="nav-link ${currentUri.contains('/user/interview-results') ? 'active' : ''}">
                            Kết quả phỏng vấn
@@ -112,25 +108,6 @@
                     <a href="${pageContext.request.contextPath}/register" class="btn btn-primary" style="padding: 6px 16px;">Đăng ký</a>
                 </c:when>
                 <c:otherwise>
-<<<<<<< HEAD
-=======
-
-                    <%-- Icon chuông thông báo (chỉ hiện cho CANDIDATE) --%>
-                    <c:if test="${sessionScope.userRole == 'CANDIDATE'}">
-                        <a href="${pageContext.request.contextPath}/notification" id="notifBell"
-                           style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); border: 1px solid var(--border-color); margin-right: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s;"
-                           onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <%-- Badge số chưa đọc – được inject bằng AJAX --%>
-                            <span id="notifCount" style="display:none; position: absolute; top: -4px; right: -4px; background: var(--error); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; font-weight: 800; align-items: center; justify-content: center;"></span>
-                        </a>
-                    </c:if>
-
-
->>>>>>> 5f0f75adbf749284d083c1981d9d7a1980dc5fd2
                     <div class="user-dropdown">
                         <button class="user-btn" type="button" onclick="toggleDropdown(event)">
                             <div class="user-avatar" style="position: relative;">
@@ -604,7 +581,6 @@
 
         if (!chatWindow || !trigger) return;
 
-<<<<<<< HEAD
         if (show) {
             chatWindow.classList.add("active");
             if (bubble) bubble.style.opacity = "0";
@@ -618,79 +594,6 @@
                 setTimeout(function () {
                     bubble.style.opacity = "1";
                 }, 180);
-=======
-        async function sendAiMessage() {
-            const message = chatInput.value.trim();
-            if (!message) return;
-
-            appendMessage('user', message);
-            chatInput.value = '';
-
-            const loadingId = 'loading-' + Date.now();
-            appendMessage('ai', 'Đang suy nghĩ...', loadingId);
-
-            try {
-                const res = await fetch('${pageContext.request.contextPath}/ai-chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-                    },
-                    body: 'message=' + encodeURIComponent(message)
-                });
-
-                let data = {};
-                try {
-                    data = await res.json();
-                } catch (e) {
-                    data = {};
-                }
-
-                const loadingEl = document.getElementById(loadingId);
-                if (loadingEl) loadingEl.remove();
-
-                if (res.ok && data.reply) {
-                    appendMessage('ai', data.reply);
-                } else if (data.error) {
-                    appendMessage('ai', data.error);
-                } else if (data.message) {
-                    appendMessage('ai', data.message);
-                } else {
-                    appendMessage('ai', 'Xin lỗi, tôi gặp chút trục trặc. Thử lại sau nhé!');
-                }
-            } catch (err) {
-                console.error('Chatbot fetch error:', err);
-                const loadingEl = document.getElementById(loadingId);
-                if (loadingEl) loadingEl.remove();
-                appendMessage('ai', 'Không thể kết nối tới server chatbot.');
-            }
-        }
-
-        sendBtn.addEventListener('click', sendAiMessage);
-
-        chatInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendAiMessage();
-            }
-        });
-
-        window.sendAiMessage = sendAiMessage;
-    })();
-</script>
-    </script>
-
-<script>
-    function toggleDropdown() {
-        document.getElementById("userDropdown").classList.toggle("show");
-    }
-    window.onclick = function (event) {
-        if (!event.target.closest('.user-btn')) {
-            var dropdowns = document.getElementsByClassName("dropdown-menu");
-            for (var i = 0; i < dropdowns.length; i++) {
-                if (dropdowns[i].classList.contains('show')) {
-                    dropdowns[i].classList.remove('show');
-                }
->>>>>>> 5f0f75adbf749284d083c1981d9d7a1980dc5fd2
             }
         }
     }
@@ -890,9 +793,7 @@
 
     (function loadNotifCount() {
         var badge = document.getElementById('notifCount');
-<<<<<<< HEAD
         if (!badge) return;
-
         fetch('${pageContext.request.contextPath}/user/notifications/count')
             .then(function(r) { return r.json(); })
             .then(function(data) {
@@ -902,19 +803,5 @@
                 }
             })
             .catch(function(){});
-=======
-        if (!badge)
-            return; // Không phải Candidate
-        fetch('${pageContext.request.contextPath}/user/notifications/count')
-                .then(function (r) {
-                    return r.json();
-                })
-                .then(function (data) {
-                    if (data.count > 0) {
-                        badge.innerText = data.count > 9 ? '9+' : data.count;
-                        badge.style.display = 'flex';
-                    }
-                }).catch(function () {});
->>>>>>> 5f0f75adbf749284d083c1981d9d7a1980dc5fd2
     })();
 </script>

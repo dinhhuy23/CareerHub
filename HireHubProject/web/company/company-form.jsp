@@ -123,7 +123,7 @@
         String actionUrl = isEdit ? request.getContextPath() + "/company/edit"
                                   : request.getContextPath() + "/company/create";
         String cancelUrl = (isEdit && company != null)
-                         ? request.getContextPath() + "/company/detail?id=" + company.getCompanyId()
+                         ? request.getContextPath() + "/company?id=" + company.getCompanyId()
                          : request.getContextPath() + "/admin/company";
     %>
 

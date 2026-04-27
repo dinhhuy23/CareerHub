@@ -94,7 +94,7 @@
                             <p class="company-short-desc">${company.description}</p>
                         </div>
                         <div class="company-card-footer">
-                            <a href="${pageContext.request.contextPath}/company/detail?id=${company.companyId}" class="btn btn-primary">Xem Chi Tiết</a>
+                            <a href="${pageContext.request.contextPath}/company?id=${company.companyId}" class="btn btn-primary">Xem Chi Tiết</a>
                         </div>
                     </div>
                 </c:forEach>
