@@ -99,7 +99,8 @@ public class JobDetailController extends HttpServlet {
                 Object userIdObj = session.getAttribute("userId");
                 if (userIdObj != null) {
                     try {
-                        int userId = Integer.parseInt(String.valueOf(userIdObj));
+                        // Dùng long thay vì int để tránh overflow khi userId lớn
+                        long userId = Long.parseLong(String.valueOf(userIdObj));
                         dal.UserCVDAO cvDAO = new dal.UserCVDAO();
                         java.util.List<model.UserCV> userCVList = cvDAO.getCVsByUserId(userId);
                         request.setAttribute("userCVList", userCVList);

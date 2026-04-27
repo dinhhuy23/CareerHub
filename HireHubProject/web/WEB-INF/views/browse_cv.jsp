@@ -113,7 +113,7 @@
         <input type="hidden" name="sort"   value="${sort}">
         <span class="s-icon"><i class="bi bi-search"></i></span>
         <input type="text"  name="keyword" value="${keyword}"
-               placeholder="Tìm theo tên, vị trí, tên hồ sơ... (VD: Java, Marketing)">
+               placeholder="Tìm theo tên ứng viên, tên hồ sơ...">
         <button type="submit"><i class="bi bi-search me-2"></i>TÌM KIẾM</button>
     </form>
 </header>

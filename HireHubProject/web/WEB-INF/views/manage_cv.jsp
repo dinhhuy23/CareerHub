@@ -407,33 +407,33 @@
                                                 <%-- Badge: Trang thai ung tuyen dua tren latestAppStatus --%>
                                                 <c:choose>
                                                     <c:when test="${cv.latestAppStatus == 'OFFERED'}">
-                                                        <span class="badge bg-success bg-opacity-15 text-success" style="font-size:0.65rem;">
-                                                            <i class="bi bi-check-circle-fill me-1"></i>Đã tuyển
+                                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;background:rgba(16,185,129,0.18);color:#34d399;border:1px solid rgba(16,185,129,0.35);white-space:nowrap;">
+                                                            <i class="bi bi-check-circle-fill"></i>Đã tuyển
                                                         </span>
                                                     </c:when>
                                                     <c:when test="${cv.latestAppStatus == 'INTERVIEWING'}">
-                                                        <span class="badge bg-warning bg-opacity-15 text-warning" style="font-size:0.65rem;">
-                                                            <i class="bi bi-camera-video-fill me-1"></i>Phỏng vấn
+                                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;background:rgba(245,158,11,0.18);color:#fbbf24;border:1px solid rgba(245,158,11,0.35);white-space:nowrap;">
+                                                            <i class="bi bi-camera-video-fill"></i>Phỏng vấn
                                                         </span>
                                                     </c:when>
                                                     <c:when test="${cv.latestAppStatus == 'REVIEWING'}">
-                                                        <span class="badge bg-info bg-opacity-15 text-info" style="font-size:0.65rem;">
-                                                            <i class="bi bi-clock-fill me-1"></i>Đang xét
+                                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;background:rgba(99,102,241,0.18);color:#a5b4fc;border:1px solid rgba(99,102,241,0.35);white-space:nowrap;">
+                                                            <i class="bi bi-clock-fill"></i>Đang xét
                                                         </span>
                                                     </c:when>
                                                     <c:when test="${cv.latestAppStatus == 'REJECTED'}">
-                                                        <span class="badge bg-danger bg-opacity-15 text-danger" style="font-size:0.65rem;">
-                                                            <i class="bi bi-x-circle-fill me-1"></i>Từ chối
+                                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.35);white-space:nowrap;">
+                                                            <i class="bi bi-x-circle-fill"></i>Từ chối
                                                         </span>
                                                     </c:when>
-                                                    <c:when test="${cv.latestAppStatus == 'SUBMITTED'}">
-                                                        <span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:0.65rem;">
-                                                            <i class="bi bi-send-fill me-1"></i>Đã nộp
+                                                    <c:when test="${cv.latestAppStatus == 'SUBMITTED' or cv.latestAppStatus == 'PENDING'}">
+                                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);white-space:nowrap;">
+                                                            <i class="bi bi-send-fill"></i>Đã nộp
                                                         </span>
                                                     </c:when>
                                                     <c:when test="${cv.isAccepted}">
-                                                        <span class="badge bg-success bg-opacity-15 text-success" style="font-size:0.65rem;">
-                                                            <i class="bi bi-check-circle-fill me-1"></i>Đã duyệt
+                                                        <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;background:rgba(16,185,129,0.18);color:#34d399;border:1px solid rgba(16,185,129,0.35);white-space:nowrap;">
+                                                            <i class="bi bi-patch-check-fill"></i>Đã duyệt
                                                         </span>
                                                     </c:when>
                                                 </c:choose>

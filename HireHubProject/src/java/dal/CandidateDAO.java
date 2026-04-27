@@ -9,11 +9,17 @@ public class CandidateDAO {
     private final DBContext dbContext = new DBContext();
 
     public boolean createProfile(long userId) {
-        String sql = "INSERT INTO CandidateProfiles (UserId, CreatedAt, UpdatedAt) VALUES (?, SYSUTCDATETIME(), SYSUTCDATETIME())";
+        // Thêm EmploymentStatus và IsPublicProfile để tránh lỗi constraint NOT NULL
+        String sql = "INSERT INTO CandidateProfiles (UserId, EmploymentStatus, IsPublicProfile, CreatedAt, UpdatedAt) "
+                   + "VALUES (?, 'OPEN_TO_WORK', 1, SYSUTCDATETIME(), SYSUTCDATETIME())";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userId);
-            return ps.executeUpdate() > 0;
+            boolean result = ps.executeUpdate() > 0;
+            if (!result) {
+                LOGGER.log(Level.WARNING, "createProfile: INSERT returned 0 rows for userId=" + userId);
+            }
+            return result;
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error creating candidate profile for userId: " + userId, e);
         }

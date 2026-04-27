@@ -77,7 +77,7 @@ public class UserCVDAO {
      * -> Moi CV chi nhan status cua don ung tuyen ma CV do thuc su duoc dung.
      * -> Yeu cau cot UserCVId da ton tai trong bang Applications (ALTER TABLE).
      */
-    public List<UserCV> getCVsByUserId(int userId) {
+    public List<UserCV> getCVsByUserId(long userId) {
         List<UserCV> list = new ArrayList<>();
         String sql =
             "SELECT u.[UserCVId], u.[UserId], u.[TemplateId], u.[CVTitle], u.[TargetRole], "
@@ -99,7 +99,7 @@ public class UserCVDAO {
         }
 
         try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setInt(1, userId);
+            st.setLong(1, userId);
             try (ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
                     UserCV cv = new UserCV();
