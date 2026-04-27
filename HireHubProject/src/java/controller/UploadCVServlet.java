@@ -15,19 +15,18 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
 @WebServlet("/user/cv/upload")
-@MultipartConfig(
-        fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10, // 10MB
         maxRequestSize = 1024 * 1024 * 50 // 50MB
 )
 public class UploadCVServlet extends HttpServlet {
 
-<<<<<<< HEAD
+    <<<<<<<HEAD
     // 1. Đường dẫn vật lý tuyệt đối để Java ghi file vào ổ đĩa
     private static final String PHYSICAL_PATH = "D:/HireHub_Uploads/cv_files";
 
-=======
->>>>>>> origin/main
+    =======>>>>>>>origin/main
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
