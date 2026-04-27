@@ -526,13 +526,40 @@
                                                                 </button>
                                                             </c:when>
 
-                                                            <%-- TRƯỜNG HỢP 2: CV CHƯA DUYỆT -> Cho phép sửa
-                                                            --%>
+                                                            <%-- TRƯỜNG HỢP 2: CV đang trong quá trình tuyển dụng -> Khóa nút Sửa --%>
+                                                            <c:when test="${cv.latestAppStatus == 'OFFERED'}">
+                                                                <button
+                                                                    class="btn btn-sm flex-fill opacity-60"
+                                                                    style="cursor: not-allowed; background:rgba(16,185,129,0.12); color:#34d399; border:1px solid rgba(16,185,129,0.3);"
+                                                                    onclick="alert('CV này đã được tuyển dụng. Không thể chỉnh sửa để đảm bảo tính toàn vẹn hồ sơ.')"
+                                                                    title="CV đã được tuyển dụng">
+                                                                    <i class="bi bi-patch-check-fill me-1"></i> Đã tuyển
+                                                                </button>
+                                                            </c:when>
+                                                            <c:when test="${cv.latestAppStatus == 'INTERVIEWING' or cv.latestAppStatus == 'INTERVIEW_ROUND_2'}">
+                                                                <button
+                                                                    class="btn btn-sm flex-fill opacity-60"
+                                                                    style="cursor: not-allowed; background:rgba(245,158,11,0.12); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);"
+                                                                    onclick="alert('CV này đang trong quá trình phỏng vấn. Không thể chỉnh sửa lúc này.')"
+                                                                    title="CV đang trong quá trình phỏng vấn">
+                                                                    <i class="bi bi-camera-video-fill me-1"></i> Phỏng vấn
+                                                                </button>
+                                                            </c:when>
+                                                            <c:when test="${cv.latestAppStatus == 'REVIEWING'}">
+                                                                <button
+                                                                    class="btn btn-sm flex-fill opacity-60"
+                                                                    style="cursor: not-allowed; background:rgba(99,102,241,0.12); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3);"
+                                                                    onclick="alert('CV này đang được nhà tuyển dụng xem xét. Không thể chỉnh sửa lúc này.')"
+                                                                    title="CV đang được xem xét">
+                                                                    <i class="bi bi-clock-fill me-1"></i> Đang xét
+                                                                </button>
+                                                            </c:when>
+
+                                                            <%-- TRƯỜNG HỢP 3: CV chưa bị khóa -> Cho phép sửa --%>
                                                             <c:otherwise>
                                                                 <a href="${pageContext.request.contextPath}/user/cv/edit?id=${cv.userCVId}"
                                                                    class="btn btn-sm btn-outline-light border-0 bg-white bg-opacity-10 flex-fill">
-                                                                    <i
-                                                                        class="bi bi-pencil-square me-1"></i>
+                                                                    <i class="bi bi-pencil-square me-1"></i>
                                                                     Sửa
                                                                 </a>
                                                             </c:otherwise>

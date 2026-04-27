@@ -440,9 +440,24 @@
             document.getElementById('peekName').innerText = name;
             document.getElementById('peekEmail').innerText = email;
             document.getElementById('peekJob').innerText = job;
-            document.getElementById('peekCV').href = cv && cv !== 'null' && cv !== '' ? cv : '#';
-            if(!cv || cv === 'null' || cv === '') document.getElementById('peekCV').innerText = 'Không có CV đính kèm';
-            else document.getElementById('peekCV').innerText = 'Xem CV Online';
+            // Xử lý URL CV: nếu là đường dẫn tương đối thì thêm contextPath
+            const contextPath = '${pageContext.request.contextPath}';
+            let cvHref = '#';
+            let cvText = 'Không có CV đính kèm';
+            if (cv && cv !== 'null' && cv !== '') {
+                // Nếu bắt đầu bằng / thì là relative URL → thêm contextPath
+                cvHref = cv.startsWith('/') ? contextPath + cv : cv;
+                cvText = cv.includes('/user/cv/view') ? '📄 Xem CV Online' : '📎 Xem File CV';
+            }
+            document.getElementById('peekCV').href = cvHref;
+            document.getElementById('peekCV').innerText = cvText;
+            if (!cv || cv === 'null' || cv === '') {
+                document.getElementById('peekCV').style.pointerEvents = 'none';
+                document.getElementById('peekCV').style.opacity = '0.5';
+            } else {
+                document.getElementById('peekCV').style.pointerEvents = '';
+                document.getElementById('peekCV').style.opacity = '';
+            }
             document.getElementById('peekLetter').innerText = letter && letter !== 'null' ? letter : 'Ứng viên không gửi thư giới thiệu.';
             document.getElementById('peekStatusSelect').value = status;
             document.getElementById('peekHrNote').value = hrNote && hrNote !== 'null' ? hrNote : '';

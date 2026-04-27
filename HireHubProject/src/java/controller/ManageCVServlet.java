@@ -28,14 +28,13 @@ public class ManageCVServlet extends HttpServlet {
         }
 
         try {
-            int userId = Integer.parseInt(userIdObj.toString());
+            long userId = Long.parseLong(userIdObj.toString());
             UserCVDAO cvDAO = new UserCVDAO();
 
             // 2. Lay danh sach CV (ORDER BY UpdatedAt DESC — CV moi nhat o dau)
             List<UserCV> userCVs = cvDAO.getCVsByUserId(userId);
 
             // 3. Lay targetRole tu CV MOI NHAT co targetRole khong trong
-            //    (getCVsByUserId da ORDER BY UpdatedAt DESC nen phan tu dau = moi nhat)
             String targetRole = "";
             if (userCVs != null) {
                 for (UserCV cv : userCVs) {
@@ -46,14 +45,24 @@ public class ManageCVServlet extends HttpServlet {
                 }
             }
 
-            // 4. Lay 5 viec lam phu hop nhat theo targetRole cua CV moi nhat
-            dal.JobDAO jobDAO = new dal.JobDAO();
-            List<model.Job> recommendedJobs = jobDAO.getRecommendedJobs(targetRole, 5);
+            // 4. Lay danh sach JobId ma user da nop don (de loai khoi goi y)
+            dal.ApplicationDAO appDAO = new dal.ApplicationDAO();
+            java.util.Set<Long> appliedJobIds = appDAO.getAppliedJobIds(userId);
 
-            // 5. Day du lieu sang JSP
+            // 5. Lay 8 viec lam phu hop nhat theo targetRole, loai bo job da nop
+            dal.JobDAO jobDAO = new dal.JobDAO();
+            List<model.Job> allRecommended = jobDAO.getRecommendedJobs(targetRole, 8);
+            List<model.Job> recommendedJobs = new java.util.ArrayList<>();
+            for (model.Job job : allRecommended) {
+                if (!appliedJobIds.contains(job.getJobId())) {
+                    recommendedJobs.add(job);
+                    if (recommendedJobs.size() >= 5) break; // Giu toi da 5 goi y
+                }
+            }
+
+            // 6. Day du lieu sang JSP
             request.setAttribute("cvList", userCVs);
             request.setAttribute("jobList", recommendedJobs);
-            // targetRoleDisplay de JSP hien thi: Viec lam "Nhan vien kinh doanh" phu hop voi CV cua ban
             request.setAttribute("targetRoleDisplay", targetRole);
             request.getRequestDispatcher("/WEB-INF/views/manage_cv.jsp").forward(request, response);
 

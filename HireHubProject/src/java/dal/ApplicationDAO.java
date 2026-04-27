@@ -92,12 +92,17 @@ public class ApplicationDAO {
         
         StringBuilder sql = new StringBuilder(
                      "SELECT a.*, ast.StatusCode AS CurrentStatus, u.UserId AS CandidateUserId, "
-                   + "j.Title, u.FullName, u.Email, u.AvatarUrl, cr.FileUrl AS CvUrl "
+                   // Uu tien UserCVs (moi) neu co UserCVId, fallback sang CandidateResumes (cu)
+                   + "j.Title, u.FullName, u.Email, u.AvatarUrl, "
+                   + "CASE WHEN ucv.UserCVId IS NOT NULL THEN '/user/cv/view?id=' + CAST(ucv.UserCVId AS NVARCHAR) "
+                   + "     WHEN cr.FileUrl IS NOT NULL   THEN cr.FileUrl "
+                   + "     ELSE NULL END AS CvUrl "
                    + "FROM Applications a "
                    + "JOIN ApplicationStatuses ast ON a.CurrentStatusId = ast.ApplicationStatusId "
                    + "JOIN Jobs j ON a.JobId = j.JobId "
                    + "JOIN CandidateProfiles cp ON a.CandidateId = cp.CandidateId "
                    + "JOIN Users u ON cp.UserId = u.UserId "
+                   + "LEFT JOIN UserCVs ucv ON a.UserCVId = ucv.UserCVId "
                    + "LEFT JOIN CandidateResumes cr ON a.ResumeId = cr.ResumeId "
                    + "WHERE j.PostedByRecruiterId = ? ");
         
@@ -146,12 +151,17 @@ public class ApplicationDAO {
     public List<Application> findAll() {
         List<Application> list = new ArrayList<>();
         String sql = "SELECT a.*, ast.StatusCode AS CurrentStatus, u.UserId AS CandidateUserId, "
-                   + "j.Title, u.FullName, u.Email, u.AvatarUrl, cr.FileUrl AS CvUrl, c.CompanyName "
+                   + "j.Title, u.FullName, u.Email, u.AvatarUrl, c.CompanyName, "
+                   // Uu tien UserCVs (moi) neu co UserCVId, fallback sang CandidateResumes (cu)
+                   + "CASE WHEN ucv.UserCVId IS NOT NULL THEN '/user/cv/view?id=' + CAST(ucv.UserCVId AS NVARCHAR) "
+                   + "     WHEN cr.FileUrl IS NOT NULL   THEN cr.FileUrl "
+                   + "     ELSE NULL END AS CvUrl "
                    + "FROM Applications a "
                    + "JOIN ApplicationStatuses ast ON a.CurrentStatusId = ast.ApplicationStatusId "
                    + "JOIN Jobs j ON a.JobId = j.JobId "
                    + "JOIN CandidateProfiles cp ON a.CandidateId = cp.CandidateId "
                    + "JOIN Users u ON cp.UserId = u.UserId "
+                   + "LEFT JOIN UserCVs ucv ON a.UserCVId = ucv.UserCVId "
                    + "LEFT JOIN CandidateResumes cr ON a.ResumeId = cr.ResumeId "
                    + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
                    + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
@@ -340,4 +350,28 @@ public class ApplicationDAO {
         }
         return false;
     }
+
+    /**
+     * Lấy danh sách JobId mà user (candidate) đã nộp đơn.
+     * Dùng để lọc bỏ các job đó ra khỏi danh sách gợi ý.
+     */
+    public java.util.Set<Long> getAppliedJobIds(long userId) {
+        java.util.Set<Long> jobIds = new java.util.HashSet<>();
+        String sql = "SELECT a.JobId FROM Applications a "
+                   + "JOIN CandidateProfiles cp ON a.CandidateId = cp.CandidateId "
+                   + "WHERE cp.UserId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    jobIds.add(rs.getLong("JobId"));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Error getting applied job ids for userId=" + userId, e);
+        }
+        return jobIds;
+    }
 }
+
