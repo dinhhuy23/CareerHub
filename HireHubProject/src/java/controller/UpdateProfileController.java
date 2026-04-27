@@ -66,11 +66,11 @@ public class UpdateProfileController extends HttpServlet {
         // ===================================================================
         StringBuilder errors = new StringBuilder();
 
-        // [1] Họ tên: bắt buộc, ít nhất 2 ký tự, không chứa ký tự đặc biệt nếu có thể
+        // [1] Họ tên: bắt buộc
         if (fullName == null || fullName.trim().isEmpty()) {
             errors.append("Họ và tên không được để trống. ");
-        } else if (fullName.trim().length() < 2 || fullName.trim().length() > 150) {
-            errors.append("Họ và tên phải từ 2 đến 150 ký tự. ");
+        } else if (fullName.trim().length() > 150) {
+            errors.append("Họ và tên không được vượt quá 150 ký tự. ");
         }
 
         // [2] Gmail liên hệ (ContactEmail): không bắt buộc, nhưng nếu nhập phải đúng format
@@ -87,15 +87,14 @@ public class UpdateProfileController extends HttpServlet {
             }
         }
 
-        // [3] Số điện thoại: Định dạng Việt Nam (bắt đầu bằng 0, có 10 chữ số)
+        // [3] Số điện thoại: nếu có thì chỉ cho phép số và dấu + () - chuẩn quốc tế
         if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
-            String phone = phoneNumber.trim();
-            if (!phone.matches("^0[35789]\\d{8}$")) {
-                errors.append("Số điện thoại không hợp lệ (phải bắt đầu bằng 0, có 10 chữ số). ");
+            if (!phoneNumber.trim().matches("^[+]?[\\d\\s\\-().]{7,20}$")) {
+                errors.append("Số điện thoại không hợp lệ. ");
             }
         }
 
-        // [4] Ngày sinh: Phải ít nhất 16 tuổi (độ tuổi lao động tối thiểu)
+        // [4] Ngày sinh: nếu có thì không được là ngày trong tương lai và phải >= 10 tuổi
         if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
             try {
                 Date dob = Date.valueOf(dateOfBirthStr);
@@ -103,13 +102,13 @@ public class UpdateProfileController extends HttpServlet {
                 java.time.LocalDate today = java.time.LocalDate.now();
                 if (dobLocal.isAfter(today)) {
                     errors.append("Ngày sinh không thể là ngày trong tương lai. ");
-                } else if (dobLocal.isAfter(today.minusYears(16))) {
-                    errors.append("Bạn phải ít nhất 16 tuổi để sử dụng nền tảng này. ");
-                } else if (dobLocal.isBefore(today.minusYears(100))) {
-                    errors.append("Ngày sinh không hợp lệ (quá 100 tuổi). ");
+                } else if (dobLocal.isAfter(today.minusYears(10))) {
+                    errors.append("Bạn phải ít nhất 10 tuổi. ");
+                } else if (dobLocal.isBefore(today.minusYears(120))) {
+                    errors.append("Ngày sinh không hợp lệ. ");
                 }
             } catch (IllegalArgumentException e) {
-                errors.append("Ngày sinh không đúng định dạng (YYYY-MM-DD). ");
+                errors.append("Ngày sinh không đúng định dạng. ");
             }
         }
 

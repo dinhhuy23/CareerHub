@@ -62,6 +62,7 @@ public class ResetPasswordServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
         String token = request.getParameter("token");
 
         User user = userDAO.findByToken(token);

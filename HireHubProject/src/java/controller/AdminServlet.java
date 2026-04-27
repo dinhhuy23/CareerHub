@@ -4,7 +4,10 @@
  */
 package controller;
 
+import dal.CompanyDAO;
+import dal.DepartmentDAO;
 import dal.JobDAO;
+import dal.RecruiterDAO;
 import dal.ReportDAO;
 import dal.UserDAO;
 import java.io.IOException;
@@ -16,13 +19,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import model.Job;
 import model.Report;
+import model.User;
 
 /**
  *
  * @author ADMIN
  */
-@WebServlet(name = "AdminServlet", urlPatterns = {"/AdminServlet"})
+@WebServlet(name = "AdminServlet", urlPatterns = {"/admin"})
 public class AdminServlet extends HttpServlet {
 
     /**
@@ -84,55 +89,49 @@ public class AdminServlet extends HttpServlet {
         UserDAO userDAO = new UserDAO();
         JobDAO jobDAO = new JobDAO();
         ReportDAO reportDAO = new ReportDAO();
-
-        List<model.User> allUsers = userDAO.getAllUsers();
-        List<model.Job> allJobs = jobDAO.getAllJobs();
+        RecruiterDAO recruDAO = new RecruiterDAO();
+        DepartmentDAO departmentDAO = new DepartmentDAO();
+        CompanyDAO companyDAO = new CompanyDAO();
+        int totalDepartment = departmentDAO.getAll().size();
+        int totalUsers = userDAO.getAllUsers().size();
+        int totalJobs = jobDAO.getAllJobs().size();
+        int totalReports = reportDAO.getAll().size();
+        int totalRecruter = recruDAO.getAll().size();
+        int totalCompany = companyDAO.getAll().size();
         List<Report> reports = reportDAO.getAll();
+        List<Job> listJob = jobDAO.getLatestJobs(5);
+// 🔥 THÊM Ở ĐÂY
+        List<User> listuser = userDAO.getTopUsers(5);
 
-        int totalUsers = allUsers.size();
-        int totalJobs = allJobs.size();
-        int totalReports = reports.size();
-        
-        // --- Bổ sung thống kê chi tiết ---
-        int candidateCount = 0;
-        int recruiterCount = 0;
-        for(model.User u : allUsers) {
-            if("CANDIDATE".equals(u.getRole())) candidateCount++;
-            else if("RECRUITER".equals(u.getRole())) recruiterCount++;
-        }
-        
-        List<model.Job> recentJobs = allJobs.size() > 5 ? allJobs.subList(0, 5) : allJobs;
-        List<model.User> recentUsers = allUsers.size() > 5 ? allUsers.subList(allUsers.size() - 5, allUsers.size()) : allUsers;
-
-        // 👉 set attribute
+// 👉 set attribute
+        request.setAttribute("listJob", listJob);
         request.setAttribute("totalUsers", totalUsers);
         request.setAttribute("totalJobs", totalJobs);
         request.setAttribute("totalReports", totalReports);
-        request.setAttribute("candidateCount", candidateCount);
-        request.setAttribute("recruiterCount", recruiterCount);
-        request.setAttribute("recentJobs", recentJobs);
-        request.setAttribute("recentUsers", recentUsers);
+        request.setAttribute("totalRecruter", totalRecruter);
+        request.setAttribute("totalDepartment", totalDepartment);
+        request.setAttribute("totalCompany", totalCompany);
         request.setAttribute("reports", reports);
+        request.setAttribute("listuser", listuser); // 🔥 QUAN TRỌNG
 
-        // 👉 forward
+// 👉 forward
         request.getRequestDispatcher("admin_dashboard.jsp").forward(request, response);
-    
 
+    }
 
-    } 
-
-    /** 
+    /**
      * Handles the HTTP <code>POST</code> method.
+     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
     @Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         String action = request.getParameter("action");
-        
+
         // 👉 xử lý report
         if ("updateReport".equals(action)) {
 
@@ -147,15 +146,16 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         }
 
         response.sendRedirect("AdminServlet");
-    
+
     }
 
-    /** 
+    /**
      * Returns a short description of the servlet.
+     *
      * @return a String containing servlet description
      */
     @Override
-public String getServletInfo() {
+    public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 

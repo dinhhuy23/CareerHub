@@ -36,33 +36,6 @@ public class SavedJobsListingController extends HttpServlet {
 
         List<SavedJob> allSavedJobs = savedJobDAO.getSavedJobsByCandidateId(userId);
         
-        // --- Xử lý filter In-Memory ---
-        String searchTitle = request.getParameter("title");
-        String searchCompany = request.getParameter("company");
-        String searchLocation = request.getParameter("location");
-        
-        if ((searchTitle != null && !searchTitle.trim().isEmpty()) ||
-            (searchCompany != null && !searchCompany.trim().isEmpty()) ||
-            (searchLocation != null && !searchLocation.trim().isEmpty())) {
-            
-            allSavedJobs = allSavedJobs.stream().filter(sj -> {
-                boolean match = true;
-                if (searchTitle != null && !searchTitle.trim().isEmpty()) {
-                    match = match && sj.getJob().getTitle() != null && 
-                            sj.getJob().getTitle().toLowerCase().contains(searchTitle.trim().toLowerCase());
-                }
-                if (searchCompany != null && !searchCompany.trim().isEmpty()) {
-                    match = match && sj.getJob().getCompanyName() != null && 
-                            sj.getJob().getCompanyName().toLowerCase().contains(searchCompany.trim().toLowerCase());
-                }
-                if (searchLocation != null && !searchLocation.trim().isEmpty()) {
-                    match = match && sj.getJob().getLocationName() != null && 
-                            sj.getJob().getLocationName().toLowerCase().contains(searchLocation.trim().toLowerCase());
-                }
-                return match;
-            }).collect(java.util.stream.Collectors.toList());
-        }
-        
         // --- Xử lý phân trang In-Memory ---
         int pageSize = 6;
         int currentPage = 1;

@@ -16,7 +16,7 @@ import java.io.IOException;
  * Controller for user login. GET /login - Display login form POST /login -
  * Process login with JWT generation
  */
-@WebServlet(name = "LoginController", urlPatterns = { "/login" })
+@WebServlet(name = "LoginController", urlPatterns = {"/login"})
 public class LoginController extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
@@ -30,7 +30,7 @@ public class LoginController extends HttpServlet {
         if (session != null && session.getAttribute("jwtToken") != null) {
             String role = (String) session.getAttribute("userRole");
             if ("ADMIN".equals(role)) {
-                response.sendRedirect(request.getContextPath() + "/AdminServlet");
+                response.sendRedirect(request.getContextPath() + "/admin");
             } else if ("RECRUITER".equals(role)) {
                 response.sendRedirect(request.getContextPath() + "/employer/dashboard");
             } else {
@@ -43,8 +43,6 @@ public class LoginController extends HttpServlet {
         String success = request.getParameter("success");
         if ("registered".equals(success)) {
             request.setAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
-        } else if ("password_reset".equals(success)) {
-            request.setAttribute("success", "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.");
         }
 
         String error = request.getParameter("error");
@@ -106,7 +104,8 @@ public class LoginController extends HttpServlet {
                 user.getUserId(),
                 user.getEmail(),
                 user.getFullName(),
-                roleCode);
+                roleCode
+        );
 
         // Create session and store token
         HttpSession session = request.getSession(true);
@@ -123,7 +122,7 @@ public class LoginController extends HttpServlet {
 
         // Chuyển hướng sau đăng nhập theo vai trò
         if ("ADMIN".equals(roleCode)) {
-            response.sendRedirect(request.getContextPath() + "/AdminServlet");
+            response.sendRedirect(request.getContextPath() + "/admin");
         } else if ("RECRUITER".equals(roleCode)) {
             response.sendRedirect(request.getContextPath() + "/employer/dashboard");
         } else {

@@ -371,55 +371,6 @@
                 width: 100%;
             }
         }
-        /* Custom Confirm Modal */
-        #confirmModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .confirm-box {
-            background: #1e1e2f;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 24px;
-            padding: 32px;
-            width: 100%;
-            max-width: 420px;
-            text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        .confirm-icon {
-            width: 64px;
-            height: 64px;
-            background: rgba(245, 158, 11, 0.1);
-            color: #F59E0B;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
-        .confirm-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 12px;
-        }
-        .confirm-msg {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 32px;
-        }
-        .confirm-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
     </style>
 </head>
 <body class="app-page">
@@ -646,10 +597,10 @@
                                                     <input type="hidden" name="action" value="status">
                                                     <input type="hidden" name="id" value="${job.jobId}">
                                                     <input type="hidden" name="status" value="CLOSED">
-                                                    <button type="button" class="btn btn-outline text-warning"
+                                                    <button type="submit" class="btn btn-outline text-warning"
                                                             style="border-color: var(--warning);"
                                                             title="Đóng bài đăng"
-                                                            onclick="handleJobAction(this.form, 'Bạn có chắc chắn muốn ĐÓNG bài đăng này?')">
+                                                            onclick="return confirm('Bạn có chắc chắn muốn ĐÓNG bài đăng này?');">
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                             <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
                                                             <line x1="12" y1="2" x2="12" y2="12"></line>
@@ -663,10 +614,10 @@
                                                     <input type="hidden" name="action" value="status">
                                                     <input type="hidden" name="id" value="${job.jobId}">
                                                     <input type="hidden" name="status" value="PUBLISHED">
-                                                    <button type="button" class="btn btn-outline text-success"
+                                                    <button type="submit" class="btn btn-outline text-success"
                                                             style="border-color: var(--success);"
                                                             title="Mở lại bài đăng"
-                                                            onclick="handleJobAction(this.form, 'Bạn muốn MỞ LẠI và tiếp tục nhận hồ sơ cho bài đăng này?')">
+                                                            onclick="return confirm('Bạn muốn MỞ LẠI và tiếp tục nhận hồ sơ cho bài đăng này?');">
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                             <polyline points="1 4 1 10 7 10"></polyline>
                                                             <polyline points="23 20 23 14 17 14"></polyline>
@@ -681,10 +632,10 @@
                                                     <input type="hidden" name="action" value="status">
                                                     <input type="hidden" name="id" value="${job.jobId}">
                                                     <input type="hidden" name="status" value="PUBLISHED">
-                                                    <button type="button" class="btn btn-outline text-success"
+                                                    <button type="submit" class="btn btn-outline text-success"
                                                             style="border-color: var(--success);"
                                                             title="Đăng công khai"
-                                                            onclick="handleJobAction(this.form, 'Bạn muốn đăng công khai bài tuyển dụng này?')">
+                                                            onclick="return confirm('Bạn muốn đăng công khai bài tuyển dụng này?');">
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                             <polyline points="1 4 1 10 7 10"></polyline>
                                                             <polyline points="23 20 23 14 17 14"></polyline>
@@ -699,10 +650,10 @@
                                             <input type="hidden" name="action" value="status">
                                             <input type="hidden" name="id" value="${job.jobId}">
                                             <input type="hidden" name="status" value="DELETED">
-                                            <button type="button" class="btn btn-outline text-danger"
+                                            <button type="submit" class="btn btn-outline text-danger"
                                                     style="border-color: var(--error);"
                                                     title="Xóa bài đăng"
-                                                    onclick="handleJobAction(this.form, 'Sau khi xóa không thể khôi phục. Bạn chắc chắn chứ?')">
+                                                    onclick="return confirm('Sau khi xóa không thể khôi phục. Tiếp tục?');">
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <polyline points="3 6 5 6 21 6"></polyline>
                                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -837,25 +788,6 @@
                     <button type="submit" class="btn btn-primary" style="padding: 14px 32px;">Lưu tin tuyển dụng</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- 🛑 Custom Confirm Modal -->
-    <div id="confirmModal">
-        <div class="confirm-box animate-fadeInUp">
-            <div class="confirm-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-            </div>
-            <h3 class="confirm-title">Xác nhận thao tác</h3>
-            <p id="confirmMessage" class="confirm-msg">Nội dung xác nhận sẽ hiện ở đây...</p>
-            <div class="confirm-actions">
-                <button type="button" class="btn btn-outline" onclick="closeConfirm()">Hủy bỏ</button>
-                <button type="button" id="confirmActionBtn" class="btn btn-primary">Xác nhận</button>
-            </div>
         </div>
     </div>
 
@@ -1068,29 +1000,6 @@
             document.body.style.overflow = 'auto';
             clearAllErrors();
         }
-
-        // --- Custom Confirm Logic ---
-        let pendingForm = null;
-
-        function handleJobAction(form, message) {
-            pendingForm = form;
-            document.getElementById('confirmMessage').innerText = message;
-            document.getElementById('confirmModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeConfirm() {
-            document.getElementById('confirmModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-            pendingForm = null;
-        }
-
-        document.getElementById('confirmActionBtn').addEventListener('click', function() {
-            if (pendingForm) {
-                pendingForm.submit();
-            }
-            closeConfirm();
-        });
 
         // Gắn validation vào nút Submit
         document.addEventListener('DOMContentLoaded', function () {

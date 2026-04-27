@@ -91,7 +91,7 @@ public class EmployerCandidateDiscoveryController extends HttpServlet {
                     String body = recruiterName + " đã xem hồ sơ của bạn và cảm thấy bạn rất phù hợp với vị trí \"" + job.getTitle() + "\". Hãy xem chi tiết và ứng tuyển ngay nhé!";
                     
                     Notification notif = new Notification(candidateUserId, title, body, "INVITATION", jobId);
-                    notifDAO.insert(notif);
+                    notifDAO.sendToUser(candidateUserId, title, body);
                     
                     response.sendRedirect(request.getContextPath() + "/employer/candidates?success=invited");
                 } else {

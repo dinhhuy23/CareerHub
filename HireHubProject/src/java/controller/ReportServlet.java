@@ -26,6 +26,8 @@ public class ReportServlet extends HttpServlet {
 
     ReportDAO dao = new ReportDAO();
     NotificationDAO notiDao = new NotificationDAO();
+    private static final int PAGE_SIZE = 5;
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -37,7 +39,7 @@ public class ReportServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
@@ -65,25 +67,100 @@ public class ReportServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+
         HttpSession session = request.getSession(false);
 
-        // 🔐 check login
+        // =========================
+        // CHECK LOGIN + ROLE
+        // =========================
         if (session == null || session.getAttribute("userRole") == null) {
             response.sendRedirect("login");
             return;
         }
+
         String role = (String) session.getAttribute("userRole");
-        // 🔐 chỉ ADMIN mới xem được
+
         if (!"ADMIN".equals(role)) {
             response.sendRedirect("jobs");
             return;
         }
-        // 👉 load list report
-        List<Report> list = dao.getAll();
-        request.setAttribute("reports", list);
-        request.getRequestDispatcher("report_manager.jsp").forward(request, response);
 
-//        request.getRequestDispatcher("report_manager.jsp").forward(request, response);
+        try {
+            ReportDAO dao = new ReportDAO();
+
+            // =========================
+            // FILTER INPUT
+            // =========================
+            String keyword = request.getParameter("keyword");
+            String status = request.getParameter("status");
+
+            keyword = (keyword != null) ? keyword.trim() : "";
+            status = (status != null) ? status.trim() : "";
+
+            // =========================
+            // PAGINATION SAFETY
+            // =========================
+            int page = 1;
+            String pageParam = request.getParameter("page");
+
+            try {
+                if (pageParam != null) {
+                    page = Integer.parseInt(pageParam);
+                    if (page < 1) {
+                        page = 1;
+                    }
+                }
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+
+            int offset = (page - 1) * PAGE_SIZE;
+
+            // =========================
+            // CHECK FILTER MODE
+            // =========================
+            boolean hasFilter = !keyword.isEmpty() || !status.isEmpty();
+
+            List<Report> list;
+            int totalReports;
+
+            // =========================
+            // QUERY DATA
+            // =========================
+            if (hasFilter) {
+
+                list = dao.searchReportsAdvanced(keyword, status, offset, PAGE_SIZE);
+                totalReports = dao.countReportsAdvanced(keyword, status);
+
+            } else {
+
+                list = dao.getReportsPaging(offset, PAGE_SIZE);
+                totalReports = dao.getTotalReports();
+            }
+
+            int totalPages = (int) Math.ceil((double) totalReports / PAGE_SIZE);
+
+            // =========================
+            // SET ATTRIBUTE FOR JSP
+            // =========================
+            request.setAttribute("reports", list);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+
+            request.setAttribute("keyword", keyword);
+            request.setAttribute("status", status);
+
+            // =========================
+            // FORWARD JSP
+            // =========================
+            request.getRequestDispatcher("report_manager.jsp")
+                    .forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendError(500, "Server Error");
+        }
     }
 
     /**
@@ -97,61 +174,70 @@ public class ReportServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+
         String action = request.getParameter("action");
 
-        // =============================
-        // 👉 USER GỬI REPORT
-        // =============================
-        if ("create".equals(action)) {
+        try {
+            // =============================
+            // 👉 USER GỬI REPORT
+            // =============================
+            if ("create".equals(action)) {
 
-            HttpSession session = request.getSession();
-            Long userId = (Long) session.getAttribute("userId");
+                HttpSession session = request.getSession();
+                Long userId = (Long) session.getAttribute("userId");
 
-            String targetType = request.getParameter("targetType");
-            long targetId = Long.parseLong(request.getParameter("targetId"));
-            long reportTypeId = Long.parseLong(request.getParameter("reportTypeId"));
-            String content = request.getParameter("content");
+                String targetType = request.getParameter("targetType");
+                long targetId = Long.parseLong(request.getParameter("targetId"));
+                long reportTypeId = Long.parseLong(request.getParameter("reportTypeId"));
+                String content = request.getParameter("content");
 
-            Report r = new Report();
-            r.setReporterId(userId);
-            r.setTargetType(targetType);
-            r.setTargetId(targetId);
-            r.setReportTypeId(reportTypeId);
-            r.setContent(content);
-            r.setStatus("Chưa giải quyết");
-            dao.insert(r);
+                Report r = new Report();
+                r.setReporterId(userId);
+                r.setTargetType(targetType);
+                r.setTargetId(targetId);
+                r.setReportTypeId(reportTypeId);
+                r.setContent(content);
+                r.setStatus("PENDING");
 
-            response.sendRedirect(
-                    request.getContextPath() + "/job-detail?id=" + targetId + "&success=reported"
-            );
-            return;
-        }
+                dao.insert(r);
 
-        // =============================
-        // 👉 ADMIN XỬ LÝ REPORT
-        // =============================
-        if ("approve".equals(action) || "reject".equals(action)) {
-
-            long reportId = Long.parseLong(request.getParameter("id"));
-            String status = action.equals("approve") ? "APPROVED" : "REJECTED";
-
-            HttpSession session = request.getSession();
-            long adminId = (Long) session.getAttribute("userId");
-
-            // 👉 LẤY REPORT TRƯỚC
-            Report r = dao.getById(reportId);
-
-            // 👉 UPDATE DB
-            dao.updateStatus(reportId, status, adminId);
-
-            // 👉 GỬI NOTIFICATION
-            if (r != null) {
-                notiDao.sendReportResult(r.getReporterId(), status);
+                response.sendRedirect(
+                        request.getContextPath() + "/job-detail?id=" + targetId + "&success=reported"
+                );
+                return;
             }
 
-            response.sendRedirect("report");
-            return;
+            // =============================
+            // 👉 ADMIN XỬ LÝ REPORT
+            // =============================
+            if ("approve".equals(action) || "reject".equals(action)) {
+
+                long reportId = Long.parseLong(request.getParameter("id"));
+                String status = action.equals("approve") ? "APPROVED" : "REJECTED";
+
+                HttpSession session = request.getSession();
+                long adminId = (Long) session.getAttribute("userId");
+
+                // 👉 Lấy report
+                Report r = dao.getById(reportId);
+
+                // 👉 Update DB
+                dao.updateStatus(reportId, status, adminId);
+
+                // 👉 Gửi notification
+                if (r != null) {
+                    notiDao.sendReportResult(r.getReporterId(), status);
+                }
+
+                response.sendRedirect("report");
+                return;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
 
     /**
