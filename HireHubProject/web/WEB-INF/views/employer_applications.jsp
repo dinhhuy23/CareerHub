@@ -369,7 +369,8 @@
                     <div style="font-weight: 600; color: #06B6D4; margin-bottom: 12px;">📅 Xếp lịch phỏng vấn</div>
                     
                     <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;">Ngày giờ bắt đầu</label>
-                    <input type="datetime-local" name="startAt" class="form-control" style="width: 100%; margin-bottom: 12px;">
+                    <input type="datetime-local" name="startAt" id="interviewStartTime" class="form-control" style="width: 100%; margin-bottom: 12px;" required onchange="validateInterviewDate()">
+                    <div id="dateErrorMessage" style="color: #EF4444; font-size: 0.8rem; margin-top: -10px; margin-bottom: 10px; display: none;">Lịch phỏng vấn không được ở trong quá khứ.</div>
 
                     <div id="meetingLinkField">
                         <label style="font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; display: block;">Link Meeting (VD: Google Meet)</label>
@@ -448,12 +449,54 @@
             document.getElementById('peekHrNote').value = hrNote && hrNote !== 'null' ? hrNote : '';
             
             toggleInterviewForm(status);
+            
+            // Khóa không cho chọn ngày quá khứ
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('interviewStartTime').min = now.toISOString().slice(0, 16);
 
             // Mở panel và overlay
             document.getElementById('peekPanel').classList.add('active');
             document.getElementById('peekOverlay').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
+
+        function validateInterviewDate() {
+            const input = document.getElementById('interviewStartTime');
+            const error = document.getElementById('dateErrorMessage');
+            const now = new Date();
+            const selected = new Date(input.value);
+
+            if (input.value && selected < now) {
+                error.style.display = 'block';
+                input.style.borderColor = '#EF4444';
+                return false;
+            } else {
+                error.style.display = 'none';
+                input.style.borderColor = 'var(--border-color)';
+                return true;
+            }
+        }
+
+        // Kiểm tra trước khi submit form
+        document.querySelector('form[action*="status"]').onsubmit = function(e) {
+            const status = document.getElementById('peekStatusSelect').value;
+            // Chỉ bắt buộc chọn ngày và validate tương lai khi trạng thái là Phỏng vấn
+            if (status === 'INTERVIEWING' || status === 'INTERVIEW_ROUND_2') {
+                const input = document.getElementById('interviewStartTime');
+                if (!input.value) {
+                    alert('Vui lòng chọn thời gian phỏng vấn.');
+                    e.preventDefault();
+                    return false;
+                }
+                if (!validateInterviewDate()) {
+                    alert('Thời gian phỏng vấn không thể ở quá khứ.');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            return true;
+        };
 
         // Hàm đóng panel
         function closePeek() {
