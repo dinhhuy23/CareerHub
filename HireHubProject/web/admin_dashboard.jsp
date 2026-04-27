@@ -73,21 +73,24 @@
                         <p class="stat-value">${totalJobs}</p>
                         <a href="jobmanager" class="btn btn-primary">Quản lý Job</a>
                     </div>
+                    
+                    <!-- 3 tính năng của User -->
                     <div class="stat-card glass-card">
-                        <h3>Quản lí nhà tuyển dụng</h3>
-                        <a href="/HireHubProject/admin/recruiters" class="btn btn-primary">Xem</a>
-                    </div>  
-                    <div class="stat-card glass-card">
-                        <h3>Quản   lí   Công  ty     </h3>
-                        <a href="company" class="btn btn-primary">Xem</a>
+                        <h3>Quản lý Công ty</h3>
+                        <a href="${pageContext.request.contextPath}/admin/company" class="btn btn-primary">Xem chi tiết</a>
                     </div>
                     <div class="stat-card glass-card">
-                        <h3>Quản lí CV        </h3>
-                        <a href="/user/cv/manage_cv" class="btn btn-primary">Xem</a>
+                        <h3>Quản lý Phòng ban</h3>
+                        <a href="${pageContext.request.contextPath}/admin/departments" class="btn btn-primary">Xem chi tiết</a>
                     </div>
                     <div class="stat-card glass-card">
-                        <h3>Quản lí Recruiters     </h3>
-                        <a href="/admin/recruiters" class="btn btn-primary">Xem</a>
+                        <h3>Quản lý Recruiters</h3>
+                        <a href="${pageContext.request.contextPath}/admin/recruiters" class="btn btn-primary">Xem chi tiết</a>
+                    </div>
+                    
+                    <div class="stat-card glass-card">
+                        <h3>Quản lý CV</h3>
+                        <a href="${pageContext.request.contextPath}/user/cv/manage_cv" class="btn btn-primary">Xem chi tiết</a>
                     </div>
                 </div>
                 <div class="section-header">

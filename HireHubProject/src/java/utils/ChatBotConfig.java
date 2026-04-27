@@ -19,16 +19,6 @@ public class ChatBotConfig {
         if (key != null && !key.trim().isEmpty()) return key.trim();
 
         // 3. Thử đọc từ file local gemini_key.txt (Dùng để test máy cá nhân, đã gitignored)
-<<<<<<< HEAD
-        try {
-            // Đường dẫn tương đối từ thư mục chạy của Server
-            // Bạn có thể cần chỉnh lại đường dẫn tuyệt đối nếu Server không tìm thấy
-            String path = "C:\\Users\\ThinkPad\\Desktop\\New folder\\CareerHub\\HireHubProject\\gemini_key.txt";
-            key = new String(Files.readAllBytes(Paths.get(path))).trim();
-            if (!key.isEmpty()) return key;
-        } catch (Exception e) {
-            // Im lặng nếu không tìm thấy file
-=======
         String[] candidatePaths = {
             "gemini_key.txt",
             System.getProperty("user.home") + "/gemini_key.txt",
@@ -45,7 +35,6 @@ public class ChatBotConfig {
             } catch (Exception e) {
                 // Im lặng nếu không tìm thấy file
             }
->>>>>>> origin/main
         }
 
         return "";
