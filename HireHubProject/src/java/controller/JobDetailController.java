@@ -93,6 +93,20 @@ public class JobDetailController extends HttpServlet {
             ReportTypeDAO rtDao = new ReportTypeDAO();
             List<ReportType> reportTypes = rtDao.getAll();
             request.setAttribute("reportTypes", reportTypes);
+
+            // Load danh sach CV cua CANDIDATE de hien thi dropdown chon CV
+            if (session != null && "CANDIDATE".equals(String.valueOf(session.getAttribute("userRole")))) {
+                Object userIdObj = session.getAttribute("userId");
+                if (userIdObj != null) {
+                    try {
+                        int userId = Integer.parseInt(String.valueOf(userIdObj));
+                        dal.UserCVDAO cvDAO = new dal.UserCVDAO();
+                        java.util.List<model.UserCV> userCVList = cvDAO.getCVsByUserId(userId);
+                        request.setAttribute("userCVList", userCVList);
+                    } catch (Exception ex) { /* bo qua loi */ }
+                }
+            }
+
             request.getRequestDispatcher("/WEB-INF/views/job_detail.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {

@@ -3,15 +3,17 @@ package model;
 import java.sql.Timestamp;
 
 public class Application {
-    private long applicationId; // ID duy nhất của đơn ứng tuyển
-    private long jobId;         // ID công việc ứng tuyển
-    private long candidateId;   // ID ứng viên (User)
-    private Long resumeId;      // ID file CV trong bảng CandidateResumes
-    private String cvUrl;       // Đường dẫn tới file hoặc link CV
-    private String coverLetter; // Thư giới thiệu của ứng viên
-    private String status;      // Trạng thái: PENDING (Chờ), REVIEWING (Đang xem), INTERVIEWING (Phỏng vấn), OFFERED (Trúng tuyển), REJECTED (Từ chối)
-    private Timestamp appliedAt; // Thời điểm ứng tuyển
-    private Timestamp updatedAt; // Thời điểm cập nhật cuối cùng
+    private long applicationId;
+    private long jobId;
+    private long candidateId;
+    private Long resumeId;
+    private String cvUrl;
+    private String coverLetter;
+    private String status;
+    private Timestamp appliedAt;
+    private Timestamp updatedAt;
+    // UserCVId: ID cua CV trong bang UserCVs ma ung vien chon khi nop don
+    private Long userCVId;
 
     // Các trường dữ liệu bổ sung từ việc JOIN bảng (không có trong table Applications)
     private String jobTitle;        // Tiêu đề công việc
@@ -67,5 +69,8 @@ public class Application {
 
     public String getHrNote() { return hrNote; }
     public void setHrNote(String hrNote) { this.hrNote = hrNote; }
+
+    public Long getUserCVId() { return userCVId; }
+    public void setUserCVId(Long userCVId) { this.userCVId = userCVId; }
 }
 

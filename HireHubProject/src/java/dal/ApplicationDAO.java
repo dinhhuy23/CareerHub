@@ -60,10 +60,10 @@ public class ApplicationDAO {
     // Hàm thêm mới đơn ứng tuyển vào Database
     // KHỚP SCHEMA: Tìm đúng ApplicationStatusId của statusCode và Convert UserId thành CandidateProfileId
     public long insert(Application app) {
-         String sql = "INSERT INTO Applications (JobId, CandidateId, ResumeId, CoverLetter, CurrentStatusId, AppliedAt, LastStatusChangedAt) "
+         String sql = "INSERT INTO Applications (JobId, CandidateId, ResumeId, CoverLetter, CurrentStatusId, UserCVId, AppliedAt, LastStatusChangedAt) "
                    + "VALUES (?, (SELECT CandidateId FROM CandidateProfiles WHERE UserId = ?), ?, ?, "
                    + "(SELECT TOP 1 ApplicationStatusId FROM ApplicationStatuses WHERE StatusCode = ?), "
-                   + "SYSUTCDATETIME(), SYSUTCDATETIME())";
+                   + "?, SYSUTCDATETIME(), SYSUTCDATETIME())";
 
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -72,6 +72,7 @@ public class ApplicationDAO {
             if (app.getResumeId() != null) { ps.setLong(3, app.getResumeId()); } else { ps.setNull(3, java.sql.Types.BIGINT); }
             ps.setString(4, app.getCoverLetter());
             ps.setString(5, app.getStatus() != null ? app.getStatus() : "PENDING");
+            if (app.getUserCVId() != null) { ps.setLong(6, app.getUserCVId()); } else { ps.setNull(6, java.sql.Types.BIGINT); }
 
             if (ps.executeUpdate() > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {

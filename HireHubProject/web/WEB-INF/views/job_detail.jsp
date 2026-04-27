@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -340,15 +341,68 @@
                 Chào <strong>${sessionScope.userFullName}</strong>, hãy gửi thông tin để nhà tuyển dụng xem xét nhé.
             </p>
 
-            <form action="${pageContext.request.contextPath}/job/apply" method="POST" enctype="multipart/form-data">
+            <form action="${pageContext.request.contextPath}/job/apply" method="POST">
                 <input type="hidden" name="jobId" value="${job.jobId}">
+                <input type="hidden" name="selectedCvId" id="selectedCvId" value="">
 
+                <%-- CV picker --%>
                 <div class="form-group" style="margin-bottom: var(--space-xl);">
-                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">
-                        Tải lên CV (PDF) <span style="color:var(--error)">*</span>
+                    <label style="font-weight: 600; margin-bottom: 10px; display: block;">
+                        Chọn CV để ứng tuyển <span style="color:var(--error)">*</span>
                     </label>
-                    <input type="file" name="cvFile" accept=".pdf,application/pdf" required class="form-control" style="width: 100%; border: 2px dashed var(--border-color); padding: 20px 10px; text-align: center; background: rgba(59, 130, 246, 0.05); cursor: pointer;">
-                    <small style="color: var(--text-muted); margin-top: 8px; display: block;">Định dạng hỗ trợ: PDF (Tối đa 10MB)</small>
+                    <c:choose>
+                        <c:when test="${not empty userCVList}">
+                            <%-- CV đã chọn (ẩn ban đầu) --%>
+                            <div id="cvSelectedBox" style="display:none; align-items:center; gap:12px; padding:13px 16px; border-radius:12px; border:2px solid #6366f1; background:rgba(99,102,241,0.1); margin-bottom:10px;">
+                                <span style="font-size:1.4rem;">📄</span>
+                                <div style="flex:1;">
+                                    <div id="cvSelectedTitle" style="font-weight:700; color:#f1f5f9; font-size:0.9rem;"></div>
+                                    <div id="cvSelectedSub"   style="font-size:0.73rem; color:rgba(255,255,255,0.4);"></div>
+                                </div>
+                                <button type="button" onclick="openCVPicker()"
+                                        style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.6); border-radius:8px; padding:5px 12px; font-size:0.75rem; cursor:pointer; white-space:nowrap;">
+                                    Đổi CV
+                                </button>
+                            </div>
+
+                            <%-- Nút mở picker (hiện ban đầu) --%>
+                            <button type="button" id="btnOpenCVPicker" onclick="openCVPicker()"
+                                    style="width:100%; padding:14px; border-radius:12px; border:2px dashed rgba(99,102,241,0.35); background:rgba(99,102,241,0.06); color:#a5b4fc; font-size:0.88rem; font-weight:600; cursor:pointer; transition:all .2s;"
+                                    onmouseover="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,0.12)'"
+                                    onmouseout="this.style.borderColor='rgba(99,102,241,0.35)';this.style.background='rgba(99,102,241,0.06)'">
+                                📋 Chọn CV của bạn
+                            </button>
+
+                            <%-- Panel danh sách CV (ẩn ban đầu) --%>
+                            <div id="cvPickerPanel" style="display:none; flex-direction:column; gap:8px; margin-top:10px; max-height:280px; overflow-y:auto; padding-right:4px;">
+                                <c:forEach items="${userCVList}" var="cv">
+                                    <button type="button"
+                                            class="cv-pick-btn"
+                                            data-cvid="${cv.userCVId}"
+                                            data-title="${cv.cvTitle}"
+                                            data-sub="${cv.isUpload == 1 ? 'File tải lên' : 'Web Builder'}${not empty cv.targetRole ? ' · '.concat(cv.targetRole) : ''}"
+                                            id="cvBtn${cv.userCVId}"
+                                            style="width:100%; display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:12px; border:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); cursor:pointer; text-align:left; transition:all .2s;">
+                                        <span style="font-size:1.3rem; flex-shrink:0;">${cv.isUpload == 1 ? '📎' : '🖥️'}</span>
+                                        <div style="flex:1; min-width:0;">
+                                            <div style="font-weight:600; color:#f1f5f9; font-size:0.88rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${cv.cvTitle}</div>
+                                            <div style="font-size:0.72rem; color:rgba(255,255,255,0.38);">
+                                                ${cv.isUpload == 1 ? 'File tải lên' : 'Web Builder'}<c:if test="${not empty cv.targetRole}"> · ${cv.targetRole}</c:if>
+                                            </div>
+                                        </div>
+                                        <span style="color:#6ee7b7; font-size:0.8rem; display:none;" id="chk${cv.userCVId}">✓</span>
+                                    </button>
+                                </c:forEach>
+                            </div>
+                            <small style="color:rgba(255,255,255,0.3); margin-top:6px; display:block;">Chọn 1 CV để gửi kèm đơn ứng tuyển.</small>
+                        </c:when>
+                        <c:otherwise>
+                            <div style="text-align:center; padding:24px; border:2px dashed rgba(255,255,255,0.1); border-radius:12px;">
+                                <p style="color:rgba(255,255,255,0.4); margin-bottom:14px;">Bạn chưa có CV nào.</p>
+                                <a href="${pageContext.request.contextPath}/user/cv_template" class="btn btn-outline" style="padding:8px 20px; font-size:0.85rem;">+ Tạo CV ngay</a>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
 
                 <div class="form-group" style="margin-bottom: var(--space-xl);">
@@ -358,7 +412,8 @@
 
                 <div style="display: flex; gap: 12px;">
                     <button type="button" onclick="closeApplyModal()" class="btn btn-outline" style="flex: 1;">Hủy</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Gửi đơn ứng tuyển</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;"
+                            onclick="return validateCVSelection()">Gửi đơn ứng tuyển</button>
                 </div>
             </form>
         </div>
@@ -456,6 +511,72 @@
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
             });
+        }
+
+        // Gan su kien click cho tat ca .cv-pick-btn qua event delegation
+        document.addEventListener('DOMContentLoaded', function() {
+            var panel = document.getElementById('cvPickerPanel');
+            if (panel) {
+                panel.addEventListener('click', function(e) {
+                    var btn = e.target.closest('.cv-pick-btn');
+                    if (!btn) return;
+                    var cvId  = btn.getAttribute('data-cvid');
+                    var title = btn.getAttribute('data-title');
+                    var sub   = btn.getAttribute('data-sub');
+                    selectCV(cvId, title, sub);
+                });
+            }
+        });
+
+        // Mo / dong panel danh sach CV
+        function openCVPicker() {
+            var panel = document.getElementById('cvPickerPanel');
+            var btn   = document.getElementById('btnOpenCVPicker');
+            if (!panel) return;
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'flex';
+                if (btn) btn.style.display = 'none';
+            } else {
+                panel.style.display = 'none';
+                if (btn && document.getElementById('selectedCvId').value === '') btn.style.display = 'block';
+            }
+        }
+
+        // Chon 1 CV cu the
+        function selectCV(cvId, title, sub) {
+            // Luu gia tri
+            document.getElementById('selectedCvId').value = cvId;
+
+            // Cap nhat hop "da chon"
+            document.getElementById('cvSelectedTitle').textContent = title;
+            document.getElementById('cvSelectedSub').textContent   = sub;
+            document.getElementById('cvSelectedBox').style.display = 'flex';
+
+            // An nut "Chon CV" va panel
+            var btn = document.getElementById('btnOpenCVPicker');
+            if (btn) btn.style.display = 'none';
+            document.getElementById('cvPickerPanel').style.display = 'none';
+
+            // Highlight nut duoc chon trong panel, reset cac nut khac
+            document.querySelectorAll('[id^="cvBtn"]').forEach(function(b) {
+                b.style.borderColor = 'rgba(255,255,255,0.1)';
+                b.style.background  = 'rgba(255,255,255,0.04)';
+            });
+            document.querySelectorAll('[id^="chk"]').forEach(function(s) { s.style.display = 'none'; });
+            var selBtn = document.getElementById('cvBtn' + cvId);
+            if (selBtn) { selBtn.style.borderColor = '#6366f1'; selBtn.style.background = 'rgba(99,102,241,0.1)'; }
+            var chk = document.getElementById('chk' + cvId);
+            if (chk) chk.style.display = 'inline';
+        }
+
+        // Validate truoc khi gui form
+        function validateCVSelection() {
+            var val = document.getElementById('selectedCvId').value;
+            if (!val || val === '') {
+                alert('Vui lòng chọn một CV để ứng tuyển!');
+                return false;
+            }
+            return true;
         }
     </script>
 </body>

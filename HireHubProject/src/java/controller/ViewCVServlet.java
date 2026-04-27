@@ -38,9 +38,11 @@ public class ViewCVServlet extends HttpServlet {
                 }
                 
                 int sessionUserId = Integer.parseInt(userIdObj.toString());
+                String sessionRole = (String) session.getAttribute("userRole");
                 
-                // Chặn trường hợp user này xem CV của user khác bằng cách thay đổi ID trên URL
-                if (cv.getUserId() != sessionUserId) {
+                // RECRUITER duoc phep xem CV cua ung vien (bo kiem tra owner)
+                boolean isRecruiter = "RECRUITER".equals(sessionRole);
+                if (!isRecruiter && cv.getUserId() != sessionUserId) {
                     response.sendRedirect(request.getContextPath() + "/user/cv/manage_cv?msg=denied");
                     return;
                 }

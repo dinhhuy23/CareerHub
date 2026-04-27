@@ -3,12 +3,31 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
+
     <head>
         <title>Quản lý CV | HireHub</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <meta name="description" content="Quản lý hồ sơ CV của bạn trên HireHub">
+
+        <%-- Preconnect de giam thoi gian DNS + TCP cho CDN --%>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net">
+        <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+              rel="stylesheet" media="print" onload="this.media='all'">
+        <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+              media="print" onload="this.media='all'">
+        <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"></noscript>
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+              media="print" onload="this.media='all'">
+        <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 
         <style>
@@ -18,23 +37,28 @@
                 gap: 5px;
                 margin-bottom: 1.5rem;
             }
+
             .cv-date-item {
                 display: flex;
                 align-items: center;
                 gap: 8px;
                 font-size: 0.8rem;
             }
+
             .cv-date-label {
                 color: rgba(255, 255, 255, 0.5);
                 min-width: 100px;
             }
+
             .cv-date-value {
                 color: rgba(255, 255, 255, 0.9);
                 font-weight: 500;
             }
+
             .text-white-80 {
                 color: rgba(255, 255, 255, 0.8);
             }
+
             .cv-card {
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 border: 1px solid rgba(255, 255, 255, 0.05) !important;
@@ -43,15 +67,18 @@
                 background: rgba(255, 255, 255, 0.03);
                 backdrop-filter: blur(10px);
             }
+
             .cv-card:hover {
                 transform: translateY(-5px);
                 border-color: #007bff !important;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             }
+
             .border-accepted {
                 border: 1px solid rgba(16, 185, 129, 0.5) !important;
                 background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
             }
+
             .accepted-badge {
                 position: absolute;
                 top: 10px;
@@ -62,28 +89,33 @@
                 transform: rotate(45deg);
                 font-size: 0.6rem;
                 font-weight: 700;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
                 z-index: 1;
             }
+
             .filter-pill {
                 border-radius: 20px;
-                border: 1px solid rgba(255,255,255,0.1);
+                border: 1px solid rgba(255, 255, 255, 0.1);
                 font-size: 0.8rem;
                 color: white;
                 transition: 0.3s;
-                background: rgba(255,255,255,0.05);
+                background: rgba(255, 255, 255, 0.05);
             }
-            .filter-pill:hover, .filter-pill.active {
+
+            .filter-pill:hover,
+            .filter-pill.active {
                 background: #007bff;
                 border-color: #007bff;
                 color: white;
             }
+
             .search-input-group {
                 background: rgba(255, 255, 255, 0.05);
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: 10px;
                 overflow: hidden;
             }
+
             .limit-info {
                 font-size: 0.9rem;
                 padding: 4px 12px;
@@ -91,18 +123,22 @@
                 background: rgba(255, 255, 255, 0.05);
                 border: 1px solid rgba(255, 255, 255, 0.1);
             }
+
             .upload-zone {
-                border: 2px dashed rgba(255,255,255,0.1) !important;
+                border: 2px dashed rgba(255, 255, 255, 0.1) !important;
                 transition: 0.3s;
                 cursor: pointer;
             }
+
             .upload-zone:hover {
                 border-color: #007bff !important;
                 background: rgba(0, 123, 255, 0.05);
             }
+
             .cursor-pointer {
                 cursor: pointer;
             }
+
             /* 1. Xóa viền trắng và bóng mặc định của ô input */
             #cvSearch.form-control {
                 border: none !important;
@@ -122,23 +158,30 @@
                 box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
                 transition: all 0.3s ease;
             }
+
             .status-public {
-                color: #10b981 !important; /* Màu xanh lá */
+                color: #10b981 !important;
+                /* Màu xanh lá */
                 font-weight: 600;
             }
+
             .status-private {
-                color: #6c757d !important; /* Màu xám */
+                color: #6c757d !important;
+                /* Màu xám */
                 font-weight: 600;
             }
+
             .cv-date-item i.bi-eye-fill {
                 font-size: 0.9rem;
             }
+
             .cv-action-top-right {
                 position: absolute;
                 top: 15px;
                 right: 15px;
                 z-index: 10;
             }
+
             .cv-action-top-right .btn-icon {
                 display: inline-flex;
                 align-items: center;
@@ -152,11 +195,13 @@
                 text-decoration: none;
                 backdrop-filter: blur(5px);
             }
+
             .cv-action-top-right .btn-icon:hover {
                 background: #10b981;
                 color: white;
                 transform: scale(1.1);
             }
+
             /* Style cho nút gạt Toggle Switch (Dark Theme) */
             .switch-container {
                 display: flex;
@@ -167,6 +212,7 @@
                 border-radius: 12px;
                 border: 1px solid rgba(255, 255, 255, 0.1);
             }
+
             .switch {
                 position: relative;
                 display: inline-block;
@@ -174,11 +220,13 @@
                 height: 24px;
                 margin-bottom: 0;
             }
+
             .switch input {
                 opacity: 0;
                 width: 0;
                 height: 0;
             }
+
             .slider {
                 position: absolute;
                 cursor: pointer;
@@ -190,6 +238,7 @@
                 transition: .4s;
                 border-radius: 24px;
             }
+
             .slider:before {
                 position: absolute;
                 content: "";
@@ -201,12 +250,15 @@
                 transition: .4s;
                 border-radius: 50%;
             }
-            input:checked + .slider {
+
+            input:checked+.slider {
                 background-color: #4A90E2;
             }
-            input:checked + .slider:before {
+
+            input:checked+.slider:before {
                 transform: translateX(26px);
             }
+
             .switch-label {
                 font-size: 0.9rem;
                 color: rgba(255, 255, 255, 0.8);
@@ -214,340 +266,464 @@
             }
         </style>
     </head>
+
     <body class="app-page">
 
         <jsp:include page="/WEB-INF/views/header.jsp" />
 
-        <div class="bg-decoration">
-            <div class="bg-circle bg-circle-1"></div>
-            <div class="bg-circle bg-circle-2"></div>
-        </div>
-
-        <div class="container py-5 main-content" style="position: relative; z-index: 10;">
-            <div class="row mb-3">
-                <div class="col-md-8">
-                    <c:if test="${not empty sessionScope.msg}">
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="bi bi-check-circle-fill me-2"></i> ${sessionScope.msg}
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
-                        </div>
-                        <c:remove var="msg" scope="session" />
-                    </c:if>
+        
+        <main class="main-content">
+            <div class="container py-5 main-content" style="position: relative; z-index: 10;">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <c:if test="${not empty sessionScope.msg}">
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i> ${sessionScope.msg}
+                                <button type="button" class="btn-close btn-close-white"
+                                        data-bs-dismiss="alert"></button>
+                            </div>
+                            <c:remove var="msg" scope="session" />
+                        </c:if>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-8">
-                    <c:set var="currentCount" value="${fn:length(cvList)}" />
+                <div class="row">
+                    <div class="col-md-8">
+                        <c:set var="currentCount" value="${fn:length(cvList)}" />
 
-                    <div class="page-header mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
-                        <div class="welcome-text">
-                            <h1 class="text-gradient">Quản lý CV</h1>
-                            <div class="d-flex align-items-center gap-3">
-                                <p class="welcome-subtitle text-white-80 mb-0">Theo dõi hồ sơ của bạn</p>
-                                <span class="limit-info">
-                                    <i class="bi bi-files me-1"></i> 
-                                    <span class="${currentCount >= 10 ? 'text-danger fw-bold' : 'text-primary'}">${currentCount}</span>/10 CV
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <c:choose>
-                                <c:when test="${currentCount >= 10}">
-                                    <button class="btn btn-outline-light border-0 bg-white bg-opacity-10" onclick="showLimitAlert()">
-                                        <i class="bi bi-upload"></i> Tải lên
-                                    </button>
-                                    <button class="btn btn-primary px-4 opacity-50" onclick="showLimitAlert()">
-                                        <i class="bi bi-lock-fill"></i> Tạo CV Mới
-                                    </button>
-                                </c:when>
-                                <c:otherwise>
-                                    <button class="btn btn-outline-light border-0 bg-white bg-opacity-10" 
-                                            data-bs-toggle="modal" data-bs-target="#uploadCVModal">
-                                        <i class="bi bi-upload me-1"></i> Tải lên
-                                    </button>
-                                    <a href="${pageContext.request.contextPath}/user/cv_template" class="btn btn-primary px-4 shadow">
-                                        <i class="bi bi-plus-lg me-1"></i> Tạo CV Mới
-                                    </a>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </div>
-
-                    <div class="glass-card p-3 mb-4">
-                        <div class="row g-3">
-                            <div class="col-lg-5">
-                                <div class="input-group search-input-group">
-                                    <span class="input-group-text bg-transparent border-0 text-secondary">
-                                        <i class="bi bi-search"></i>
+                        <div
+                            class="page-header mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                            <div style="margin-bottom: 16px;">
+                                <h1
+                                    style="font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
+                                    Quản lý CV
+                                </h1>
+                                <div class="d-flex align-items-center gap-3">
+                                    <p style="color: var(--text-secondary); margin-bottom: 0;">Theo dõi hồ sơ
+                                        của bạn</p>
+                                    <span class="limit-info">
+                                        <i class="bi bi-files me-1"></i>
+                                        <span
+                                            class="${currentCount >= 10 ? 'text-danger fw-bold' : 'text-primary'}">${currentCount}</span>/10
+                                        CV
                                     </span>
-                                    <input type="text" 
-                                           id="cvSearch" 
-                                           class="form-control bg-transparent text-white" 
-                                           placeholder="Tìm theo tên CV..." 
-                                           onkeyup="filterCVs()">
                                 </div>
                             </div>
-                            <div class="col-lg-7">
-                                <div class="d-flex flex-wrap gap-2 justify-content-lg-end h-100 align-items-center">
-                                    <button class="btn btn-sm filter-pill active" onclick="applyFilter('all', this)">Tất cả</button>
-                                    <button class="btn btn-sm filter-pill" onclick="applyFilter('accepted', this)">Đã duyệt</button>
-                                    <button class="btn btn-sm filter-pill" onclick="applyFilter('web', this)">Tạo từ Web</button>
-                                    <button class="btn btn-sm filter-pill" onclick="applyFilter('upload', this)">File Tải lên</button>
+
+                            <div class="d-flex gap-2">
+                                <c:choose>
+                                    <c:when test="${currentCount >= 10}">
+                                        <button class="btn btn-outline-light border-0 bg-white bg-opacity-10"
+                                                onclick="showLimitAlert()">
+                                            <i class="bi bi-upload"></i> Tải lên
+                                        </button>
+                                        <button class="btn btn-primary px-4 opacity-50"
+                                                onclick="showLimitAlert()">
+                                            <i class="bi bi-lock-fill"></i> Tạo CV Mới
+                                        </button>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <button class="btn btn-outline-light border-0 bg-white bg-opacity-10"
+                                                data-bs-toggle="modal" data-bs-target="#uploadCVModal">
+                                            <i class="bi bi-upload me-1"></i> Tải lên
+                                        </button>
+                                        <a href="${pageContext.request.contextPath}/user/cv_template"
+                                           class="btn btn-primary px-4 shadow">
+                                            <i class="bi bi-plus-lg me-1"></i> Tạo CV Mới
+                                        </a>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-3 mb-4">
+                            <div class="row g-3">
+                                <div class="col-lg-5">
+                                    <div class="input-group search-input-group">
+                                        <span class="input-group-text bg-transparent border-0 text-secondary">
+                                            <i class="bi bi-search"></i>
+                                        </span>
+                                        <input type="text" id="cvSearch"
+                                               class="form-control bg-transparent text-white"
+                                               placeholder="Tìm theo tên CV..." onkeyup="filterCVs()">
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <div
+                                        class="d-flex flex-wrap gap-2 justify-content-lg-end h-100 align-items-center">
+                                        <button class="btn btn-sm filter-pill active"
+                                                onclick="applyFilter('all', this)">Tất cả</button>
+                                        <button class="btn btn-sm filter-pill"
+                                                onclick="applyFilter('accepted', this)">Đã duyệt</button>
+                                        <button class="btn btn-sm filter-pill"
+                                                onclick="applyFilter('web', this)">Tạo từ Web</button>
+                                        <button class="btn btn-sm filter-pill"
+                                                onclick="applyFilter('upload', this)">File Tải lên</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="row" id="cvContainer">
-                        <c:forEach var="cv" items="${cvList}">
-                            <div class="col-md-6 mb-4 cv-item-card" 
-                                 data-title="${cv.cvTitle.toLowerCase()}" 
-                                 data-source="${cv.isUpload == 1 ? 'upload' : 'web'}" 
-                                 data-status="${cv.isAccepted ? 'accepted' : 'pending'}">
+                        <div class="row" id="cvContainer">
+                            <c:forEach var="cv" items="${cvList}">
+                                <div class="col-md-6 mb-4 cv-item-card" data-title="${cv.cvTitle.toLowerCase()}"
+                                     data-source="${cv.isUpload == 1 ? 'upload' : 'web'}"
+                                     data-status="${cv.isAccepted ? 'accepted' : 'pending'}"
+                                     data-hirestatus="${not empty cv.latestAppStatus ? cv.latestAppStatus : ''}">
 
-                                <div class="glass-card cv-card h-100 ${cv.isAccepted ? 'border-accepted' : ''}">
-                                    <c:if test="${cv.isAccepted}">
-                                        <div class="accepted-badge">DUYỆT</div>
-                                    </c:if>
-                                    
-                                    <!-- Nút tải xuống ở góc phải -->
-                                    <div class="cv-action-top-right" style="${cv.isAccepted ? 'right: 55px;' : ''}">
-                                        <c:choose>
-                                            <c:when test="${cv.isUpload == 1}">
-                                                <!-- Đối với File Tải lên: không hiện tải xuống nữa theo yêu cầu -->
-                                            </c:when>
-                                            <c:otherwise>
-                                                <!-- Đối với Web Builder: hiện icon tải xuống -->
-                                                <a href="${pageContext.request.contextPath}/user/cv/preview?id=${cv.userCVId}" 
-                                                   onclick="alert('Mẹo: Trình duyệt sẽ mở tab mới. Bạn hãy nhấn Ctrl+P (hoặc Cmd+P trên Mac) và chọn Lưu dưới dạng PDF để tải CV này nhé!');" 
-                                                   class="btn-icon" target="_blank" title="Tải xuống CV">
-                                                    <i class="bi bi-download"></i>
-                                                </a>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </div>
+                                    <div
+                                        class="glass-card cv-card h-100 ${cv.isAccepted ? 'border-accepted' : ''}">
+                                        <c:if test="${cv.isAccepted}">
+                                            <div class="accepted-badge">DUYỆT</div>
+                                        </c:if>
 
-                                    <div class="card-body p-4">
-                                        <div class="mb-2">
-                                            <span class="badge ${cv.isUpload == 0 ? 'bg-primary' : 'bg-info'} bg-opacity-10 ${cv.isUpload == 0 ? 'text-primary' : 'text-info'}" style="font-size: 0.65rem;">
-                                                <i class="bi ${cv.isUpload == 0 ? 'bi-window-sidebar' : 'bi-file-earmark-arrow-up'} me-1"></i>
-                                                ${cv.isUpload == 0 ? 'WEB BUILDER' : 'UPLOADED FILE'}
-                                            </span>
+                                        <!-- Nút tải xuống ở góc phải -->
+                                        <div class="cv-action-top-right"
+                                             style="${cv.isAccepted ? 'right: 55px;' : ''}">
+                                            <c:choose>
+                                                <c:when test="${cv.isUpload == 1}">
+                                                    <!-- Đối với File Tải lên: không hiện tải xuống nữa theo yêu cầu -->
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <!-- Đối với Web Builder: hiện icon tải xuống -->
+                                                    <a href="${pageContext.request.contextPath}/user/cv/preview?id=${cv.userCVId}"
+                                                       onclick="alert('Mẹo: Trình duyệt sẽ mở tab mới. Bạn hãy nhấn Ctrl+P (hoặc Cmd+P trên Mac) và chọn Lưu dưới dạng PDF để tải CV này nhé!');"
+                                                       class="btn-icon" target="_blank" title="Tải xuống CV">
+                                                        <i class="bi bi-download"></i>
+                                                    </a>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </div>
 
-                                        <h5 class="fw-bold mb-1 text-white text-truncate">${cv.cvTitle}</h5>
-                                        <c:choose>
-                                            <%-- Nếu là Web Builder (isUpload == 0) thì hiện Target Role bình thường --%>
-                                            <c:when test="${cv.isUpload == 0}">
-                                                <p class="small text-secondary mb-4 text-truncate">
-                                                    ${not empty cv.targetRole ? cv.targetRole : 'Chưa cập nhật vị trí'}
-                                                </p>
-                                            </c:when>
-                                            <%-- Nếu là File Upload (isUpload == 1) thì ẩn chữ nhưng giữ khoảng trống (margin/height) --%>
-                                            <c:otherwise>
-                                                <p class="small mb-4" style="visibility: hidden;">&nbsp;</p>
-                                            </c:otherwise>
-                                        </c:choose>
-
-                                        <div class="cv-date-container">
-                                            <div class="cv-date-item">
-                                                <i class="bi bi-calendar-plus text-primary"></i>
-                                                <span class="cv-date-label">Ngày tạo:</span>
-                                                <span class="cv-date-value">
-                                                    <fmt:formatDate value="${cv.createdAt}" pattern="dd/MM/yyyy" />
+                                        <div class="card-body p-4">
+                                            <div class="mb-2 d-flex flex-wrap gap-1 align-items-center">
+                                                <%-- Badge: Web / Upload --%>
+                                                <span class="badge ${cv.isUpload == 0 ? 'bg-primary' : 'bg-info'} bg-opacity-10 ${cv.isUpload == 0 ? 'text-primary' : 'text-info'}"
+                                                      style="font-size: 0.65rem;">
+                                                    <i class="bi ${cv.isUpload == 0 ? 'bi-window-sidebar' : 'bi-file-earmark-arrow-up'} me-1"></i>
+                                                    ${cv.isUpload == 0 ? 'WEB BUILDER' : 'UPLOADED FILE'}
                                                 </span>
-                                            </div>
 
-                                            <div class="cv-date-item">
+                                                <%-- Badge: Trang thai ung tuyen dua tren latestAppStatus --%>
                                                 <c:choose>
-                                                    <c:when test="${cv.isUpload == 0}">
-                                                        <i class="bi bi-pencil-square text-info"></i>
-                                                        <span class="cv-date-label">Cập nhật:</span>
-                                                        <span class="cv-date-value">
-                                                            <fmt:formatDate value="${cv.updatedAt != null ? cv.updatedAt : cv.createdAt}" pattern="dd/MM/yyyy" />
+                                                    <c:when test="${cv.latestAppStatus == 'OFFERED'}">
+                                                        <span class="badge bg-success bg-opacity-15 text-success" style="font-size:0.65rem;">
+                                                            <i class="bi bi-check-circle-fill me-1"></i>Đã tuyển
                                                         </span>
                                                     </c:when>
-                                                    <c:otherwise>
-                                                        <div style="height: 1.2rem;"></div> 
-                                                    </c:otherwise>
+                                                    <c:when test="${cv.latestAppStatus == 'INTERVIEWING'}">
+                                                        <span class="badge bg-warning bg-opacity-15 text-warning" style="font-size:0.65rem;">
+                                                            <i class="bi bi-camera-video-fill me-1"></i>Phỏng vấn
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${cv.latestAppStatus == 'REVIEWING'}">
+                                                        <span class="badge bg-info bg-opacity-15 text-info" style="font-size:0.65rem;">
+                                                            <i class="bi bi-clock-fill me-1"></i>Đang xét
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${cv.latestAppStatus == 'REJECTED'}">
+                                                        <span class="badge bg-danger bg-opacity-15 text-danger" style="font-size:0.65rem;">
+                                                            <i class="bi bi-x-circle-fill me-1"></i>Từ chối
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${cv.latestAppStatus == 'SUBMITTED'}">
+                                                        <span class="badge bg-secondary bg-opacity-15 text-secondary" style="font-size:0.65rem;">
+                                                            <i class="bi bi-send-fill me-1"></i>Đã nộp
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${cv.isAccepted}">
+                                                        <span class="badge bg-success bg-opacity-15 text-success" style="font-size:0.65rem;">
+                                                            <i class="bi bi-check-circle-fill me-1"></i>Đã duyệt
+                                                        </span>
+                                                    </c:when>
                                                 </c:choose>
                                             </div>
 
-                                            <%-- THÊM MỚI: Dòng Trạng thái tìm kiếm --%>
-                                            <div class="cv-date-item">
-                                                <i class="bi ${cv.isSearchable == 1 ? 'bi-eye-fill' : 'bi-eye-slash-fill'} ${cv.isSearchable == 1 ? 'text-success' : 'text-secondary'}"></i>
-                                                <span class="cv-date-label">Tìm kiếm:</span>
-                                                <span class="cv-date-value ${cv.isSearchable == 1 ? 'status-public' : 'status-private'}">
-                                                    ${cv.isSearchable == 1 ? 'Đang bật' : 'Đang tắt'}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex gap-2 pt-3" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                                            <h5 class="fw-bold mb-1 text-white text-truncate">${cv.cvTitle}</h5>
                                             <c:choose>
-                                                <c:when test="${cv.isUpload == 1}">
-                                                    <a href="${pageContext.request.contextPath}/user/cv/view?id=${cv.userCVId}" 
-                                                       class="btn btn-sm btn-info flex-fill text-white" target="_blank">
-                                                        <i class="fas fa-file-pdf me-1"></i> Xem PDF
-                                                    </a>
+                                                <%-- Nếu là Web Builder (isUpload==0) thì hiện Target Role bình
+                                                    thường --%>
+                                                <c:when test="${cv.isUpload == 0}">
+                                                    <p class="small text-secondary mb-4 text-truncate">
+                                                        ${not empty cv.targetRole ? cv.targetRole : 'Chưa
+                                                          cập nhật vị trí'}
+                                                    </p>
                                                 </c:when>
+                                                <%-- Nếu là File Upload (isUpload==1) thì ẩn chữ nhưng giữ
+                                                    khoảng trống (margin/height) --%>
                                                 <c:otherwise>
-                                                    <a href="${pageContext.request.contextPath}/user/cv/preview?id=${cv.userCVId}" 
-                                                       class="btn btn-sm btn-outline-light border-0 bg-white bg-opacity-10 flex-fill" target="_blank">
-                                                        <i class="bi bi-eye me-1"></i> Xem
-                                                    </a>
-                                                    <c:choose>
-                                                        <%-- TRƯỜNG HỢP 1: CV ĐÃ DUYỆT -> Khóa nút Sửa --%>
-                                                        <c:when test="${cv.isAccepted}">
-                                                            <button class="btn btn-sm btn-outline-light border-0 bg-white bg-opacity-5 flex-fill opacity-50" 
-                                                                    style="cursor: not-allowed;" 
-                                                                    onclick="alert('Hồ sơ đã được duyệt không thể chỉnh sửa. Vui lòng liên hệ Admin nếu cần thay đổi.')"
-                                                                    title="Hồ sơ đã khóa">
-                                                                <i class="bi bi-lock-fill me-1"></i> Sửa
-                                                            </button>
-                                                        </c:when>
+                                                    <p class="small mb-4" style="visibility: hidden;">
+                                                        &nbsp;</p>
+                                                    </c:otherwise>
+                                                </c:choose>
 
-                                                        <%-- TRƯỜNG HỢP 2: CV CHƯA DUYỆT -> Cho phép sửa --%>
+                                            <div class="cv-date-container">
+                                                <div class="cv-date-item">
+                                                    <i class="bi bi-calendar-plus text-primary"></i>
+                                                    <span class="cv-date-label">Ngày tạo:</span>
+                                                    <span class="cv-date-value">
+                                                        <fmt:formatDate value="${cv.createdAt}"
+                                                                        pattern="dd/MM/yyyy" />
+                                                    </span>
+                                                </div>
+
+                                                <div class="cv-date-item">
+                                                    <c:choose>
+                                                        <c:when test="${cv.isUpload == 0}">
+                                                            <i class="bi bi-pencil-square text-info"></i>
+                                                            <span class="cv-date-label">Cập nhật:</span>
+                                                            <span class="cv-date-value">
+                                                                <fmt:formatDate
+                                                                    value="${cv.updatedAt != null ? cv.updatedAt : cv.createdAt}"
+                                                                    pattern="dd/MM/yyyy" />
+                                                            </span>
+                                                        </c:when>
                                                         <c:otherwise>
-                                                            <a href="${pageContext.request.contextPath}/user/cv/edit?id=${cv.userCVId}" 
-                                                               class="btn btn-sm btn-outline-light border-0 bg-white bg-opacity-10 flex-fill">
-                                                                <i class="bi bi-pencil-square me-1"></i> Sửa
-                                                            </a>
+                                                            <div style="height: 1.2rem;"></div>
                                                         </c:otherwise>
                                                     </c:choose>
-                                                </c:otherwise>
-                                            </c:choose>
+                                                </div>
 
-                                            <button class="btn btn-sm btn-outline-danger border-0 bg-danger bg-opacity-10"
+                                                <%-- THÊM MỚI: Dòng Trạng thái tìm kiếm --%>
+                                                <div class="cv-date-item">
+                                                    <i
+                                                        class="bi ${cv.isSearchable == 1 ? 'bi-eye-fill' : 'bi-eye-slash-fill'} ${cv.isSearchable == 1 ? 'text-success' : 'text-secondary'}"></i>
+                                                    <span class="cv-date-label">Tìm kiếm:</span>
+                                                    <span
+                                                        class="cv-date-value ${cv.isSearchable == 1 ? 'status-public' : 'status-private'}">
+                                                        ${cv.isSearchable == 1 ? 'Đang bật' : 'Đang tắt'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-2 pt-3"
+                                                 style="border-top: 1px solid rgba(255,255,255,0.05);">
+                                                <c:choose>
+                                                    <c:when test="${cv.isUpload == 1}">
+                                                        <a href="${pageContext.request.contextPath}/user/cv/view?id=${cv.userCVId}"
+                                                           class="btn btn-sm btn-info flex-fill text-white"
+                                                           target="_blank">
+                                                            <i class="fas fa-file-pdf me-1"></i> Xem PDF
+                                                        </a>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <a href="${pageContext.request.contextPath}/user/cv/preview?id=${cv.userCVId}"
+                                                           class="btn btn-sm btn-outline-light border-0 bg-white bg-opacity-10 flex-fill"
+                                                           target="_blank">
+                                                            <i class="bi bi-eye me-1"></i> Xem
+                                                        </a>
+                                                        <c:choose>
+                                                            <%-- TRƯỜNG HỢP 1: CV ĐÃ DUYỆT -> Khóa nút Sửa --%>
+                                                            <c:when test="${cv.isAccepted}">
+                                                                <button
+                                                                    class="btn btn-sm btn-outline-light border-0 bg-white bg-opacity-5 flex-fill opacity-50"
+                                                                    style="cursor: not-allowed;"
+                                                                    onclick="alert('Hồ sơ đã được duyệt không thể chỉnh sửa. Vui lòng liên hệ Admin nếu cần thay đổi.')"
+                                                                    title="Hồ sơ đã khóa">
+                                                                    <i class="bi bi-lock-fill me-1"></i> Sửa
+                                                                </button>
+                                                            </c:when>
+
+                                                            <%-- TRƯỜNG HỢP 2: CV CHƯA DUYỆT -> Cho phép sửa
+                                                            --%>
+                                                            <c:otherwise>
+                                                                <a href="${pageContext.request.contextPath}/user/cv/edit?id=${cv.userCVId}"
+                                                                   class="btn btn-sm btn-outline-light border-0 bg-white bg-opacity-10 flex-fill">
+                                                                    <i
+                                                                        class="bi bi-pencil-square me-1"></i>
+                                                                    Sửa
+                                                                </a>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </c:otherwise>
+                                                </c:choose>
+
+                                                <button
+                                                    class="btn btn-sm btn-outline-danger border-0 bg-danger bg-opacity-10"
                                                     onclick="confirmDelete('${cv.userCVId}', '${cv.cvTitle}')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </c:forEach>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="glass-card p-4 mb-4 border-0" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));">
-                        <h5 class="text-white fw-bold mb-3"><i class="bi bi-lightbulb text-warning me-2"></i>Mẹo nhỏ</h5>
-                        <p class="small text-white-80">CV có trạng thái <b class="text-success">Duyệt</b> sẽ có tỉ lệ được nhà tuyển dụng chú ý cao hơn 40%.</p>
+                            </c:forEach>
+                        </div>
                     </div>
 
-                    <h4 class="fw-bold text-white mb-3">Việc làm phù hợp</h4>
-                    <div class="d-flex flex-column gap-3">
+                    <div class="col-md-4">
+                        <div class="glass-card p-4 mb-4 border-0"
+                             style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));">
+                            <h5 class="text-white fw-bold mb-3"><i
+                                    class="bi bi-lightbulb text-warning me-2"></i>Mẹo nhỏ</h5>
+                            <p class="small text-white-80">CV có trạng thái <b class="text-success">Duyệt</b> sẽ
+                                có tỉ lệ được nhà tuyển dụng chú ý cao hơn 40%.</p>
+                        </div>
+
+                        <%-- Tieu de dong: Viec lam "Java Developer" phu hop voi CV cua ban --%>
+                        <c:choose>
+                            <c:when test="${not empty targetRoleDisplay}">
+                                <h4 class="fw-bold text-white mb-1" style="font-size:1rem; line-height:1.4;">
+                                    Việc làm <span class="text-warning">"${targetRoleDisplay}"</span>
+                                    phù hợp với CV của bạn
+                                </h4>
+                                <p class="small text-white-50 mb-3">Dựa trên CV mới nhất của bạn</p>
+                            </c:when>
+                            <c:otherwise>
+                                <h4 class="fw-bold text-white mb-1" style="font-size:1rem;">Việc làm mới nhất</h4>
+                                <p class="small text-white-50 mb-3">Hãy thêm vị trí mong muốn để nhận gợi ý</p>
+                            </c:otherwise>
+                        </c:choose>
+
+                        <div class="d-flex flex-column gap-3">
                             <c:forEach var="job" items="${jobList}">
-                                <a href="${pageContext.request.contextPath}/job-detail?id=${job.jobId}" class="glass-card p-3 text-decoration-none shadow-hover d-block">
-                                    <h6 class="fw-bold text-white mb-1">${job.title}</h6>
-                                    <p class="small text-secondary mb-2">${job.companyName != null ? job.companyName : 'Đang cập nhật công ty'}</p>
+                                <a href="${pageContext.request.contextPath}/job-detail?id=${job.jobId}"
+                                   class="glass-card p-3 text-decoration-none d-block"
+                                   style="border-left:3px solid rgba(99,102,241,0.4); transition:all 0.2s;"
+                                   onmouseover="this.style.borderColor='rgba(99,102,241,1)'; this.style.transform='translateX(3px)'"
+                                   onmouseout="this.style.borderColor='rgba(99,102,241,0.4)'; this.style.transform='translateX(0)'">
+                                    <h6 class="fw-bold text-white mb-1" style="font-size:0.88rem; line-height:1.35;">${job.title}</h6>
+                                    <p class="mb-2" style="font-size:0.78rem; color:rgba(255,255,255,0.5);">
+                                        <i class="bi bi-building me-1"></i>${not empty job.companyName ? job.companyName : 'Đang cập nhật'}
+                                        <c:if test="${not empty job.locationName}">
+                                            <span class="mx-1">·</span><i class="bi bi-geo-alt me-1"></i>${job.locationName}
+                                        </c:if>
+                                    </p>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-success fw-bold small">
-                                            ${job.formattedSalary} ${job.formattedSalary != 'Thỏa thuận' ? job.currencyCode : ''}
+                                        <span class="text-success fw-bold" style="font-size:0.8rem;">
+                                            ${job.formattedSalary}${job.formattedSalary != 'Thỏa thuận' ? ' '.concat(job.currencyCode) : ''}
                                         </span>
-                                        <span class="badge bg-primary">Chi tiết</span>
+                                        <span class="badge" style="background:rgba(99,102,241,0.7); font-size:0.7rem;">Xem →</span>
                                     </div>
                                 </a>
                             </c:forEach>
+                            <c:if test="${empty jobList}">
+                                <div class="text-center py-3">
+                                    <i class="bi bi-briefcase text-white-50 fs-3 d-block mb-2"></i>
+                                    <p class="small text-white-50 mb-0">Chưa tìm thấy việc làm phù hợp.<br>Hãy cập nhật vị trí mong muốn trong CV.</p>
+                                </div>
+                            </c:if>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="modal fade" id="uploadCVModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content glass-card border-0" style="background: #1a1d21;">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title text-white fw-bold">Tải CV lên hệ thống</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form action="${pageContext.request.contextPath}/user/cv/upload" method="post" enctype="multipart/form-data">
-                        <div class="modal-body p-4">
-                            <div class="mb-3">
-                                <label class="text-white-50 small mb-2">Tên CV gợi nhớ</label>
-                                <input type="text" name="cvTitle" class="form-control bg-dark border-secondary text-white" 
-                                       placeholder="Ví dụ: CV Java Developer - [Tên của bạn]" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="text-white-50 small mb-2">Vị trí mong muốn <span class="text-danger">*</span></label>
-                                <input type="text" name="targetRole" class="form-control bg-dark border-secondary text-white" 
-                                       placeholder="Ví dụ: Lập trình viên Java, Chuyên viên Marketing..." required>
-                            </div>
-                            <div class="switch-container mb-4">
-                                <span class="switch-label">Cho phép nhà tuyển dụng tìm thấy CV</span>
-                                <label class="switch">
-                                    <input type="checkbox" name="isSearchable" value="1" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div class="upload-zone p-4 rounded-3 text-center mb-3" onclick="document.getElementById('cvFileInput').click()">
-                                <i class="bi bi-file-earmark-pdf text-primary fs-1"></i>
-                                <input type="file" name="cvFile" id="cvFileInput" class="d-none" accept=".pdf" required onchange="updateFileName(this)">
-                                <div class="mt-2">
-                                    <span class="text-white d-block" id="fileNameLabel">Chọn file PDF từ thiết bị</span>
-                                    <span class="text-secondary small">Dung lượng tối đa 5MB</span>
+            <div class="modal fade" id="uploadCVModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content glass-card border-0" style="background: #1a1d21;">
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title text-white fw-bold">Tải CV lên hệ thống</h5>
+                            <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="${pageContext.request.contextPath}/user/cv/upload" method="post"
+                              enctype="multipart/form-data">
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="text-white-50 small mb-2">Tên CV gợi nhớ</label>
+                                    <input type="text" name="cvTitle"
+                                           class="form-control bg-dark border-secondary text-white"
+                                           placeholder="Ví dụ: CV Java Developer - [Tên của bạn]" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-white-50 small mb-2">Vị trí mong muốn <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="targetRole"
+                                           class="form-control bg-dark border-secondary text-white"
+                                           placeholder="Ví dụ: Lập trình viên Java, Chuyên viên Marketing..."
+                                           required>
+                                </div>
+                                <div class="switch-container mb-4">
+                                    <span class="switch-label">Cho phép nhà tuyển dụng tìm thấy CV</span>
+                                    <label class="switch">
+                                        <input type="checkbox" name="isSearchable" value="1" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="upload-zone p-4 rounded-3 text-center mb-3"
+                                     onclick="document.getElementById('cvFileInput').click()">
+                                    <i class="bi bi-file-earmark-pdf text-primary fs-1"></i>
+                                    <input type="file" name="cvFile" id="cvFileInput" class="d-none"
+                                           accept=".pdf" required onchange="updateFileName(this)">
+                                    <div class="mt-2">
+                                        <span class="text-white d-block" id="fileNameLabel">Chọn file PDF từ
+                                            thiết bị</span>
+                                        <span class="text-secondary small">Dung lượng tối đa 5MB</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="modal-footer border-0">
-                            <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-primary px-4">Tải lên</button>
-                        </div>
-                    </form>
+                            <div class="modal-footer border-0">
+                                <button type="button" class="btn btn-link text-secondary text-decoration-none"
+                                        data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary px-4">Tải lên</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-
+        </main>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-                                    function updateFileName(input) {
-                                        const label = document.getElementById('fileNameLabel');
-                                        if (input.files && input.files[0]) {
-                                            label.innerText = "Đã chọn: " + input.files[0].name;
-                                            label.classList.add('text-primary', 'fw-bold');
-                                        }
-                                    }
+                                               function updateFileName(input) {
+                                                   const label = document.getElementById('fileNameLabel');
+                                                   if (input.files && input.files[0]) {
+                                                       label.innerText = "Đã chọn: " + input.files[0].name;
+                                                       label.classList.add('text-primary', 'fw-bold');
+                                                   }
+                                               }
 
-                                    function showLimitAlert() {
-                                        alert("⚠️ Bạn đã đạt giới hạn 10 hồ sơ. Vui lòng xóa bớt để tiếp tục.");
-                                    }
+                                               function showLimitAlert() {
+                                                   alert("⚠️ Bạn đã đạt giới hạn 10 hồ sơ. Vui lòng xóa bớt để tiếp tục.");
+                                               }
 
-                                    function confirmDelete(cvId, cvTitle) {
-                                        if (confirm("Bạn có chắc chắn muốn xóa hồ sơ: " + cvTitle + "?")) {
-                                            window.location.href = "${pageContext.request.contextPath}/user/cv/delete?id=" + cvId;
-                                        }
-                                    }
+                                               function confirmDelete(cvId, cvTitle) {
+                                                   if (confirm("Bạn có chắc chắn muốn xóa hồ sơ: " + cvTitle + "?")) {
+                                                       window.location.href = "${pageContext.request.contextPath}/user/cv/delete?id=" + cvId;
+                                                   }
+                                               }
 
-                                    function filterCVs() {
-                                        let input = document.getElementById('cvSearch').value.toLowerCase();
-                                        let cards = document.getElementsByClassName('cv-item-card');
-                                        for (let card of cards) {
-                                            let title = card.getAttribute('data-title');
-                                            card.style.display = title.includes(input) ? "" : "none";
-                                        }
-                                    }
+                                               function filterCVs() {
+                                                   let input = document.getElementById('cvSearch').value.toLowerCase();
+                                                   let cards = document.getElementsByClassName('cv-item-card');
+                                                   for (let card of cards) {
+                                                       let title = card.getAttribute('data-title');
+                                                       card.style.display = title.includes(input) ? "" : "none";
+                                                   }
+                                               }
 
-                                    function applyFilter(filterType, btn) {
-                                        document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-                                        btn.classList.add('active');
+                                               function applyFilter(filterType, btn) {
+                                                   document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                                                   btn.classList.add('active');
+                                                   applyFilterInternal(filterType);
+                                               }
 
-                                        let cards = document.getElementsByClassName('cv-item-card');
-                                        for (let card of cards) {
-                                            let source = card.getAttribute('data-source');
-                                            let status = card.getAttribute('data-status');
+                                               function applyFilterInternal(filterType) {
+                                                   let searchVal = (document.getElementById('cvSearch').value || '').toLowerCase();
+                                                   let cards = document.getElementsByClassName('cv-item-card');
+                                                   for (let card of cards) {
+                                                       let source     = card.getAttribute('data-source');
+                                                       let status     = card.getAttribute('data-status');     // 'accepted' | 'pending'
+                                                       let hireStatus = card.getAttribute('data-hirestatus'); // 'OFFERED' | 'INTERVIEWING' | ''
+                                                       let title      = card.getAttribute('data-title') || '';
 
-                                            if (filterType === 'all') {
-                                                card.style.display = "";
-                                            } else if (filterType === 'accepted') {
-                                                card.style.display = (status === 'accepted') ? "" : "none";
-                                            } else {
-                                                card.style.display = (source === filterType) ? "" : "none";
-                                            }
-                                        }
-                                    }
+                                                       // Text search
+                                                       let matchText = (searchVal === '') || title.includes(searchVal);
+
+                                                       // Filter category
+                                                       let matchFilter;
+                                                       if (filterType === 'all') {
+                                                           matchFilter = true;
+                                                       } else if (filterType === 'accepted') {
+                                                           // Da duyet: isAccepted=true HOAC hireStatusCode='OFFERED'
+                                                           matchFilter = (status === 'accepted') || (hireStatus === 'OFFERED');
+                                                       } else {
+                                                           matchFilter = (source === filterType);
+                                                       }
+
+                                                       card.style.display = (matchText && matchFilter) ? '' : 'none';
+                                                   }
+                                               }
         </script>
     </body>
+
 </html>

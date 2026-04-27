@@ -222,4 +222,16 @@ public class UserCV {
     public void setIsSearchable(int isSearchable) {
         this.isSearchable = isSearchable;
     }
+
+    // LatestAppStatus: StatusCode moi nhat cua don ung tuyen dung chinh xac CV nay (qua UserCVId JOIN)
+    // Vi du: SUBMITTED, REVIEWING, INTERVIEWING, OFFERED, REJECTED
+    private String latestAppStatus;
+
+    public String getLatestAppStatus() {
+        return latestAppStatus;
+    }
+
+    public void setLatestAppStatus(String latestAppStatus) {
+        this.latestAppStatus = latestAppStatus;
+    }
 }

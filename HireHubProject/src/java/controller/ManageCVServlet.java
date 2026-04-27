@@ -21,7 +21,7 @@ public class ManageCVServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Object userIdObj = session.getAttribute("userId");
 
-        // 1. Kiểm tra đăng nhập
+        // 1. Kiem tra dang nhap
         if (userIdObj == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
@@ -31,33 +31,32 @@ public class ManageCVServlet extends HttpServlet {
             int userId = Integer.parseInt(userIdObj.toString());
             UserCVDAO cvDAO = new UserCVDAO();
 
-            // 2. Chỉ tập trung lấy danh sách CV
+            // 2. Lay danh sach CV (ORDER BY UpdatedAt DESC — CV moi nhat o dau)
             List<UserCV> userCVs = cvDAO.getCVsByUserId(userId);
 
-            // Tìm TargetRole từ CV mới nhất (nếu có) để gợi ý việc làm
+            // 3. Lay targetRole tu CV MOI NHAT co targetRole khong trong
+            //    (getCVsByUserId da ORDER BY UpdatedAt DESC nen phan tu dau = moi nhat)
             String targetRole = "";
-            if (userCVs != null && !userCVs.isEmpty()) {
+            if (userCVs != null) {
                 for (UserCV cv : userCVs) {
                     if (cv.getTargetRole() != null && !cv.getTargetRole().trim().isEmpty()) {
-                        targetRole = cv.getTargetRole();
+                        targetRole = cv.getTargetRole().trim();
                         break;
                     }
                 }
             }
 
-            // Lấy việc làm gợi ý
+            // 4. Lay 5 viec lam phu hop nhat theo targetRole cua CV moi nhat
             dal.JobDAO jobDAO = new dal.JobDAO();
             List<model.Job> recommendedJobs = jobDAO.getRecommendedJobs(targetRole, 5);
-            // Nếu tìm theo targetRole không có kết quả, lấy 5 job mới nhất
-            if (recommendedJobs.isEmpty() && !targetRole.isEmpty()) {
-                recommendedJobs = jobDAO.getRecommendedJobs("", 5);
-            }
 
-            // 3. Đẩy dữ liệu sang JSP
+            // 5. Day du lieu sang JSP
             request.setAttribute("cvList", userCVs);
             request.setAttribute("jobList", recommendedJobs);
+            // targetRoleDisplay de JSP hien thi: Viec lam "Nhan vien kinh doanh" phu hop voi CV cua ban
+            request.setAttribute("targetRoleDisplay", targetRole);
             request.getRequestDispatcher("/WEB-INF/views/manage_cv.jsp").forward(request, response);
-            
+
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/login");
         }

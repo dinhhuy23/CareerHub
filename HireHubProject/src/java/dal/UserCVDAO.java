@@ -71,16 +71,28 @@ public class UserCVDAO {
     }
 
     /**
-     * Lấy danh sách CV theo UserId bao gồm cả trạng thái Upload và Accepted
+     * Lay danh sach CV theo UserId, kem trang thai don ung tuyen CHINH XAC.
+     *
+     * JOIN truc tiep: Applications.UserCVId = UserCVs.UserCVId
+     * -> Moi CV chi nhan status cua don ung tuyen ma CV do thuc su duoc dung.
+     * -> Yeu cau cot UserCVId da ton tai trong bang Applications (ALTER TABLE).
      */
     public List<UserCV> getCVsByUserId(int userId) {
         List<UserCV> list = new ArrayList<>();
-        // Lọc thêm điều kiện isDeleted = 0
-        String sql = "SELECT [UserCVId], [UserId], [TemplateId], [CVTitle], [TargetRole], "
-                + "[IsUpload], [IsAccepted], [IsSearchable], [CreatedAt], [UpdatedAt] "
-                + "FROM [dbo].[UserCVs] "
-                + "WHERE [UserId] = ? AND ([isDeleted] = 0 OR [isDeleted] IS NULL) " // Thêm lọc ở đây
-                + "ORDER BY [UpdatedAt] DESC";
+        String sql =
+            "SELECT u.[UserCVId], u.[UserId], u.[TemplateId], u.[CVTitle], u.[TargetRole], "
+          + "u.[IsUpload], u.[IsAccepted], u.[IsSearchable], u.[CreatedAt], u.[UpdatedAt], "
+          + "( "
+          + "  SELECT TOP 1 ast.StatusCode "
+          + "  FROM Applications a "
+          + "  JOIN ApplicationStatuses ast ON a.CurrentStatusId = ast.ApplicationStatusId "
+          // JOIN chinh xac: application dung dung CV nay
+          + "  WHERE a.UserCVId = u.UserCVId "
+          + "  ORDER BY a.LastStatusChangedAt DESC "
+          + ") AS LatestAppStatus "
+          + "FROM [dbo].[UserCVs] u "
+          + "WHERE u.[UserId] = ? AND (u.[isDeleted] = 0 OR u.[isDeleted] IS NULL) "
+          + "ORDER BY u.[UpdatedAt] DESC";
 
         if (this.conn == null) {
             return list;
@@ -101,11 +113,14 @@ public class UserCVDAO {
                     cv.setCreatedAt(rs.getTimestamp("CreatedAt"));
                     cv.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
                     cv.setIsSearchable(rs.getInt("IsSearchable"));
+                    // LatestAppStatus: StatusCode chinh xac theo UserCVId
+                    try { cv.setLatestAppStatus(rs.getString("LatestAppStatus")); } catch (Exception e) {}
                     list.add(cv);
                 }
             }
         } catch (SQLException e) {
-            System.err.println("DEBUG: Lỗi tại getCVsByUserId: " + e.getMessage());
+            System.err.println("DEBUG: Loi tai getCVsByUserId: " + e.getMessage());
+            e.printStackTrace();
         }
         return list;
     }
@@ -261,46 +276,79 @@ public class UserCVDAO {
         return list;
     }
 
-    public int countSearchableCVs(String keyword) {
-        String sql = "SELECT COUNT(*) FROM [dbo].[UserCVs] WHERE [IsSearchable] = 1 AND ([isDeleted] = 0 OR [isDeleted] IS NULL)";
+    // Overload moi: ho tro filter theo isUpload + ISNULL email/phone tu Users
+    public int countSearchableCVs(String keyword, Integer isUploadFilter) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) FROM [dbo].[UserCVs] c "
+            + "JOIN [dbo].[Users] u ON c.[UserId] = u.[UserId] "
+            + "WHERE c.[IsSearchable] = 1 AND (c.[isDeleted] = 0 OR c.[isDeleted] IS NULL)"
+        );
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql += " AND [TargetRole] LIKE ?";
+            sql.append(" AND (c.[TargetRole] LIKE ? OR c.[CVTitle] LIKE ?)");
         }
-        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        if (isUploadFilter != null) {
+            sql.append(" AND c.[IsUpload] = " + isUploadFilter);
+        }
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int p = 1;
             if (keyword != null && !keyword.trim().isEmpty()) {
-                ps.setString(1, "%" + keyword + "%");
+                String pat = "%" + keyword + "%";
+                ps.setString(p++, pat);
+                ps.setString(p++, pat);
             }
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
+            if (rs.next()) return rs.getInt(1);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
 
-    public List<UserCV> getSearchableCVsPaginated(String keyword, int page, int pageSize) {
-        List<UserCV> list = new ArrayList<>();
-        String sql = "SELECT c.[UserCVId], c.[UserId], c.[CVTitle], ISNULL(c.[FullName], u.[FullName]) AS FullName, c.[TargetRole], "
-                + "c.[AvatarUrl], c.[UpdatedAt], c.[Email], c.[Phone], c.[IsUpload] "
-                + "FROM [dbo].[UserCVs] c JOIN [dbo].[Users] u ON c.[UserId] = u.[UserId] "
-                + "WHERE c.[IsSearchable] = 1 AND (c.[isDeleted] = 0 OR c.[isDeleted] IS NULL) ";
-        
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql += " AND c.[TargetRole] LIKE ? ";
-        }
-        
-        sql += " ORDER BY c.[UpdatedAt] DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+    // Giu nguyen cu de khong loi compile cac cho khac goi
+    public int countSearchableCVs(String keyword) {
+        return countSearchableCVs(keyword, null);
+    }
 
-        try (Connection conn = new DBContext().getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            int paramIndex = 1;
+    // Overload moi: ho tro isUploadFilter + sort (newest | az)
+    public List<UserCV> getSearchableCVsPaginated(String keyword, int page, int pageSize, Integer isUploadFilter, String sort) {
+        List<UserCV> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT c.[UserCVId], c.[UserId], c.[CVTitle], "
+            + "ISNULL(c.[FullName], u.[FullName]) AS FullName, "
+            + "c.[TargetRole], c.[AvatarUrl], c.[UpdatedAt], "
+            + "ISNULL(c.[Email], u.[Email]) AS Email, "
+            + "ISNULL(c.[Phone], u.[PhoneNumber]) AS Phone, "
+            + "c.[IsUpload] "
+            + "FROM [dbo].[UserCVs] c "
+            + "JOIN [dbo].[Users] u ON c.[UserId] = u.[UserId] "
+            + "WHERE c.[IsSearchable] = 1 AND (c.[isDeleted] = 0 OR c.[isDeleted] IS NULL)"
+        );
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (c.[TargetRole] LIKE ? OR c.[CVTitle] LIKE ?)");
+        }
+        if (isUploadFilter != null) {
+            sql.append(" AND c.[IsUpload] = " + isUploadFilter);
+        }
+        // Sort: newest (UpdatedAt DESC) hoac az (FullName ASC)
+        if ("az".equalsIgnoreCase(sort)) {
+            sql.append(" ORDER BY ISNULL(c.[FullName], u.[FullName]) ASC");
+        } else {
+            sql.append(" ORDER BY c.[UpdatedAt] DESC");
+        }
+        sql.append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (Connection conn = new DBContext().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int p = 1;
             if (keyword != null && !keyword.trim().isEmpty()) {
-                ps.setString(paramIndex++, "%" + keyword + "%");
+                String pat = "%" + keyword + "%";
+                ps.setString(p++, pat);
+                ps.setString(p++, pat);
             }
-            ps.setInt(paramIndex++, (page - 1) * pageSize);
-            ps.setInt(paramIndex++, pageSize);
-            
+            ps.setInt(p++, (page - 1) * pageSize);
+            ps.setInt(p++, pageSize);
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UserCV cv = new UserCV();
@@ -320,6 +368,16 @@ public class UserCVDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    // Overload cu (isUploadFilter, khong sort) -> mac dinh newest
+    public List<UserCV> getSearchableCVsPaginated(String keyword, int page, int pageSize, Integer isUploadFilter) {
+        return getSearchableCVsPaginated(keyword, page, pageSize, isUploadFilter, "newest");
+    }
+
+    // Overload cu nhat (khong filter, khong sort)
+    public List<UserCV> getSearchableCVsPaginated(String keyword, int page, int pageSize) {
+        return getSearchableCVsPaginated(keyword, page, pageSize, null, "newest");
     }
 
     public List<UserCV> searchPublicCVsByRole(String roleKeyword) {

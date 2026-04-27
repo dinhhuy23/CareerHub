@@ -68,61 +68,96 @@
                 gap: 15px;
                 margin-top: 35px;
             }
-            /* CSS cho bộ chọn Template */
-            .template-selector {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
-                margin-top: 15px;
-            }
-            .template-card {
-                position: relative;
-                border: 2px solid #eee;
-                border-radius: 12px;
-                padding: 10px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                text-align: center;
-                background: #fff;
-            }
-            .template-card:hover {
-                border-color: #4A90E2;
-                transform: translateY(-5px);
-            }
-            .template-card.active {
-                border-color: #4CAF50;
-                background: #f0f9f0;
-            }
-            .template-card img {
-                width: 100%;
-                height: 250px;
-                object-fit: cover;
-                border-radius: 8px;
-                margin-bottom: 10px;
-            }
-            .template-card input[type="radio"] {
-                display: none; /* Ẩn nút radio mặc định */
-            }
             .template-name {
-                font-weight: 700;
-                color: #333;
+                font-weight: 700; color: #333;
+                font-size: 1rem; margin-top: 12px;
             }
-            .check-badge {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: #4CAF50;
-                color: white;
-                width: 25px;
-                height: 25px;
-                border-radius: 50%;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                font-size: 14px;
+            /* ===== TEMPLATE CAROUSEL (multi-slide) ===== */
+            .template-carousel-wrap {
+                position: relative; margin-top: 16px;
+                user-select: none; padding: 0 52px;
             }
-            .template-card.active .check-badge {
+            .template-viewport {
+                overflow: hidden; width: 100%;
+            }
+            .template-track {
                 display: flex;
+                transition: transform 0.38s cubic-bezier(.4,0,.2,1);
+                will-change: transform;
+            }
+            /* Moi slide chiem 1/3 viewport (3 cot) */
+            .template-slide {
+                flex: 0 0 calc(100% / 3);
+                box-sizing: border-box;
+                padding: 0 10px;
+            }
+            @media (max-width: 768px) {
+                .template-slide { flex: 0 0 50%; }
+                .template-carousel-wrap { padding: 0 44px; }
+            }
+            @media (max-width: 480px) {
+                .template-slide { flex: 0 0 100%; }
+            }
+            /* Arrow buttons */
+            .carousel-arrow {
+                position: absolute; top: 50%; transform: translateY(-50%);
+                background: rgba(74,144,226,0.13);
+                border: 2px solid rgba(74,144,226,0.35);
+                color: #4A90E2; border-radius: 50%;
+                width: 42px; height: 42px;
+                display: flex; align-items: center; justify-content: center;
+                cursor: pointer; font-size: 1.2rem; z-index: 10;
+                transition: all 0.2s;
+            }
+            .carousel-arrow:hover:not(:disabled) {
+                background: rgba(74,144,226,0.28); border-color: #4A90E2;
+                transform: translateY(-50%) scale(1.05);
+            }
+            .carousel-arrow.left  { left:  0; }
+            .carousel-arrow.right { right: 0; }
+            .carousel-arrow:disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+            /* Card ben trong slide */
+            .tpl-card {
+                width: 100%;
+                border: 3px solid #e0e0e0; border-radius: 14px;
+                padding: 10px; text-align: center;
+                background: #fff; cursor: pointer;
+                transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+                position: relative;
+            }
+            .tpl-card:hover   { transform: translateY(-4px); border-color: #4A90E2; }
+            .tpl-card.active  { border-color: #4CAF50; box-shadow: 0 8px 24px rgba(76,175,80,0.22); }
+            /* Anh to hon, khong bi bop */
+            .tpl-card img {
+                width: 100%;
+                height: 380px;
+                object-fit: contain;
+                object-position: top;
+                border-radius: 8px;
+                background: #f5f5f5;
+            }
+            .tpl-check {
+                position: absolute; top: 10px; right: 10px;
+                background: #4CAF50; color: #fff;
+                width: 28px; height: 28px; border-radius: 50%;
+                display: none; align-items: center; justify-content: center;
+                font-size: 15px; font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            }
+            .tpl-card.active .tpl-check { display: flex; }
+            /* Dots */
+            .carousel-dots {
+                display: flex; justify-content: center;
+                gap: 7px; margin-top: 14px;
+            }
+            .carousel-dot {
+                width: 9px; height: 9px; border-radius: 50%;
+                background: #ccc; cursor: pointer; border: none; padding: 0;
+                transition: background 0.2s, transform 0.2s;
+            }
+            .carousel-dot.active { background: #4A90E2; transform: scale(1.35); }
+            .carousel-counter {
+                text-align: center; font-size: 0.82rem;
+                color: #999; margin-top: 6px;
             }
             /* Nút gạt tùy chỉnh trong Modal */
             .modal-status-row {
@@ -269,27 +304,40 @@
                     </div>
                 </div>
 
-                <%-- SECTION: CHỌN MẪU GIAO DIỆN --%>
+                <%-- SECTION: CHON MAU GIAO DIEN --%>
                 <div class="form-section animate-fadeInUp">
-                    <h3>🎨 Chọn mẫu giao diện CV</h3>
-                    <div class="template-selector">
-                        <c:forEach items="${listT}" var="t">
-                            <label class="template-card ${cv.templateId == t.templateId ? 'active' : ''}" id="card-${t.templateId}">
-                                <div class="check-badge">✓</div>
+                    <h3>&#127912; Ch&#7885;n m&#7851;u giao di&#7879;n CV</h3>
 
-                                <%-- Input radio thực tế sẽ lưu TemplateId vào DB --%>
-                                <input type="radio" name="templateId" value="${t.templateId}" 
-                                       ${cv.templateId == t.templateId ? 'checked' : ''} 
-                                       onchange="updateTemplateSelection(this, ${t.templateId})">
+                    <div class="template-carousel-wrap">
+                        <button type="button" class="carousel-arrow left" id="arrowLeft"
+                                onclick="slideTemplate(-1)">&#8592;</button>
 
-                                <%-- Hiển thị ImageThumbnail từ Cloudinary --%>
-                                <img src="${t.imageThumbnail}" alt="${t.name}">
+                        <div class="template-viewport">
+                            <div class="template-track" id="tplTrack">
+                                <c:forEach items="${listT}" var="t" varStatus="vs">
+                                    <div class="template-slide">
+                                        <div class="tpl-card ${cv.templateId == t.templateId ? 'active' : ''}"
+                                             id="tplCard-${t.templateId}"
+                                             onclick="selectTemplate(${t.templateId})">
+                                            <div class="tpl-check">&#10003;</div>
+                                            <img src="${t.imageThumbnail}" alt="${t.name}">
+                                            <div class="template-name">${t.name}</div>
+                                            <input type="radio" name="templateId" value="${t.templateId}"
+                                                   id="radio-${t.templateId}"
+                                                   ${cv.templateId == t.templateId ? 'checked' : ''}
+                                                   style="display:none;">
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
 
-                                <%-- Hiển thị tên (Thanh Lịch, Tiêu Chuẩn, Tham Vọng) --%>
-                                <div class="template-name">${t.name}</div>
-                            </label>
-                        </c:forEach>
+                        <button type="button" class="carousel-arrow right" id="arrowRight"
+                                onclick="slideTemplate(1)">&#8594;</button>
                     </div>
+
+                    <div class="carousel-dots" id="tplDots"></div>
+                    <div class="carousel-counter" id="tplCounter"></div>
                 </div>
 
                 <%-- ACTIONS --%>
@@ -379,17 +427,72 @@
                 document.getElementById('finalIsSearchable').value = isSearchableChecked ? "1" : "0";
                 document.getElementById('cvForm').submit();
             }
-            function updateTemplateSelection(radio, templateId) {
-                // Xóa class active ở tất cả các card
-                document.querySelectorAll('.template-card').forEach(card => {
-                    card.classList.remove('active');
-                });
+            /* ===== TEMPLATE CAROUSEL (multi-slide) ===== */
+            (function() {
+                var track    = document.getElementById('tplTrack');
+                var slides   = document.querySelectorAll('.template-slide');
+                var dotsWrap = document.getElementById('tplDots');
+                var counter  = document.getElementById('tplCounter');
+                var arrowL   = document.getElementById('arrowLeft');
+                var arrowR   = document.getElementById('arrowRight');
+                var total    = slides.length;
+                var current  = 0;
 
-                // Thêm class active cho card vừa chọn
-                if (radio.checked) {
-                    document.getElementById('card-' + templateId).classList.add('active');
+                function getPerView() {
+                    if (window.innerWidth <= 480) return 1;
+                    if (window.innerWidth <= 768) return 2;
+                    return 3;
                 }
-            }
+                function maxOffset() { return Math.max(0, total - getPerView()); }
+
+                function goTo(idx) {
+                    var pv  = getPerView();
+                    var max = maxOffset();
+                    idx = Math.max(0, Math.min(idx, max));
+                    current = idx;
+                    track.style.transform = 'translateX(-' + (100 / pv * idx) + '%)';
+                    arrowL.disabled = (idx === 0);
+                    arrowR.disabled = (idx >= max);
+                    var pageIdx   = Math.floor(idx / pv);
+                    var pageCount = Math.ceil(total / pv);
+                    document.querySelectorAll('.carousel-dot').forEach(function(d, i) {
+                        d.classList.toggle('active', i === pageIdx);
+                    });
+                    counter.textContent = (pageIdx + 1) + ' / ' + pageCount;
+                }
+
+                function buildDots() {
+                    dotsWrap.innerHTML = '';
+                    var pv        = getPerView();
+                    var pageCount = Math.ceil(total / pv);
+                    for (var i = 0; i < pageCount; i++) {
+                        var d = document.createElement('button');
+                        d.type = 'button'; d.className = 'carousel-dot';
+                        (function(pi) { d.onclick = function() { goTo(pi * getPerView()); }; })(i);
+                        dotsWrap.appendChild(d);
+                    }
+                }
+
+                // Khoi tao: tim slide co template dang active
+                var startIdx = 0;
+                slides.forEach(function(s, i) {
+                    if (s.querySelector('.tpl-card.active')) startIdx = i;
+                });
+                buildDots();
+                goTo(Math.floor(startIdx / getPerView()) * getPerView());
+
+                window.addEventListener('resize', function() { buildDots(); goTo(current); });
+
+                window.slideTemplate = function(dir) { goTo(current + dir); };
+
+                window.selectTemplate = function(tplId) {
+                    document.querySelectorAll('.tpl-card').forEach(function(c) { c.classList.remove('active'); });
+                    var card  = document.getElementById('tplCard-' + tplId);
+                    var radio = document.getElementById('radio-' + tplId);
+                    if (card)  card.classList.add('active');
+                    if (radio) radio.checked = true;
+                };
+            })();
         </script>
     </body>
-</html>
+</html>

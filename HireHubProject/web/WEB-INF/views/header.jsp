@@ -47,7 +47,7 @@
                            class="nav-link ${currentUri.endsWith('/admin') || currentUri.endsWith('/admin/') ? 'active' : ''}">
                             Admin Quản lý
                         </a>
-                        
+
                         <a href="${pageContext.request.contextPath}/admin/company"
                            class="nav-link ${currentUri.contains('/admin/company') ? 'active' : ''}">Quản lý Công ty</a>
                         <a href="${pageContext.request.contextPath}/admin/departments"
@@ -70,11 +70,15 @@
                         </a>
                         <a href="${pageContext.request.contextPath}/employer/browse_cv" 
                            class="nav-link ${currentUri.contains('/employer/browse_cv') ? 'active' : ''}">
-                            Tìm ứng viên
+                            Tìm hồ sơ
                         </a>
                         <a href="${pageContext.request.contextPath}/employer/candidates" 
                            class="nav-link ${currentUri.contains('/employer/candidates') ? 'active' : ''}">
-                           Khám phá ứng viên
+                            Khám phá ứng viên
+                        </a>
+                        <a href="${pageContext.request.contextPath}/interview-questions" 
+                           class="nav-link ${currentUri.contains('/interview-questions') ? 'active' : ''}">
+                            Câu hỏi phỏng vấn
                         </a>
                     </c:when>
 
@@ -97,13 +101,13 @@
                            class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
                             Việc làm đã lưu
                         </a>
-                        <a href="${pageContext.request.contextPath}/user/saved-jobs" 
-                           class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
-                           Việc làm đã lưu
-                        </a>
                         <a href="${pageContext.request.contextPath}/user/interview-results" 
                            class="nav-link ${currentUri.contains('/user/interview-results') ? 'active' : ''}">
-                           Kết quả phỏng vấn
+                            Kết quả phỏng vấn
+                        </a>
+                        <a href="${pageContext.request.contextPath}/interview-questions" 
+                           class="nav-link ${currentUri.contains('/interview-questions') ? 'active' : ''}">
+                            Câu hỏi phỏng vấn
                         </a>
                     </c:otherwise>
                 </c:choose>
@@ -122,10 +126,10 @@
                     <c:if test="${sessionScope.userRole == 'CANDIDATE'|| sessionScope.userRole == 'RECRUITER'}">
                         <a href="${pageContext.request.contextPath}/notification" id="notifBell"
                            style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); border: 1px solid var(--border-color); margin-right: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s;"
-                           onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                           onmouseover="this.style.borderColor = 'var(--primary)'" onmouseout="this.style.borderColor = 'var(--border-color)'">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                             </svg>
                             <%-- Badge số chưa đọc – được inject bằng AJAX --%>
                             <span id="notifCount" style="display:none; position: absolute; top: -4px; right: -4px; background: var(--error); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; font-weight: 800; align-items: center; justify-content: center;"></span>
@@ -164,7 +168,7 @@
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
                                     Kết quả phỏng vấn
                                 </a>
-                             
+
 
                                 <a href="${pageContext.request.contextPath}/notification" class="dropdown-item">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -190,8 +194,8 @@
     </div>
 </nav>
 
-        <%-- CHATBOT AI SECTION --%>
-   <%-- CHATBOT AI SECTION --%>
+<%-- CHATBOT AI SECTION --%>
+<%-- CHATBOT AI SECTION --%>
 <style>
     .ai-chat-widget {
         position: fixed;
@@ -323,7 +327,7 @@
         <div class="chat-header">
             <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.5 8.5 0 0 1 7.6 10.6l.9-3.8z"></path>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.5 8.5 0 0 1 7.6 10.6l.9-3.8z"></path>
                 </svg>
             </div>
             <div>
@@ -340,8 +344,8 @@
             <input type="text" class="chat-input" id="chatInput" placeholder="Nhập câu hỏi...">
             <button type="button" class="send-btn" id="sendChatBtn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
             </button>
         </div>
@@ -349,7 +353,7 @@
 
     <button type="button" class="chat-btn" id="toggleChatBtn">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
     </button>
 </div>
@@ -374,7 +378,8 @@
         function appendMessage(role, text, id) {
             const div = document.createElement('div');
             div.className = 'msg ' + role;
-            if (id) div.id = id;
+            if (id)
+                div.id = id;
             div.innerText = text;
             chatBody.appendChild(div);
             chatBody.scrollTop = chatBody.scrollHeight;
@@ -382,7 +387,8 @@
 
         async function sendAiMessage() {
             const message = chatInput.value.trim();
-            if (!message) return;
+            if (!message)
+                return;
 
             appendMessage('user', message);
             chatInput.value = '';
@@ -407,7 +413,8 @@
                 }
 
                 const loadingEl = document.getElementById(loadingId);
-                if (loadingEl) loadingEl.remove();
+                if (loadingEl)
+                    loadingEl.remove();
 
                 if (res.ok && data.reply) {
                     appendMessage('ai', data.reply);
@@ -421,7 +428,8 @@
             } catch (err) {
                 console.error('Chatbot fetch error:', err);
                 const loadingEl = document.getElementById(loadingId);
-                if (loadingEl) loadingEl.remove();
+                if (loadingEl)
+                    loadingEl.remove();
                 appendMessage('ai', 'Không thể kết nối tới server chatbot.');
             }
         }
@@ -438,7 +446,7 @@
         window.sendAiMessage = sendAiMessage;
     })();
 </script>
-    </script>
+</script>
 
 <script>
     function toggleDropdown() {

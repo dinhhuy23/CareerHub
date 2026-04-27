@@ -1,6 +1,7 @@
 package controller;
 
 import dal.ApplicationDAO;
+import dal.UserCVDAO;
 import model.Application;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,10 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-import jakarta.servlet.annotation.MultipartConfig;
-
 @WebServlet(name = "ApplyController", urlPatterns = {"/job/apply"})
-@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
 public class ApplyController extends HttpServlet {
 
     private final ApplicationDAO appDAO = new ApplicationDAO();
@@ -22,17 +20,19 @@ public class ApplyController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 1. Lấy userId từ sessionScope (được lưu khi đăng nhập)
         HttpSession session = request.getSession(false);
-        Long userId = (session != null) ? (Long) session.getAttribute("userId") : null;
+        Long userId = null;
+        if (session != null) {
+            Object obj = session.getAttribute("userId");
+            if (obj instanceof Long) userId = (Long) obj;
+            else if (obj != null) { try { userId = Long.parseLong(obj.toString()); } catch (Exception e) {} }
+        }
 
         if (userId == null) {
-            // Chưa đăng nhập, chuyển về trang login
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        // Chỉ CANDIDATE mới được nộp đơn
         String userRole = (String) session.getAttribute("userRole");
         if (!"CANDIDATE".equals(userRole)) {
             response.sendRedirect(request.getContextPath() + "/jobs");
@@ -40,52 +40,36 @@ public class ApplyController extends HttpServlet {
         }
 
         try {
-            // Lấy Job ID
             long jobId = Long.parseLong(request.getParameter("jobId"));
             String coverLetter = request.getParameter("coverLetter");
 
-            // Kiểm tra xem đã nộp đơn công việc này chưa
+            // Kiem tra da nop don chua
             if (appDAO.hasAlreadyApplied(userId, jobId)) {
                 response.sendRedirect(request.getContextPath() + "/job-detail?id=" + jobId + "&error=already_applied");
                 return;
             }
 
-            jakarta.servlet.http.Part filePart = request.getPart("cvFile");
-            Long resumeId = null;
-
-            if (filePart != null && filePart.getSize() > 0) {
-                // Thư mục lưu file: Sử dụng FileUtil để lưu ngoài thư mục build (tránh mất file khi clean and build)
-                String uploadPath = utils.FileUtil.getUploadPath("cv");
-
-                // Sinh tên file duy nhất tránh trùng lặp ghim đuôi pdf
-                String fileName = java.util.UUID.randomUUID().toString() + ".pdf";
-                String filePath = uploadPath + java.io.File.separator + fileName;
-                filePart.write(filePath);
-
-                // Đường dẫn URL tương đối dể trả về Web
-                String fileUrl = request.getContextPath() + "/uploads/cv/" + fileName;
-
-                // Lưu vào Resume Database
-                dal.ResumeDAO resumeDAO = new dal.ResumeDAO();
-                model.CandidateResume resume = new model.CandidateResume();
-                resume.setCandidateId(userId);
-                resume.setResumeTitle("CV_"+fileName.substring(0, 8));
-                resume.setFileUrl(fileUrl);
-                resume.setFileType("application/pdf");
-                resume.setFileSizeKB((int) (filePart.getSize() / 1024));
-                
-                resumeId = resumeDAO.insert(resume);
+            // Doc selectedCvId tu form (dropdown chon CV)
+            String selectedCvIdStr = request.getParameter("selectedCvId");
+            Long selectedCvId = null;
+            if (selectedCvIdStr != null && !selectedCvIdStr.trim().isEmpty()) {
+                try { selectedCvId = Long.parseLong(selectedCvIdStr); } catch (Exception e) {}
             }
 
-            // Tạo đối tượng Application và gán dữ liệu
+            // Neu khong chon CV nao, bao loi
+            if (selectedCvId == null) {
+                response.sendRedirect(request.getContextPath() + "/job-detail?id=" + jobId + "&error=no_cv_selected");
+                return;
+            }
+
+            // Tao don ung tuyen
             Application app = new Application();
             app.setJobId(jobId);
             app.setCandidateId(userId);
-            app.setResumeId(resumeId);
+            app.setUserCVId(selectedCvId);  // Luu UserCVId chinh xac
             app.setCoverLetter(coverLetter);
-            app.setStatus("PENDING"); 
+            app.setStatus("PENDING");
 
-            // Lưu vào Database Applications
             long appId = appDAO.insert(app);
             if (appId > 0) {
                 response.sendRedirect(request.getContextPath() + "/job-detail?id=" + jobId + "&success=applied");
