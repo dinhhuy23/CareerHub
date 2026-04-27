@@ -15,18 +15,18 @@
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-              rel="stylesheet" media="print" onload="this.media='all'">
+              rel="stylesheet" media="print" onload="this.media = 'all'">
         <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
               rel="stylesheet">
         <link rel="stylesheet"
               href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
-              media="print" onload="this.media='all'">
+              media="print" onload="this.media = 'all'">
         <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"></noscript>
         <link rel="stylesheet"
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-              media="print" onload="this.media='all'">
+              media="print" onload="this.media = 'all'">
         <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 
@@ -271,7 +271,7 @@
 
         <jsp:include page="/WEB-INF/views/header.jsp" />
 
-        
+
         <main class="main-content">
             <div class="container py-5 main-content" style="position: relative; z-index: 10;">
                 <div class="row mb-3">
@@ -452,10 +452,12 @@
                                                 <%-- Nếu là File Upload (isUpload==1) thì ẩn chữ nhưng giữ
                                                     khoảng trống (margin/height) --%>
                                                 <c:otherwise>
-                                                    <p class="small mb-4" style="visibility: hidden;">
-                                                        &nbsp;</p>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                    <p class="small text-secondary mb-4 text-truncate">
+                                                        ${not empty cv.targetRole ? cv.targetRole : 'Chưa
+                                                          cập nhật vị trí'}
+                                                    </p>
+                                                </c:otherwise>
+                                            </c:choose>
 
                                             <div class="cv-date-container">
                                                 <div class="cv-date-item">
@@ -580,8 +582,8 @@
                                 <a href="${pageContext.request.contextPath}/job-detail?id=${job.jobId}"
                                    class="glass-card p-3 text-decoration-none d-block"
                                    style="border-left:3px solid rgba(99,102,241,0.4); transition:all 0.2s;"
-                                   onmouseover="this.style.borderColor='rgba(99,102,241,1)'; this.style.transform='translateX(3px)'"
-                                   onmouseout="this.style.borderColor='rgba(99,102,241,0.4)'; this.style.transform='translateX(0)'">
+                                   onmouseover="this.style.borderColor = 'rgba(99,102,241,1)'; this.style.transform = 'translateX(3px)'"
+                                   onmouseout="this.style.borderColor = 'rgba(99,102,241,0.4)'; this.style.transform = 'translateX(0)'">
                                     <h6 class="fw-bold text-white mb-1" style="font-size:0.88rem; line-height:1.35;">${job.title}</h6>
                                     <p class="mb-2" style="font-size:0.78rem; color:rgba(255,255,255,0.5);">
                                         <i class="bi bi-building me-1"></i>${not empty job.companyName ? job.companyName : 'Đang cập nhật'}
@@ -701,10 +703,10 @@
                                                    let searchVal = (document.getElementById('cvSearch').value || '').toLowerCase();
                                                    let cards = document.getElementsByClassName('cv-item-card');
                                                    for (let card of cards) {
-                                                       let source     = card.getAttribute('data-source');
-                                                       let status     = card.getAttribute('data-status');     // 'accepted' | 'pending'
+                                                       let source = card.getAttribute('data-source');
+                                                       let status = card.getAttribute('data-status');     // 'accepted' | 'pending'
                                                        let hireStatus = card.getAttribute('data-hirestatus'); // 'OFFERED' | 'INTERVIEWING' | ''
-                                                       let title      = card.getAttribute('data-title') || '';
+                                                       let title = card.getAttribute('data-title') || '';
 
                                                        // Text search
                                                        let matchText = (searchVal === '') || title.includes(searchVal);

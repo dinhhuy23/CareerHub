@@ -142,7 +142,7 @@
                             
                             <div class="candidate-actions">
                                 <c:if test="${not empty c.cvUrl}">
-                                    <a href="${c.cvUrl}" target="_blank" class="btn-cv">Xem CV</a>
+                                    <a href="${pageContext.request.contextPath}${c.cvUrl}" target="_blank" class="btn-cv">Xem CV</a>
                                 </c:if>
                                 <button class="btn-invite" onclick="openInviteModal('${c.userId}', '${c.fullName}')">
                                     📩 Mời ứng tuyển

@@ -725,41 +725,73 @@ public int countSearchJobs(String keyword, String status) {
 }
     public List<Job> getRecommendedJobs(String targetRole, int limit) {
         List<Job> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(
-            "SELECT TOP (?) j.*, c.CompanyName " +
-            "FROM Jobs j " +
-            "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " +
-            "WHERE j.Status = 'PUBLISHED' "
-        );
-        
-        String[] words = null;
+
+        // Tach keywords, loc tu qua ngan (< 2 ky tu)
+        List<String> wordList = new ArrayList<>();
         if (targetRole != null && !targetRole.trim().isEmpty()) {
-            // Tách các từ, loại bỏ khoảng trắng thừa
-            words = targetRole.trim().split("\\s+");
-            if (words.length > 0) {
-                sql.append("AND (");
-                for (int i = 0; i < words.length; i++) {
-                    if (i > 0) sql.append(" OR ");
-                    sql.append("j.Title LIKE ?");
-                }
-                sql.append(") ");
+            for (String w : targetRole.trim().split("[\\s,;/]+")) {
+                if (w.trim().length() >= 2) wordList.add(w.trim());
             }
         }
-        
-        sql.append("ORDER BY j.UpdatedAt DESC");
-        
+        boolean hasKeywords = !wordList.isEmpty();
+        String[] words = wordList.toArray(new String[0]);
+
+        StringBuilder sql = new StringBuilder();
+
+        if (hasKeywords) {
+            // Query voi relevance score: Title=3diem, Description=2diem, Requirements=1diem
+            sql.append("SELECT TOP (?) j.JobId, j.Title, j.SalaryMin, j.SalaryMax, j.CurrencyCode, ");
+            sql.append("j.DeadlineAt, c.CompanyName, l.LocationName, ");
+            sql.append("(");
+            for (int i = 0; i < words.length; i++) {
+                if (i > 0) sql.append(" + ");
+                sql.append("(CASE WHEN j.Title LIKE ? THEN 3 ELSE 0 END)");
+                sql.append(" + (CASE WHEN j.Description LIKE ? THEN 2 ELSE 0 END)");
+                sql.append(" + (CASE WHEN j.Requirements LIKE ? THEN 1 ELSE 0 END)");
+            }
+            sql.append(") AS RelevanceScore ");
+            sql.append("FROM Jobs j ");
+            sql.append("LEFT JOIN Companies c ON j.CompanyId = c.CompanyId ");
+            sql.append("LEFT JOIN Locations l ON j.LocationId = l.LocationId ");
+            sql.append("WHERE j.Status = 'PUBLISHED' AND (");
+            for (int i = 0; i < words.length; i++) {
+                if (i > 0) sql.append(" OR ");
+                sql.append("j.Title LIKE ? OR j.Description LIKE ? OR j.Requirements LIKE ?");
+            }
+            sql.append(") ORDER BY RelevanceScore DESC, j.UpdatedAt DESC");
+        } else {
+            // Fallback: lay 5 job moi nhat neu khong co keywords
+            sql.append("SELECT TOP (?) j.JobId, j.Title, j.SalaryMin, j.SalaryMax, j.CurrencyCode, ");
+            sql.append("j.DeadlineAt, c.CompanyName, l.LocationName, 0 AS RelevanceScore ");
+            sql.append("FROM Jobs j ");
+            sql.append("LEFT JOIN Companies c ON j.CompanyId = c.CompanyId ");
+            sql.append("LEFT JOIN Locations l ON j.LocationId = l.LocationId ");
+            sql.append("WHERE j.Status = 'PUBLISHED' ORDER BY j.UpdatedAt DESC");
+        }
+
         try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-             
-            int paramIndex = 1;
-            ps.setInt(paramIndex++, limit);
-            
-            if (words != null && words.length > 0) {
+
+            int p = 1;
+            ps.setInt(p++, limit);
+
+            if (hasKeywords) {
+                // Set 1: tham so cho CASE WHEN (tinh diem) — 3 cols x n keywords
                 for (String word : words) {
-                    ps.setString(paramIndex++, "%" + word + "%");
+                    String pat = "%" + word + "%";
+                    ps.setString(p++, pat);
+                    ps.setString(p++, pat);
+                    ps.setString(p++, pat);
+                }
+                // Set 2: tham so cho WHERE clause — 3 cols x n keywords
+                for (String word : words) {
+                    String pat = "%" + word + "%";
+                    ps.setString(p++, pat);
+                    ps.setString(p++, pat);
+                    ps.setString(p++, pat);
                 }
             }
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Job job = new Job();
@@ -768,7 +800,9 @@ public int countSearchJobs(String keyword, String status) {
                     job.setSalaryMin(rs.getBigDecimal("SalaryMin"));
                     job.setSalaryMax(rs.getBigDecimal("SalaryMax"));
                     job.setCurrencyCode(rs.getString("CurrencyCode"));
-                    try { job.setCompanyName(rs.getString("CompanyName")); } catch(Exception e){}
+                    job.setDeadlineAt(rs.getTimestamp("DeadlineAt"));
+                    try { job.setCompanyName(rs.getString("CompanyName")); } catch (Exception e) {}
+                    try { job.setLocationName(rs.getString("LocationName")); } catch (Exception e) {}
                     list.add(job);
                 }
             }
