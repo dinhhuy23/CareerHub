@@ -64,6 +64,25 @@
         .contact-email-hint strong {
             color: var(--primary);
         }
+
+        /* Validation Styles */
+        .error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 5px;
+            display: none;
+            font-weight: 500;
+        }
+        .form-input.invalid {
+            border-color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.02);
+        }
+        .form-input.invalid:focus {
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+        }
+        .required {
+            color: #ef4444;
+        }
     </style>
 </head>
 <body class="app-page">
@@ -130,12 +149,14 @@
                             <input type="text" id="fullName" name="fullName" class="form-input"
                                    value="${user.fullName}" required maxlength="150"
                                    placeholder="Nguyễn Văn A">
+                            <div class="error-message" id="fullNameError">Họ tên chỉ chứa chữ cái và ít nhất 2 ký tự.</div>
                         </div>
 
                         <div class="form-group">
                             <label for="phoneNumber" class="form-label">Số điện thoại</label>
                             <input type="tel" id="phoneNumber" name="phoneNumber" class="form-input"
                                    value="${user.phoneNumber}" placeholder="0901234567">
+                            <div class="error-message" id="phoneNumberError">Số điện thoại 10 chữ số không hợp lệ (VD: 0912345678).</div>
                         </div>
                     </div>
 
@@ -154,6 +175,7 @@
                             <label for="dateOfBirth" class="form-label">Ngày sinh</label>
                             <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-input"
                                    value="<fmt:formatDate value='${user.dateOfBirth}' pattern='yyyy-MM-dd'/>">
+                            <div class="error-message" id="dobError">Bạn phải ít nhất 15 tuổi.</div>
                         </div>
                     </div>
 
@@ -174,6 +196,7 @@
                         <input type="email" id="contactEmail" name="contactEmail" class="form-input"
                                value="${user.contactEmail}"
                                placeholder="example@gmail.com">
+                        <div class="error-message" id="contactEmailError">Gmail không hợp lệ hoặc không phải @gmail.com</div>
                         <p class="contact-email-hint">
                             Đây là Gmail dùng để nhà tuyển dụng hoặc hệ thống liên hệ với bạn. 
                             Phải là địa chỉ <strong>@gmail.com</strong> và mỗi tài khoản chỉ được liên kết 
@@ -193,16 +216,91 @@
 
     <script src="${pageContext.request.contextPath}/js/main.js"></script>
     <script>
-        // Client-side validation nhanh
-        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
-            const contactEmail = document.getElementById('contactEmail').value.trim();
-            if (contactEmail) {
-                if (!contactEmail.endsWith('@gmail.com')) {
-                    e.preventDefault();
-                    alert('⚠ Gmail liên hệ phải là địa chỉ @gmail.com');
-                    document.getElementById('contactEmail').focus();
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editProfileForm');
+            const fullName = document.getElementById('fullName');
+            const phoneNumber = document.getElementById('phoneNumber');
+            const dateOfBirth = document.getElementById('dateOfBirth');
+            const contactEmail = document.getElementById('contactEmail');
+
+            // Regex patterns
+            const nameRegex = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỊỈỊịỉịỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỵỷỹý\s]{2,150}$/;
+            const phoneRegex = /^(\+84|0)[35789][0-9]{8}$/;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+            function validateField(input, regex, errorId, isRequired = false) {
+                const value = input.value.trim();
+                const errorEl = document.getElementById(errorId);
+                
+                if (isRequired && !value) {
+                    input.classList.add('invalid');
+                    errorEl.textContent = 'Trường này là bắt buộc.';
+                    errorEl.style.display = 'block';
+                    return false;
                 }
+
+                if (value && regex && !regex.test(value)) {
+                    input.classList.add('invalid');
+                    errorEl.style.display = 'block';
+                    return false;
+                }
+
+                input.classList.remove('invalid');
+                errorEl.style.display = 'none';
+                return true;
             }
+
+            function validateDOB() {
+                const value = dateOfBirth.value;
+                const errorEl = document.getElementById('dobError');
+                if (!value) return true;
+
+                const dob = new Date(value);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const m = today.getMonth() - dob.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                    age--;
+                }
+
+                if (age < 15) {
+                    dateOfBirth.classList.add('invalid');
+                    errorEl.textContent = 'Bạn phải ít nhất 15 tuổi.';
+                    errorEl.style.display = 'block';
+                    return false;
+                }
+                
+                if (age > 120) {
+                    dateOfBirth.classList.add('invalid');
+                    errorEl.textContent = 'Ngày sinh không hợp lệ.';
+                    errorEl.style.display = 'block';
+                    return false;
+                }
+
+                dateOfBirth.classList.remove('invalid');
+                errorEl.style.display = 'none';
+                return true;
+            }
+
+            // Real-time validation
+            fullName.addEventListener('input', () => validateField(fullName, nameRegex, 'fullNameError', true));
+            phoneNumber.addEventListener('input', () => validateField(phoneNumber, phoneRegex, 'phoneNumberError'));
+            contactEmail.addEventListener('input', () => validateField(contactEmail, emailRegex, 'contactEmailError'));
+            dateOfBirth.addEventListener('change', validateDOB);
+
+            form.addEventListener('submit', function(e) {
+                const isNameValid = validateField(fullName, nameRegex, 'fullNameError', true);
+                const isPhoneValid = validateField(phoneNumber, phoneRegex, 'phoneNumberError');
+                const isEmailValid = validateField(contactEmail, emailRegex, 'contactEmailError');
+                const isDobValid = validateDOB();
+
+                if (!isNameValid || !isPhoneValid || !isEmailValid || !isDobValid) {
+                    e.preventDefault();
+                    // Scroll to first error
+                    const firstError = document.querySelector('.form-input.invalid');
+                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
         });
     </script>
 </body>

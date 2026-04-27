@@ -181,6 +181,86 @@
             transition: all 0.2s; margin-top: 15px; display: inline-flex; align-items: center; gap: 8px;
         }
         .btn-view-offer:hover { background: #10B981; color: white; }
+
+        /* Stats Dashboard */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .stat-card-mini {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s;
+        }
+        .stat-card-mini:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .stat-icon-mini {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .stat-content-mini h4 { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-content-mini .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 32px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 80px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .search-input-wrapper { flex: 1; position: relative; min-width: 250px; }
+        .search-input-wrapper svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-input-wrapper input { width: 100%; padding: 12px 16px 12px 42px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-tertiary); color: var(--text-primary); }
+        .filter-select { padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-tertiary); color: var(--text-primary); min-width: 150px; }
+
+        /* Timeline */
+        .timeline-process {
+            display: flex;
+            align-items: center;
+            margin-top: 24px;
+            gap: 4px;
+            position: relative;
+        }
+        .timeline-step {
+            flex: 1;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            position: relative;
+        }
+        .timeline-step.active { background: var(--primary); }
+        .timeline-step.success { background: #10B981; }
+        .timeline-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: var(--border-color);
+            position: absolute; top: -4px; left: 0;
+            border: 2px solid var(--bg-secondary);
+        }
+        .timeline-step.active .timeline-dot { background: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2); }
+        .timeline-step.success .timeline-dot { background: #10B981; }
+        .timeline-label {
+            position: absolute; top: 12px; left: 0;
+            font-size: 0.65rem; font-weight: 700; color: var(--text-muted);
+            white-space: nowrap;
+        }
+        .timeline-step.active .timeline-label { color: var(--primary); }
+        .timeline-step.success .timeline-label { color: #10B981; }
     </style>
 </head>
 <body class="app-page">
@@ -190,11 +270,60 @@
         <div class="container animate-fadeInUp results-container">
             
             <div style="margin-bottom: 40px; text-align: center;">
-                <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Kết quả tuyển dụng</h1>
-                <p style="color: var(--text-secondary); font-size: 1.1rem;">
-                    Nơi lưu giữ những cột mốc quan trọng trong sự nghiệp của bạn.
+                <h1 style="font-size: 2.8rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Career Milestones</h1>
+                <p style="color: var(--text-secondary); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
+                    Theo dõi hành trình chinh phục những đỉnh cao mới trong sự nghiệp của bạn tại HireHub.
                 </p>
             </div>
+
+            <!-- Stats Dashboard -->
+            <div class="stats-dashboard animate-fadeInUp">
+                <div class="stat-card-mini">
+                    <div class="stat-icon-mini" style="background: rgba(99, 102, 241, 0.1); color: #6366F1;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <div class="stat-content-mini">
+                        <h4>Tổng kết quả</h4>
+                        <div class="stat-value">${totalResults}</div>
+                    </div>
+                </div>
+                <div class="stat-card-mini">
+                    <div class="stat-icon-mini" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <div class="stat-content-mini">
+                        <h4>Trúng tuyển</h4>
+                        <div class="stat-value">${totalOffered}</div>
+                    </div>
+                </div>
+                <div class="stat-card-mini">
+                    <div class="stat-icon-mini" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div class="stat-content-mini">
+                        <h4>Sắp tới</h4>
+                        <div class="stat-value">${totalUpcoming}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <form action="${pageContext.request.contextPath}/user/interview-results" method="GET" class="filter-bar animate-fadeInUp" style="animation-delay: 0.1s;">
+                <div class="search-input-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" name="search" placeholder="Tìm theo công việc hoặc công ty..." value="${search}">
+                </div>
+                <select name="statusFilter" class="filter-select">
+                    <option value="ALL" ${statusFilter == 'ALL' ? 'selected' : ''}>Tất cả trạng thái</option>
+                    <option value="OFFERED" ${statusFilter == 'OFFERED' ? 'selected' : ''}>Trúng tuyển (Pass)</option>
+                    <option value="INTERVIEW_ROUND_2" ${statusFilter == 'INTERVIEW_ROUND_2' ? 'selected' : ''}>Pass Vòng 1</option>
+                    <option value="REJECTED" ${statusFilter == 'REJECTED' ? 'selected' : ''}>Không phù hợp (Fail)</option>
+                </select>
+                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">Lọc kết quả</button>
+                <c:if test="${not empty search || (not empty statusFilter && statusFilter != 'ALL')}">
+                    <a href="${pageContext.request.contextPath}/user/interview-results" class="btn btn-outline" style="padding: 12px 16px;">Xóa lọc</a>
+                </c:if>
+            </form>
 
             <c:choose>
                 <c:when test="${empty results}">
@@ -270,12 +399,31 @@
                                         </div>
                                     </c:if>
 
-                                    <%-- Hiển thị ghi chú từ nhà tuyển dụng nếu có --%>
                                     <c:if test="${not empty app.hrNote}">
                                         <div class="hr-feedback">
                                             " ${app.hrNote} "
                                         </div>
                                     </c:if>
+
+                                    <!-- Timeline Process -->
+                                    <div class="timeline-process">
+                                        <div class="timeline-step success">
+                                            <div class="timeline-dot"></div>
+                                            <div class="timeline-label">ỨNG TUYỂN</div>
+                                        </div>
+                                        <div class="timeline-step ${app.status == 'INTERVIEW_ROUND_2' || app.status == 'OFFERED' ? 'success' : 'active'}">
+                                            <div class="timeline-dot"></div>
+                                            <div class="timeline-label">VÒNG 1</div>
+                                        </div>
+                                        <div class="timeline-step ${app.status == 'OFFERED' ? 'success' : (app.status == 'INTERVIEW_ROUND_2' ? 'active' : '')}">
+                                            <div class="timeline-dot"></div>
+                                            <div class="timeline-label">VÒNG 2</div>
+                                        </div>
+                                        <div class="timeline-step ${app.status == 'OFFERED' ? 'success' : (app.status == 'REJECTED' ? 'active' : '')}" style="flex: 0; min-width: 12px;">
+                                            <div class="timeline-dot"></div>
+                                            <div class="timeline-label">KẾT QUẢ</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             

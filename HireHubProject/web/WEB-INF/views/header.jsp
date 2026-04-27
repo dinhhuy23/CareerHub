@@ -97,9 +97,10 @@
                            class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
                             Việc làm đã lưu
                         </a>
-                        <a href="${pageContext.request.contextPath}/user/saved-jobs" 
-                           class="nav-link ${currentUri.contains('/user/saved-jobs') ? 'active' : ''}">
-                           Việc làm đã lưu
+
+                        <a href="${pageContext.request.contextPath}/user/my-applications" 
+                           class="nav-link ${currentUri.contains('/user/my-applications') ? 'active' : ''}">
+                            Việc làm đã ứng tuyển
                         </a>
                         <a href="${pageContext.request.contextPath}/user/interview-results" 
                            class="nav-link ${currentUri.contains('/user/interview-results') ? 'active' : ''}">

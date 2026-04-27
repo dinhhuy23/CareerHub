@@ -179,25 +179,37 @@
                 <input type="hidden" name="action" value="invite">
                 <input type="hidden" name="candidateUserId" id="modalCandidateUserId">
                 
-                <c:choose>
-                    <c:when test="${not empty myJobs}">
-                        <div style="max-height: 300px; overflow-y: auto;">
-                            <c:forEach var="job" items="${myJobs}">
-                                <button type="submit" name="jobId" value="${job.jobId}" class="job-select-item">
-                                    <div style="font-weight: 700;">${job.title}</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-muted);">${job.locationName}</div>
-                                </button>
-                            </c:forEach>
-                        </div>
-                    </c:when>
-                    <c:otherwise>
-                        <p style="color: var(--error); text-align: center; padding: 20px;">
-                            Bạn chưa đăng tin tuyển dụng nào để mời.
-                        </p>
-                    </c:otherwise>
-                </c:choose>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Vị trí ứng tuyển</label>
+                    <c:choose>
+                        <c:when test="${not empty myJobs}">
+                            <select name="jobId" class="form-control" style="width: 100%; background: var(--bg-primary);" required onchange="updateDefaultMessage()">
+                                <option value="">-- Chọn công việc --</option>
+                                <c:forEach var="job" items="${myJobs}">
+                                    <option value="${job.jobId}" data-title="${job.title}">${job.title}</option>
+                                </c:forEach>
+                            </select>
+                        </c:when>
+                        <c:otherwise>
+                            <div style="padding: 12px; background: rgba(239, 68, 68, 0.1); color: #EF4444; border-radius: 12px; font-size: 0.9rem;">
+                                Bạn chưa đăng tin tuyển dụng nào để mời.
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Lời mời (Thư mời)</label>
+                    <textarea name="inviteMessage" id="inviteMessage" class="form-control" rows="6" 
+                              placeholder="Chào bạn, mình thấy hồ sơ của bạn rất phù hợp..." 
+                              style="width: 100%; background: var(--bg-primary); resize: none;"></textarea>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">Bạn có thể chỉnh sửa nội dung thư mời trước khi gửi.</p>
+                </div>
                 
-                <button type="button" onclick="closeInviteModal()" class="btn btn-outline" style="width: 100%; margin-top: 10px;">Hủy</button>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeInviteModal()" class="btn btn-outline" style="flex: 1;">Hủy</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px;">Gửi lời mời ngay</button>
+                </div>
             </form>
         </div>
     </div>
@@ -208,6 +220,20 @@
             document.getElementById('modalCandidateName').innerText = name;
             document.getElementById('inviteModal').classList.add('active');
             document.body.style.overflow = 'hidden';
+            updateDefaultMessage();
+        }
+
+        function updateDefaultMessage() {
+            const select = document.querySelector('select[name="jobId"]');
+            const candidateName = document.getElementById('modalCandidateName').innerText;
+            const textarea = document.getElementById('inviteMessage');
+            
+            if (select && select.selectedIndex > 0) {
+                const jobTitle = select.options[select.selectedIndex].getAttribute('data-title');
+                textarea.value = `Chào ${candidateName},\n\nMình là tuyển dụng từ hệ thống HireHub. Sau khi xem qua hồ sơ của bạn, mình thấy bạn rất tiềm năng và phù hợp với vị trí "${jobTitle}" mà công ty mình đang tuyển dụng.\n\nMời bạn xem chi tiết công việc và phản hồi lại cho mình nhé. Hy vọng có cơ hội hợp tác với bạn!\n\nTrân trọng.`;
+            } else {
+                textarea.value = "";
+            }
         }
 
         function closeInviteModal() {

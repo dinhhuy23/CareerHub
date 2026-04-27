@@ -76,7 +76,11 @@ public class JobDAO {
     }
 public List<Job> getLatestJobs(int limit) {
     List<Job> list = new ArrayList<>();
-    String sql = "SELECT TOP (?) * FROM Jobs ORDER BY CreatedAt DESC";
+    String sql = "SELECT TOP (?) j.*, c.CompanyName " +
+                 "FROM Jobs j " +
+                 "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " +
+                 "WHERE j.Status = 'PUBLISHED' " +
+                 "ORDER BY j.CreatedAt DESC";
 
     try (Connection conn = dbContext.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -88,15 +92,16 @@ public List<Job> getLatestJobs(int limit) {
             Job j = new Job();
             j.setJobId(rs.getLong("JobId"));
             j.setTitle(rs.getString("Title"));
-            j.setSalaryMin((BigDecimal) rs.getObject("SalaryMin"));
-            j.setSalaryMax((BigDecimal) rs.getObject("SalaryMax"));
+            j.setSalaryMin(rs.getBigDecimal("SalaryMin"));
+            j.setSalaryMax(rs.getBigDecimal("SalaryMax"));
+            j.setCurrencyCode(rs.getString("CurrencyCode"));
             j.setStatus(rs.getString("Status"));
+            j.setCompanyName(rs.getString("CompanyName"));
             list.add(j);
         }
     } catch (Exception e) {
-        e.printStackTrace();
+        LOGGER.log(Level.SEVERE, "Error in getLatestJobs", e);
     }
-
     return list;
 }
     public long insert(Job job) throws SQLException {

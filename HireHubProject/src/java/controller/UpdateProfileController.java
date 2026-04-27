@@ -66,49 +66,59 @@ public class UpdateProfileController extends HttpServlet {
         // ===================================================================
         StringBuilder errors = new StringBuilder();
 
-        // [1] Họ tên: bắt buộc
+        // [1] Họ tên: bắt buộc, 2-150 ký tự, chỉ chứa chữ cái
         if (fullName == null || fullName.trim().isEmpty()) {
             errors.append("Họ và tên không được để trống. ");
-        } else if (fullName.trim().length() > 150) {
-            errors.append("Họ và tên không được vượt quá 150 ký tự. ");
+        } else {
+            String fn = fullName.trim();
+            if (fn.length() < 2 || fn.length() > 150) {
+                errors.append("Họ và tên phải từ 2 đến 150 ký tự. ");
+            } else if (!fn.matches("^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂẾưăạảấầẩẫậắằẳẵặẹẻẽềềểếỊỈỊịỉịỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỵỷỹý\\s]+$")) {
+                errors.append("Họ và tên chỉ được chứa chữ cái. ");
+            }
         }
 
         // [2] Gmail liên hệ (ContactEmail): không bắt buộc, nhưng nếu nhập phải đúng format
         //     và phải là địa chỉ Gmail (đuôi @gmail.com)
-        //     Mỗi Gmail chỉ được liên kết với 1 tài khoản
         if (contactEmail != null && !contactEmail.trim().isEmpty()) {
             String ce = contactEmail.trim().toLowerCase();
-            if (!SecurityUtil.isValidEmail(ce)) {
-                errors.append("Gmail liên hệ không đúng định dạng email. ");
-            } else if (!ce.endsWith("@gmail.com")) {
-                errors.append("Gmail liên hệ phải là địa chỉ @gmail.com. ");
+            if (!ce.matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$")) {
+                errors.append("Gmail liên hệ không hợp lệ (phải là @gmail.com). ");
             } else if (userDAO.contactEmailExistsForOtherUser(ce, userId)) {
                 errors.append("Gmail liên hệ này đã được liên kết với tài khoản khác. ");
             }
         }
 
-        // [3] Số điện thoại: nếu có thì chỉ cho phép số và dấu + () - chuẩn quốc tế
+        // [3] Số điện thoại: 10 chữ số, bắt đầu bằng 0 hoặc +84
         if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
-            if (!phoneNumber.trim().matches("^[+]?[\\d\\s\\-().]{7,20}$")) {
-                errors.append("Số điện thoại không hợp lệ. ");
+            String pn = phoneNumber.trim();
+            if (!pn.matches("^(\\+84|0)[35789][0-9]{8}$")) {
+                errors.append("Số điện thoại không hợp lệ (phải là 10 chữ số VN). ");
             }
         }
 
-        // [4] Ngày sinh: nếu có thì không được là ngày trong tương lai và phải >= 10 tuổi
-        if (dateOfBirthStr != null && !dateOfBirthStr.isEmpty()) {
+        // [4] Giới tính: Nam, Nu, Khac
+        if (gender != null && !gender.trim().isEmpty()) {
+            if (!gender.equals("Nam") && !gender.equals("Nu") && !gender.equals("Khac")) {
+                errors.append("Giới tính không hợp lệ. ");
+            }
+        }
+
+        // [5] Ngày sinh: nếu có thì không được là ngày trong tương lai và phải >= 15 tuổi
+        if (dateOfBirthStr != null && !dateOfBirthStr.trim().isEmpty()) {
             try {
-                Date dob = Date.valueOf(dateOfBirthStr);
+                Date dob = Date.valueOf(dateOfBirthStr.trim());
                 java.time.LocalDate dobLocal = dob.toLocalDate();
                 java.time.LocalDate today = java.time.LocalDate.now();
                 if (dobLocal.isAfter(today)) {
                     errors.append("Ngày sinh không thể là ngày trong tương lai. ");
-                } else if (dobLocal.isAfter(today.minusYears(10))) {
-                    errors.append("Bạn phải ít nhất 10 tuổi. ");
+                } else if (dobLocal.isAfter(today.minusYears(15))) {
+                    errors.append("Bạn phải ít nhất 15 tuổi. ");
                 } else if (dobLocal.isBefore(today.minusYears(120))) {
                     errors.append("Ngày sinh không hợp lệ. ");
                 }
             } catch (IllegalArgumentException e) {
-                errors.append("Ngày sinh không đúng định dạng. ");
+                errors.append("Ngày sinh không đúng định dạng (yyyy-MM-dd). ");
             }
         }
 
