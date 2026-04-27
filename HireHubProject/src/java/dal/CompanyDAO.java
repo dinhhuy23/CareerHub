@@ -209,6 +209,51 @@ public class CompanyDAO {
         return getCompanyById(id);
     }
 
+    public List<String> getDistinctIndustries() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT Industry FROM Companies WHERE Industry IS NOT NULL AND Industry != '' ORDER BY Industry";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<String> getDistinctSizes() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT CompanySize FROM Companies WHERE CompanySize IS NOT NULL AND CompanySize != '' ORDER BY CompanySize";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<String> getDistinctStatuses() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT Status FROM Companies WHERE Status IS NOT NULL AND Status != '' ORDER BY Status";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(rs.getString(1));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // ── Pagination & filtering ────────────────────────────────────────────────
 
     /** Total companies in DB – dùng cho stats strip (không phụ thuộc filter). */
@@ -238,13 +283,13 @@ public class CompanyDAO {
      * Truyền null/""/""All"" để bỏ qua một điều kiện lọc.
      */
     public List<Company> getFiltered(String keyword, String industry,
-                                     String location, int page, int pageSize) {
+                                     String location, String size, String status, int page, int pageSize) {
         List<Company> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT C.*, L.LocationName FROM Companies C " +
             "LEFT JOIN Locations L ON C.LocationId = L.LocationId WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-        applyCompanyFilters(sql, params, keyword, industry, location);
+        applyCompanyFilters(sql, params, keyword, industry, location, size, status);
         sql.append("ORDER BY C.CompanyId DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         params.add((page - 1) * pageSize);
         params.add(pageSize);
@@ -273,12 +318,12 @@ public class CompanyDAO {
     }
 
     /** Đếm số công ty thỏa filter – dùng để tính totalPages. */
-    public int countFiltered(String keyword, String industry, String location) {
+    public int countFiltered(String keyword, String industry, String location, String size, String status) {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) FROM Companies C " +
             "LEFT JOIN Locations L ON C.LocationId = L.LocationId WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-        applyCompanyFilters(sql, params, keyword, industry, location);
+        applyCompanyFilters(sql, params, keyword, industry, location, size, status);
 
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -290,11 +335,16 @@ public class CompanyDAO {
     }
 
     private void applyCompanyFilters(StringBuilder sql, List<Object> params,
-                                     String keyword, String industry, String location) {
+                                     String keyword, String industry, String location, String size, String status) {
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (C.CompanyName LIKE ? OR C.Industry LIKE ?) ");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
+            sql.append("AND (C.CompanyName LIKE ? OR C.Industry LIKE ? OR C.Description LIKE ? OR C.CompanySize LIKE ? OR C.WebsiteUrl LIKE ? OR L.LocationName LIKE ?) ");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
         }
         if (industry != null && !industry.isEmpty() && !"All".equals(industry)) {
             sql.append("AND C.Industry = ? ");
@@ -303,6 +353,14 @@ public class CompanyDAO {
         if (location != null && !location.isEmpty() && !"All".equals(location)) {
             sql.append("AND L.LocationName = ? ");
             params.add(location);
+        }
+        if (size != null && !size.isEmpty() && !"All".equals(size)) {
+            sql.append("AND C.CompanySize = ? ");
+            params.add(size);
+        }
+        if (status != null && !status.isEmpty() && !"All".equals(status)) {
+            sql.append("AND C.Status = ? ");
+            params.add(status);
         }
     }
 }

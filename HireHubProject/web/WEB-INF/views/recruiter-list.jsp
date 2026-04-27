@@ -39,10 +39,11 @@
         }
         .rl-search {
             flex: 1; min-width: 240px;
-            padding: 11px 16px 11px 40px;
+            padding: 9px 16px 9px 40px;
             background: var(--glass-bg); backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border); border-radius: var(--radius-md);
-            color: var(--text-primary); font-size: 0.9rem; outline: none;
+            color: var(--text-primary); font-size: 0.85rem; outline: none;
+            font-family: inherit;
             transition: border-color 0.2s;
             position: relative;
         }
@@ -54,10 +55,11 @@
             color: var(--text-muted); pointer-events: none;
         }
         .rl-filter {
-            padding: 11px 16px; min-width: 160px;
+            padding: 9px 14px; min-width: 140px;
             background: var(--glass-bg); backdrop-filter: var(--glass-blur);
             border: 1px solid var(--glass-border); border-radius: var(--radius-md);
-            color: var(--text-primary); font-size: 0.9rem; outline: none;
+            color: var(--text-primary); font-size: 0.85rem; outline: none;
+            font-family: inherit;
             cursor: pointer; transition: border-color 0.2s;
         }
         .rl-filter:focus { border-color: var(--primary); }
@@ -97,13 +99,13 @@
             background: linear-gradient(135deg, var(--primary), var(--accent));
         }
         .rl-table th {
-            padding: 14px 16px; text-align: left;
-            font-size: 0.75rem; font-weight: 700;
+            padding: 10px 14px; text-align: left;
+            font-size: 0.72rem; font-weight: 700;
             text-transform: uppercase; letter-spacing: 0.5px;
             color: rgba(255,255,255,0.9); white-space: nowrap;
         }
         .rl-table td {
-            padding: 14px 16px; font-size: 0.875rem;
+            padding: 10px 14px; font-size: 0.85rem;
             border-bottom: 1px solid rgba(255,255,255,0.04);
             color: var(--text-primary); vertical-align: middle;
         }
@@ -113,10 +115,10 @@
 
         /* ── Avatar ── */
         .rec-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
+            width: 32px; height: 32px; border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--accent));
             display: inline-flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.8rem; color: white;
+            font-weight: 700; font-size: 0.75rem; color: white;
             flex-shrink: 0; margin-right: 10px;
         }
         .name-cell { display: flex; align-items: center; }
@@ -165,9 +167,9 @@
         /* ── Actions ── */
         .action-btns { display: flex; gap: 8px; }
         .btn-icon {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 6px 12px; border-radius: var(--radius-sm);
-            font-size: 0.78rem; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 5px 10px; border-radius: var(--radius-sm);
+            font-size: 0.75rem; font-weight: 600;
             text-decoration: none; transition: all 0.15s; border: none; cursor: pointer;
         }
         .btn-icon.edit {
@@ -191,6 +193,8 @@
 
         /* ── Row hidden by filter ── */
         tr.hidden-row { display: none; }
+
+
         /* ── Toast notification ── */
         .toast-container {
             position: fixed; top: 24px; right: 24px; z-index: 9999;
@@ -338,6 +342,14 @@
                         </option>
                     </c:forEach>
                 </select>
+                <select name="department" class="rl-filter" id="departmentFilter" onchange="this.form.submit()">
+                    <option value="All" ${departmentFilter == 'All' ? 'selected' : ''}>Tất cả phòng ban</option>
+                    <c:forEach var="d" items="${allDepartments}">
+                        <option value="${fn:escapeXml(d.departmentName)}" ${departmentFilter == d.departmentName ? 'selected' : ''}>
+                            <c:out value="${d.departmentName}"/>
+                        </option>
+                    </c:forEach>
+                </select>
                 <button type="submit" class="btn btn-primary" style="padding:10px 18px;white-space:nowrap;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:5px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Tìm kiếm
                 </button>
@@ -405,11 +417,11 @@
                                             </td>
                                             <td>
                                                 <div class="action-btns">
+                                                    <a class="btn-icon edit" href="${pageContext.request.contextPath}/admin/recruiters?action=edit&id=${r.recruiterId}">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                        Sửa
+                                                    </a>
                                                     <c:if test="${r.status == 'ACTIVE'}">
-                                                        <a class="btn-icon edit" href="${pageContext.request.contextPath}/admin/recruiters?action=edit&id=${r.recruiterId}">
-                                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                                            Sửa
-                                                        </a>
                                                         <a class="btn-icon del" href="${pageContext.request.contextPath}/admin/recruiters?action=delete&id=${r.recruiterId}"
                                                            onclick="return confirm('Xác nhận khóa nhà tuyển dụng này?')">
                                                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
@@ -454,7 +466,7 @@
                             <span class="page-btn disabled">&#8592;</span>
                         </c:when>
                         <c:otherwise>
-                            <a class="page-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8592;</a>
+                            <a class="page-btn" href="?page=${currentPage-1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}&department=${fn:escapeXml(departmentFilter)}">&#8592;</a>
                         </c:otherwise>
                     </c:choose>
                     <%-- Page numbers --%>
@@ -462,7 +474,7 @@
                         <c:choose>
                             <c:when test="${pn == -1}"><span class="page-ellipsis">&#8230;</span></c:when>
                             <c:when test="${pn == currentPage}"><span class="page-btn active">${pn}</span></c:when>
-                            <c:otherwise><a class="page-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">${pn}</a></c:otherwise>
+                            <c:otherwise><a class="page-btn" href="?page=${pn}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}&department=${fn:escapeXml(departmentFilter)}">${pn}</a></c:otherwise>
                         </c:choose>
                     </c:forEach>
                     <%-- Next --%>
@@ -471,7 +483,7 @@
                             <span class="page-btn disabled">&#8594;</span>
                         </c:when>
                         <c:otherwise>
-                            <a class="page-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}">&#8594;</a>
+                            <a class="page-btn" href="?page=${currentPage+1}&keyword=${fn:escapeXml(keyword)}&status=${fn:escapeXml(statusFilter)}&company=${fn:escapeXml(companyFilter)}&department=${fn:escapeXml(departmentFilter)}">&#8594;</a>
                         </c:otherwise>
                     </c:choose>
                 </div>

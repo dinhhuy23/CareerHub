@@ -214,12 +214,12 @@ public class CompanyEditServlet extends HttpServlet {
             setToast(request, ok ? "success" : "error",
                 ok ? "Cập nhật công ty thành công!"
                    : "Cập nhật thất bại. Vui lòng thử lại.");
-            response.sendRedirect(request.getContextPath() + "/company?id=" + companyId);
+            response.sendRedirect(request.getContextPath() + "/company/detail?id=" + companyId);
 
         } catch (Exception e) {
             e.printStackTrace();
             setToast(request, "error", "Đã xảy ra lỗi hệ thống. Vui lòng thử lại.");
-            response.sendRedirect(request.getContextPath() + "/company?id=" + companyId);
+            response.sendRedirect(request.getContextPath() + "/company/detail?id=" + companyId);
         }
     }
 
