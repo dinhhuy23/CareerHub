@@ -162,7 +162,7 @@ public class UserDAO {
             int index = 1;
 
             if (keyword != null && !keyword.isEmpty()) {
-                ps.setString(index++, "%" + keyword + "%");
+                ps.setString(index++, "%" + escapeLike(keyword) + "%");
             }
 
             if (status != null && !status.isEmpty()) {
@@ -193,7 +193,7 @@ public class UserDAO {
 
         try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, "%" + keyword + "%");
+            ps.setString(1, "%" + escapeLike(keyword) + "%");
             ps.setInt(2, offset);
             ps.setInt(3, limit);
 
@@ -726,5 +726,12 @@ public class UserDAO {
             LOGGER.log(Level.SEVERE, "Error checking contactEmail uniqueness", e);
         }
         return false;
+    }
+
+    private String escapeLike(String input) {
+        if (input == null) return null;
+        return input.replace("[", "[[]")
+                    .replace("%", "[%]")
+                    .replace("_", "[_]");
     }
 }

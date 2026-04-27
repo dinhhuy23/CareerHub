@@ -1,6 +1,7 @@
 package controller;
 
 import dal.ApplicationDAO;
+import dal.JobDAO;
 import model.Application;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 import jakarta.servlet.annotation.MultipartConfig;
+import model.Job;
 
 @WebServlet(name = "ApplyController", urlPatterns = {"/job/apply"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, maxFileSize = 1024 * 1024 * 10, maxRequestSize = 1024 * 1024 * 50)
@@ -49,6 +51,13 @@ public class ApplyController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/job-detail?id=" + jobId + "&error=already_applied");
                 return;
             }
+            JobDAO jobDAO = new JobDAO();
+            Job job = jobDAO.findById(jobId);
+            long exprity = job.getDeadlineAt().getTime();
+            long now = System.currentTimeMillis();
+            if (exprity < now) {
+                 response.sendRedirect(request.getContextPath() + "/job-detail?id=" + jobId + "&error=exprity");
+            } else {
 
             jakarta.servlet.http.Part filePart = request.getPart("cvFile");
             Long resumeId = null;
@@ -91,6 +100,7 @@ public class ApplyController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/job-detail?id=" + jobId + "&success=applied");
             } else {
                 response.sendRedirect(request.getContextPath() + "/job-detail?id=" + jobId + "&error=failed");
+            }
             }
         } catch (Exception e) {
             e.printStackTrace();

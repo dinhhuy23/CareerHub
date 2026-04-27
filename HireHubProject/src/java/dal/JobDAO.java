@@ -323,7 +323,7 @@ public List<Job> getLatestJobs(int limit) {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND j.Title LIKE ? ");
-            params.add("%" + keyword.trim() + "%");
+            params.add("%" + escapeLike(keyword.trim()) + "%");
         }
 
         if (status != null && !status.trim().isEmpty()) {
@@ -370,7 +370,7 @@ public List<Job> getLatestJobs(int limit) {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (j.Title LIKE ? OR j.Description LIKE ? OR u.FullName LIKE ?) ");
-            String searchPattern = "%" + keyword.trim() + "%";
+            String searchPattern = "%" + escapeLike(keyword.trim()) + "%";
             params.add(searchPattern);
             params.add(searchPattern);
             params.add(searchPattern);
@@ -432,7 +432,7 @@ public List<Job> getLatestJobs(int limit) {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (j.Title LIKE ? OR j.Description LIKE ? OR u.FullName LIKE ?) ");
-            String searchPattern = "%" + keyword.trim() + "%";
+            String searchPattern = "%" + escapeLike(keyword.trim()) + "%";
             params.add(searchPattern);
             params.add(searchPattern);
             params.add(searchPattern);
@@ -806,5 +806,13 @@ public int countSearchJobs(String keyword, String status) {
             e.printStackTrace();
         }
         return list;
+    }
+    private String escapeLike(String input) {
+        if (input == null) {
+            return null;
+        }
+        return input.replace("[", "[[]")
+                    .replace("%", "[%]")
+                    .replace("_", "[_]");
     }
 }
