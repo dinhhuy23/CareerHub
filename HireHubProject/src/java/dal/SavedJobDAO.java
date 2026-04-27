@@ -240,4 +240,19 @@ public class SavedJobDAO {
 
         return list;
     }
+    public int countSavedJobs(long candidateUserId) {
+        String sql = "SELECT COUNT(*) FROM SavedJobs sj "
+                + "JOIN CandidateProfiles cp ON sj.CandidateId = cp.CandidateId "
+                + "WHERE cp.UserId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, candidateUserId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error counting saved jobs", e);
+        }
+        return 0;
+    }
 }

@@ -36,6 +36,32 @@ public class DashboardController extends HttpServlet {
         }
 
         // Candidate: hiện trang dashboard bình thường
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            dal.ApplicationDAO appDAO = new dal.ApplicationDAO();
+            dal.SavedJobDAO savedJobDAO = new dal.SavedJobDAO();
+            dal.JobDAO jobDAO = new dal.JobDAO();
+            dal.NotificationDAO notiDAO = new dal.NotificationDAO();
+
+            // Lấy thống kê
+            int totalApplied = appDAO.findByCandidateId(userId).size();
+            int totalSaved = savedJobDAO.countSavedJobs(userId);
+            int totalNotifications = notiDAO.countUnread(userId);
+
+            request.setAttribute("totalApplied", totalApplied);
+            request.setAttribute("totalSaved", totalSaved);
+            request.setAttribute("totalNotifications", totalNotifications);
+
+            // Lấy danh sách ứng tuyển gần đây (3 cái mới nhất)
+            java.util.List<model.Application> recentApps = appDAO.findByCandidateId(userId);
+            if (recentApps.size() > 3) recentApps = recentApps.subList(0, 3);
+            request.setAttribute("recentApps", recentApps);
+
+            // Gợi ý việc làm (Lấy 4 cái mới nhất)
+            java.util.List<model.Job> recommendedJobs = jobDAO.getLatestJobs(4);
+            request.setAttribute("recommendedJobs", recommendedJobs);
+        }
+
         request.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(request, response);
     }
 }

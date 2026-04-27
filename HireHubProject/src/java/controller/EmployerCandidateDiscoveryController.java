@@ -87,10 +87,12 @@ public class EmployerCandidateDiscoveryController extends HttpServlet {
                 Job job = jobDAO.findById(jobId);
                 
                 if (job != null) {
+                    String customMessage = request.getParameter("inviteMessage");
                     String title = "📩 Lời mời ứng tuyển từ " + recruiterName;
-                    String body = recruiterName + " đã xem hồ sơ của bạn và cảm thấy bạn rất phù hợp với vị trí \"" + job.getTitle() + "\". Hãy xem chi tiết và ứng tuyển ngay nhé!";
+                    String body = (customMessage != null && !customMessage.trim().isEmpty()) 
+                                    ? customMessage.trim() 
+                                    : recruiterName + " đã xem hồ sơ của bạn và cảm thấy bạn rất phù hợp với vị trí \"" + job.getTitle() + "\". Hãy xem chi tiết và ứng tuyển ngay nhé!";
                     
-                    Notification notif = new Notification(candidateUserId, title, body, "INVITATION", jobId);
                     notifDAO.sendToUser(candidateUserId, title, body);
                     
                     response.sendRedirect(request.getContextPath() + "/employer/candidates?success=invited");
