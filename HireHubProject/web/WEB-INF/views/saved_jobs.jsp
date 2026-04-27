@@ -195,6 +195,22 @@
                                 </p>
                             </div>
 
+                            <%-- Thanh công cụ tìm kiếm --%>
+                            <form action="${pageContext.request.contextPath}/user/saved-jobs" method="GET" style="display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap;">
+                                <input type="text" name="title" value="${param.title}" placeholder="Tìm theo tên công việc..." 
+                                    style="padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; min-width: 200px; background: var(--bg-secondary); color: var(--text-primary); font-family: inherit; font-size: 0.95rem;">
+                                <input type="text" name="company" value="${param.company}" placeholder="Tìm theo tên công ty..." 
+                                    style="padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; min-width: 200px; background: var(--bg-secondary); color: var(--text-primary); font-family: inherit; font-size: 0.95rem;">
+                                <input type="text" name="location" value="${param.location}" placeholder="Tìm theo địa điểm..." 
+                                    style="padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; min-width: 200px; background: var(--bg-secondary); color: var(--text-primary); font-family: inherit; font-size: 0.95rem;">
+                                <div style="display: flex; gap: 12px;">
+                                    <button type="submit" class="btn btn-primary" style="padding: 12px 32px; border-radius: 12px; font-weight: 600;">Tìm kiếm</button>
+                                    <c:if test="${not empty param.title or not empty param.company or not empty param.location}">
+                                        <a href="${pageContext.request.contextPath}/user/saved-jobs" class="btn" style="padding: 12px 24px; border-radius: 12px; font-weight: 600; background: var(--bg-tertiary); color: var(--text-primary); text-decoration: none; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">Xóa lọc</a>
+                                    </c:if>
+                                </div>
+                            </form>
+
                             <c:if test="${empty savedJobs}">
                                 <div class="glass-card"
                                     style="padding: 100px 40px; text-align: center; border-style: dashed;">
@@ -359,10 +375,21 @@
                                 </div>
                                 
                                 <%-- Component Phân trang --%>
+                                <c:url var="pagedUrl" value="/user/saved-jobs">
+                                    <c:if test="${not empty param.title}">
+                                        <c:param name="title" value="${param.title}" />
+                                    </c:if>
+                                    <c:if test="${not empty param.company}">
+                                        <c:param name="company" value="${param.company}" />
+                                    </c:if>
+                                    <c:if test="${not empty param.location}">
+                                        <c:param name="location" value="${param.location}" />
+                                    </c:if>
+                                </c:url>
                                 <jsp:include page="/WEB-INF/views/components/pagination.jsp">
                                     <jsp:param name="currentPage" value="${currentPage}" />
                                     <jsp:param name="totalPages" value="${totalPages}" />
-                                    <jsp:param name="actionUrl" value="${pageContext.request.contextPath}/user/saved-jobs" />
+                                    <jsp:param name="actionUrl" value="${pagedUrl}" />
                                 </jsp:include>
                             </c:if>
 

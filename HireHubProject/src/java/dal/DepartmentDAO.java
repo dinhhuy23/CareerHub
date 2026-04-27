@@ -28,10 +28,6 @@ public class DepartmentDAO {
                 d.setIsActive(rs.getBoolean("IsActive"));
                 d.setCompanyId(rs.getLong("CompanyId"));
                 d.setCompanyName(rs.getString("CompanyName"));
-                d.setManagerName(rs.getString("ManagerName"));
-                d.setContactEmail(rs.getString("ContactEmail"));
-                d.setPhoneNumber(rs.getString("PhoneNumber"));
-                d.setLocation(rs.getString("Location"));
                 list.add(d);
             }
 
@@ -55,10 +51,6 @@ public class DepartmentDAO {
                 d.setDepartmentId(rs.getLong("DepartmentId"));
                 d.setDepartmentName(rs.getString("DepartmentName"));
                 d.setCompanyId(rs.getLong("CompanyId"));
-                d.setManagerName(rs.getString("ManagerName"));
-                d.setContactEmail(rs.getString("ContactEmail"));
-                d.setPhoneNumber(rs.getString("PhoneNumber"));
-                d.setLocation(rs.getString("Location"));
                 list.add(d);
             }
 
@@ -86,10 +78,6 @@ public class DepartmentDAO {
                 d.setIsActive(rs.getBoolean("IsActive"));
                 d.setCompanyId(rs.getLong("CompanyId"));
                 d.setCompanyName(rs.getString("CompanyName"));
-                d.setManagerName(rs.getString("ManagerName"));
-                d.setContactEmail(rs.getString("ContactEmail"));
-                d.setPhoneNumber(rs.getString("PhoneNumber"));
-                d.setLocation(rs.getString("Location"));
                 return d;
             }
 
@@ -100,47 +88,31 @@ public class DepartmentDAO {
     }
 
     // INSERT
-    public long insert(Department d) {
-        String sql = "INSERT INTO Departments (DepartmentName, Description, CompanyId, ManagerName, ContactEmail, PhoneNumber, Location, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, 1)";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            ps.setString(1, d.getDepartmentName());
-            ps.setString(2, d.getDescription());
-            ps.setLong(3, d.getCompanyId());
-            ps.setString(4, d.getManagerName());
-            ps.setString(5, d.getContactEmail());
-            ps.setString(6, d.getPhoneNumber());
-            ps.setString(7, d.getLocation());
-            ps.executeUpdate();
-            
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getLong(1);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    // UPDATE
-    public void update(Department d) {
-        String sql = "UPDATE Departments SET DepartmentName = ?, Description = ?, CompanyId = ?, ManagerName = ?, ContactEmail = ?, PhoneNumber = ?, Location = ?, IsActive = ? WHERE DepartmentId = ?";
+    public void insert(Department d) {
+        String sql = "INSERT INTO Departments (DepartmentName, Description, CompanyId, IsActive) VALUES (?, ?, ?, 1)";
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, d.getDepartmentName());
             ps.setString(2, d.getDescription());
             ps.setLong(3, d.getCompanyId());
-            ps.setString(4, d.getManagerName());
-            ps.setString(5, d.getContactEmail());
-            ps.setString(6, d.getPhoneNumber());
-            ps.setString(7, d.getLocation());
-            ps.setBoolean(8, d.isIsActive());
-            ps.setLong(9, d.getDepartmentId());
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // UPDATE
+    public void update(Department d) {
+        String sql = "UPDATE Departments SET DepartmentName = ?, Description = ?, CompanyId = ? WHERE DepartmentId = ?";
+        try (Connection conn = dbContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, d.getDepartmentName());
+            ps.setString(2, d.getDescription());
+            ps.setLong(3, d.getCompanyId());
+            ps.setLong(4, d.getDepartmentId());
             ps.executeUpdate();
 
         } catch (Exception e) {
@@ -211,10 +183,6 @@ public class DepartmentDAO {
                 d.setIsActive(rs.getBoolean("IsActive"));
                 d.setCompanyId(rs.getLong("CompanyId"));
                 d.setCompanyName(rs.getString("CompanyName"));
-                d.setManagerName(rs.getString("ManagerName"));
-                d.setContactEmail(rs.getString("ContactEmail"));
-                d.setPhoneNumber(rs.getString("PhoneNumber"));
-                d.setLocation(rs.getString("Location"));
                 list.add(d);
             }
         } catch (Exception e) { e.printStackTrace(); }
@@ -255,73 +223,5 @@ public class DepartmentDAO {
             params.add(company);
         }
     }
-
-    public List<Department> getFilteredByCompanyId(long companyId, String keyword, String status, int page, int pageSize) {
-        List<Department> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM Departments WHERE CompanyId = ? ");
-        List<Object> params = new ArrayList<>();
-        params.add(companyId);
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (DepartmentName LIKE ? OR Description LIKE ? OR ManagerName LIKE ?) ");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-        }
-        if ("active".equals(status)) {
-            sql.append("AND IsActive = 1 ");
-        } else if ("inactive".equals(status)) {
-            sql.append("AND IsActive = 0 ");
-        }
-
-        sql.append("ORDER BY DepartmentId ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        params.add((page - 1) * pageSize);
-        params.add(pageSize);
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Department d = new Department();
-                d.setDepartmentId(rs.getLong("DepartmentId"));
-                d.setDepartmentName(rs.getString("DepartmentName"));
-                d.setDescription(rs.getString("Description"));
-                d.setIsActive(rs.getBoolean("IsActive"));
-                d.setCompanyId(rs.getLong("CompanyId"));
-                d.setManagerName(rs.getString("ManagerName"));
-                d.setContactEmail(rs.getString("ContactEmail"));
-                d.setPhoneNumber(rs.getString("PhoneNumber"));
-                d.setLocation(rs.getString("Location"));
-                list.add(d);
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
-    }
-
-    public int countFilteredByCompanyId(long companyId, String keyword, String status) {
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Departments WHERE CompanyId = ? ");
-        List<Object> params = new ArrayList<>();
-        params.add(companyId);
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (DepartmentName LIKE ? OR Description LIKE ? OR ManagerName LIKE ?) ");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-        }
-        if ("active".equals(status)) {
-            sql.append("AND IsActive = 1 ");
-        } else if ("inactive".equals(status)) {
-            sql.append("AND IsActive = 0 ");
-        }
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
-        return 0;
-    }
 }
+

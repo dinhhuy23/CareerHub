@@ -96,9 +96,6 @@
             <div class="auth-footer">
                 <p>Chưa có tài khoản? <a href="${pageContext.request.contextPath}/register" class="auth-link">Đăng ký ngay</a></p>
             </div>
-            <div class="auth-footer">
-                <p>Quên mật khẩu? <a href="forgot-password.jsp" class="auth-link">Click</a></p>
-            </div>
         </div>
     </div>
 

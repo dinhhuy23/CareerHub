@@ -62,9 +62,8 @@ public class UserManagerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         UserDAO dao = new UserDAO();
-
+//        List<User> list = dao.getAllUsers(); // 👈 LẤY TẤT CẢ USER
         int page = 1;
         int pageSize = 5;
 
@@ -73,137 +72,132 @@ public class UserManagerServlet extends HttpServlet {
             page = Integer.parseInt(pageParam);
         }
 
-        String keyword = request.getParameter("keyword");
-        String status = request.getParameter("status");
-
         int offset = (page - 1) * pageSize;
 
-        List<User> list;
-        int totalUsers;
-
-        boolean hasFilter
-                = (keyword != null && !keyword.trim().isEmpty())
-                || (status != null && !status.trim().isEmpty());
-
-        if (hasFilter) {
-
-            list = dao.searchUsersAdvanced(keyword, status, offset, pageSize);
-            totalUsers = dao.getTotalUsersAdvanced(keyword, status);
-
-        } else {
-
-            list = dao.getUsersPaging(offset, pageSize);
-            totalUsers = dao.getTotalUsers();
-        }
-
+        List<User> list = dao.getUsersPaging(offset, pageSize);
+        int totalUsers = dao.getTotalUsers();
         int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
 
         request.setAttribute("list", list);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
-        request.setAttribute("keyword", keyword);
-        request.setAttribute("status", status);
-
+//        request.setAttribute("list", list);
+//
+//        request.getRequestDispatcher("users.jsp").forward(request, response);
         String action = request.getParameter("action");
 
         try {
             if (action == null) {
+                request.setAttribute("usermanager", list);
                 request.getRequestDispatcher("user-manager.jsp").forward(request, response);
-
             } else if ("view".equals(action)) {
-
                 long id = Long.parseLong(request.getParameter("id"));
+
                 User user = dao.findById(id);
 
                 request.setAttribute("user", user);
+
                 request.getRequestDispatcher("user-detail.jsp").forward(request, response);
-
-            } else if ("delete".equals(action)) {
-
+            } else if (action.equals("delete")) {
                 long id = Long.parseLong(request.getParameter("id"));
                 String reason = request.getParameter("reason");
-
                 dao.deactivateUser(id, reason);
-
                 response.sendRedirect("usermanager");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-    
-}
+    }
 
-/**
- * Handles the HTTP <code>POST</code> method.
- *
- * @param request servlet request
- * @param response servlet response
- * @throws ServletException if a servlet-specific error occurs
- * @throws IOException if an I/O error occurs
- */
-@Override
-protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-
         UserDAO dao = new UserDAO();
-
         try {
             String idStr = request.getParameter("userId");
-            String email = request.getParameter("email");
-            String phone = request.getParameter("phone");
-
-            // 🔥 VALIDATE TRƯỚC
-            if (phone == null || !phone.matches("^0\\d{9,10}$")) {
-                request.setAttribute("error", "SĐT phải hợp lệ");
-                request.getRequestDispatcher("user-manager.jsp").forward(request, response);
-                return;
-            }
-
-            if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
-                request.setAttribute("error", "Email không đúng");
-                request.getRequestDispatcher("user-manager.jsp").forward(request, response);
-                return;
-            }
 
             User user = new User();
-            user.setEmail(email);
+//            user.setRoleCode(request.getParameter("role"));
+            user.setEmail(request.getParameter("email"));
             user.setFullName(request.getParameter("fullName"));
-            user.setPhoneNumber(phone);
+//            user.setStatus(request.getParameter("status"));
+            user.setPhoneNumber(request.getParameter("phone"));
             user.setGender(request.getParameter("gender"));
-
             String password = request.getParameter("password");
 
             // 👉 CREATE
             if (idStr == null || idStr.isEmpty()) {
 
                 if (password == null || password.isEmpty()) {
-                    password = "123456";
+                    password = "123456"; // default
                 }
 
                 user.setPasswordHash(SecurityUtil.hashPassword(password));
                 dao.insert(user);
+
+                System.out.println("CREATE USER SUCCESS");
 
             } else {
                 // 👉 UPDATE
                 long id = Long.parseLong(idStr);
                 user.setUserId(id);
 
+                // 🔥 GIỮ PASSWORD CŨ nếu không nhập
                 if (password != null && !password.isEmpty()) {
-                    user.setPasswordHash(SecurityUtil.hashPassword(password));
+                    user.setPasswordHash(password);
                 } else {
                     User oldUser = dao.findById(id);
                     user.setPasswordHash(oldUser.getPasswordHash());
                 }
 
                 dao.update(user);
-            }
 
+                System.out.println("UPDATE USER SUCCESS ID = " + id);
+            }
+            String phone = request.getParameter("phone");
+
+// validate SĐT
+            if (phone == null || !phone.matches("^0\\d{9,10}$")) {
+
+                request.setAttribute("error", "SĐT phải là số, bắt đầu bằng 0 và có 10-11 số");
+
+                // giữ lại dữ liệu user nhập
+                request.setAttribute("oldEmail", request.getParameter("email"));
+                request.setAttribute("oldName", request.getParameter("fullName"));
+                request.setAttribute("oldPhone", phone);
+
+                request.getRequestDispatcher("user-manager.jsp").forward(request, response);
+                return;
+            }
+            String email = request.getParameter("email");
+
+// validate email
+            if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+
+                request.setAttribute("error", "Email không đúng định dạng");
+
+                request.setAttribute("oldEmail", email);
+                request.setAttribute("oldName", request.getParameter("fullName"));
+                request.setAttribute("oldPhone", request.getParameter("phone"));
+
+                request.getRequestDispatcher("user-manager.jsp").forward(request, response);
+                return;
+            }
             response.sendRedirect("usermanager");
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.setContentType("text/html;charset=UTF-8");
+            response.getWriter().println("<h2>ERROR POST: " + e.getMessage() + "</h2>");
         }
 
     }
@@ -214,7 +208,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
      * @return a String containing servlet description
      */
     @Override
-public String getServletInfo() {
+    public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 

@@ -92,7 +92,6 @@ public class RecruiterController extends HttpServlet {
                 String keyword = trim(request.getParameter("keyword"));
                 String status  = nvl(request.getParameter("status"),  "All");
                 String company = nvl(request.getParameter("company"), "All");
-                String department = nvl(request.getParameter("department"), "All");
                 int rPage      = parsePage(request.getParameter("page"));
 
                 // Stats (full-DB)
@@ -100,15 +99,14 @@ public class RecruiterController extends HttpServlet {
                 int rActive = recruiterDAO.countActive();
 
                 // Filtered
-                int rFiltered   = recruiterDAO.countFiltered(keyword, status, company, department);
+                int rFiltered   = recruiterDAO.countFiltered(keyword, status, company);
                 int rTotalPages = Math.max(1, (int) Math.ceil((double) rFiltered / PAGE_SIZE));
                 rPage = Math.min(rPage, rTotalPages);
 
-                request.setAttribute("list",         recruiterDAO.getFiltered(keyword, status, company, department, rPage, PAGE_SIZE));
+                request.setAttribute("list",         recruiterDAO.getFiltered(keyword, status, company, rPage, PAGE_SIZE));
                 request.setAttribute("keyword",      keyword);
                 request.setAttribute("statusFilter", status);
                 request.setAttribute("companyFilter",company);
-                request.setAttribute("departmentFilter", department);
                 request.setAttribute("currentPage",  rPage);
                 request.setAttribute("totalPages",   rTotalPages);
                 request.setAttribute("totalItems",   rFiltered);
@@ -116,7 +114,6 @@ public class RecruiterController extends HttpServlet {
                 request.setAttribute("activeCount",  rActive);
                 request.setAttribute("pageNums",     buildPageNums(rPage, rTotalPages));
                 request.setAttribute("allCompanies", companyDAO.getAll());
-                request.setAttribute("allDepartments", departmentDAO.getAll());
                 request.getRequestDispatcher("/WEB-INF/views/recruiter-list.jsp")
                        .forward(request, response);
         }
@@ -134,7 +131,6 @@ public class RecruiterController extends HttpServlet {
         String bio          = trim(request.getParameter("bio"));
         String companyIdStr = trim(request.getParameter("companyId"));
         String deptIdStr    = trim(request.getParameter("departmentId"));
-        String status       = trim(request.getParameter("status"));
 
         boolean isCreate = (id == null || id.trim().isEmpty());
 
@@ -179,7 +175,6 @@ public class RecruiterController extends HttpServlet {
             r.setFullName(fullName);
             r.setJobTitle(jobTitle);
             r.setBio(bio);
-            r.setStatus(status.isEmpty() ? "ACTIVE" : status);
             if (!companyIdStr.isEmpty()) {
                 try { r.setCompanyId(Long.parseLong(companyIdStr)); } catch (NumberFormatException ignored) {}
             }
@@ -254,7 +249,7 @@ public class RecruiterController extends HttpServlet {
                 if (!deptIdStr.isEmpty()) r.setDepartmentId(Long.parseLong(deptIdStr));
                 r.setJobTitle(jobTitle);
                 r.setBio(bio.isEmpty() ? null : bio);
-                r.setStatus(status.isEmpty() ? "ACTIVE" : status);
+                r.setStatus("ACTIVE");
 
                 boolean ok = recruiterDAO.insert(r);
                 setToast(request, ok ? "success" : "error",
@@ -272,9 +267,6 @@ public class RecruiterController extends HttpServlet {
                 }
                 r.setJobTitle(jobTitle);
                 r.setBio(bio.isEmpty() ? null : bio);
-                if (!status.isEmpty()) {
-                    r.setStatus(status);
-                }
 
                 boolean ok = recruiterDAO.update(r);
                 setToast(request, ok ? "success" : "error",

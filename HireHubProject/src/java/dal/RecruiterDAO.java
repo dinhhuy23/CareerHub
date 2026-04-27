@@ -35,7 +35,6 @@ public class RecruiterDAO {
                 r.setRecruiterId(rs.getLong("RecruiterId"));
                 r.setUserId(rs.getLong("UserId"));
                 r.setCompanyId(rs.getLong("CompanyId"));
-                r.setDepartmentId(rs.getLong("DepartmentId"));
                 r.setJobTitle(rs.getString("JobTitle"));
                 r.setStatus(rs.getString("Status"));
                 r.setCompanyName(rs.getString("CompanyName"));
@@ -143,7 +142,7 @@ public class RecruiterDAO {
     // UPDATE – trả về true nếu thành công
     public boolean update(Recruiter r) {
         String sql = "UPDATE RecruiterProfiles "
-                + "SET CompanyId=?, DepartmentId=?, JobTitle=?, Bio=?, Status=? "
+                + "SET CompanyId=?, DepartmentId=?, JobTitle=?, Bio=? "
                 + "WHERE RecruiterId=?";
 
         try (Connection conn = dbContext.getConnection();
@@ -164,54 +163,15 @@ public class RecruiterDAO {
 
             // Bio (có thể null)
             ps.setString(4, r.getBio());
-            
-            // Status
-            ps.setString(5, r.getStatus());
 
             // Where
-            ps.setLong(6, r.getRecruiterId());
+            ps.setLong(5, r.getRecruiterId());
 
             return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    // Xóa departmentId khỏi tất cả recruiters của department này
-    public void clearDepartment(long departmentId) {
-        String sql = "UPDATE RecruiterProfiles SET DepartmentId = NULL WHERE DepartmentId = ?";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, departmentId);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Gán departmentId cho một danh sách recruiter
-    public void assignDepartment(long departmentId, String[] recruiterIds) {
-        if (recruiterIds == null || recruiterIds.length == 0) return;
-        
-        StringBuilder sql = new StringBuilder("UPDATE RecruiterProfiles SET DepartmentId = ? WHERE RecruiterId IN (");
-        for (int i = 0; i < recruiterIds.length; i++) {
-            sql.append("?");
-            if (i < recruiterIds.length - 1) sql.append(",");
-        }
-        sql.append(")");
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
-            ps.setLong(1, departmentId);
-            for (int i = 0; i < recruiterIds.length; i++) {
-                ps.setLong(i + 2, Long.parseLong(recruiterIds[i]));
-            }
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -250,130 +210,6 @@ public class RecruiterDAO {
         }
 
         return list;
-    }
-
-    public List<Recruiter> getRecruitersByDepartmentId(long departmentId) {
-        List<Recruiter> list = new ArrayList<>();
-
-        String sql = "SELECT rp.RecruiterId, rp.UserId, rp.CompanyId, rp.DepartmentId, rp.JobTitle, rp.IsPrimaryContact, rp.Status, rp.Bio, "
-                + "u.FullName, u.Email, u.PhoneNumber, u.AvatarUrl, c.CompanyName, d.DepartmentName "
-                + "FROM RecruiterProfiles rp "
-                + "INNER JOIN Users u ON rp.UserId = u.UserId "
-                + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
-                + "LEFT JOIN Departments d ON rp.DepartmentId = d.DepartmentId "
-                + "WHERE rp.DepartmentId = ? "
-                + "ORDER BY rp.IsPrimaryContact DESC, u.FullName ASC";
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setLong(1, departmentId);
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Recruiter recruiter = new Recruiter();
-                recruiter.setRecruiterId(rs.getLong("RecruiterId"));
-                recruiter.setUserId(rs.getLong("UserId"));
-                recruiter.setCompanyId(rs.getLong("CompanyId"));
-                recruiter.setDepartmentId(rs.getLong("DepartmentId"));
-                recruiter.setJobTitle(rs.getString("JobTitle"));
-                recruiter.setIsPrimaryContact(rs.getBoolean("IsPrimaryContact"));
-                recruiter.setStatus(rs.getString("Status"));
-                recruiter.setFullName(rs.getString("FullName"));
-                recruiter.setEmail(rs.getString("Email"));
-                recruiter.setPhoneNumber(rs.getString("PhoneNumber"));
-                recruiter.setAvatarUrl(rs.getString("AvatarUrl"));
-                recruiter.setBio(rs.getString("Bio"));
-                recruiter.setCompanyName(rs.getString("CompanyName"));
-                recruiter.setDepartmentName(rs.getString("DepartmentName"));
-                
-                list.add(recruiter);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return list;
-    }
-
-    public List<Recruiter> getFilteredByDepartmentId(long departmentId, String keyword, String status, int page, int pageSize) {
-        List<Recruiter> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(
-            "SELECT rp.RecruiterId, rp.UserId, rp.CompanyId, rp.DepartmentId, rp.JobTitle, rp.IsPrimaryContact, rp.Status, rp.Bio, " +
-            "u.FullName, u.Email, u.PhoneNumber, u.AvatarUrl, c.CompanyName, d.DepartmentName " +
-            "FROM RecruiterProfiles rp " +
-            "INNER JOIN Users u ON rp.UserId = u.UserId " +
-            "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId " +
-            "LEFT JOIN Departments d ON rp.DepartmentId = d.DepartmentId " +
-            "WHERE rp.DepartmentId = ? ");
-        List<Object> params = new ArrayList<>();
-        params.add(departmentId);
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ?) ");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-        }
-        if (status != null && !status.isEmpty() && !"All".equals(status)) {
-            sql.append("AND rp.Status = ? ");
-            params.add(status);
-        }
-
-        sql.append("ORDER BY rp.IsPrimaryContact DESC, u.FullName ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        params.add((page - 1) * pageSize);
-        params.add(pageSize);
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Recruiter recruiter = new Recruiter();
-                recruiter.setRecruiterId(rs.getLong("RecruiterId"));
-                recruiter.setUserId(rs.getLong("UserId"));
-                recruiter.setCompanyId(rs.getLong("CompanyId"));
-                recruiter.setDepartmentId(rs.getLong("DepartmentId"));
-                recruiter.setJobTitle(rs.getString("JobTitle"));
-                recruiter.setIsPrimaryContact(rs.getBoolean("IsPrimaryContact"));
-                recruiter.setStatus(rs.getString("Status"));
-                recruiter.setFullName(rs.getString("FullName"));
-                recruiter.setEmail(rs.getString("Email"));
-                recruiter.setPhoneNumber(rs.getString("PhoneNumber"));
-                recruiter.setAvatarUrl(rs.getString("AvatarUrl"));
-                recruiter.setBio(rs.getString("Bio"));
-                recruiter.setCompanyName(rs.getString("CompanyName"));
-                recruiter.setDepartmentName(rs.getString("DepartmentName"));
-                list.add(recruiter);
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
-    }
-
-    public int countFilteredByDepartmentId(long departmentId, String keyword, String status) {
-        StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) FROM RecruiterProfiles rp " +
-            "INNER JOIN Users u ON rp.UserId = u.UserId " +
-            "WHERE rp.DepartmentId = ? ");
-        List<Object> params = new ArrayList<>();
-        params.add(departmentId);
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ?) ");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-        }
-        if (status != null && !status.isEmpty() && !"All".equals(status)) {
-            sql.append("AND rp.Status = ? ");
-            params.add(status);
-        }
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
-        return 0;
     }
 
     public Recruiter getRecruiterDetailById(long recruiterId) {
@@ -436,7 +272,7 @@ public class RecruiterDAO {
 
     /** Trả về một trang recruiter đã lọc (keyword, status, companyName). */
     public List<Recruiter> getFiltered(String keyword, String status,
-                                       String company, String department, int page, int pageSize) {
+                                       String company, int page, int pageSize) {
         List<Recruiter> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT r.*, c.CompanyName, d.DepartmentName, u.FullName, u.Email " +
@@ -445,7 +281,7 @@ public class RecruiterDAO {
             "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId " +
             "LEFT JOIN Users u ON r.UserId = u.UserId WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-        applyRecruiterFilters(sql, params, keyword, status, company, department);
+        applyRecruiterFilters(sql, params, keyword, status, company);
         sql.append("ORDER BY r.RecruiterId DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         params.add((page - 1) * pageSize);
         params.add(pageSize);
@@ -473,14 +309,13 @@ public class RecruiterDAO {
     }
 
     /** Đếm recruiter thỏa filter – dùng tính totalPages. */
-    public int countFiltered(String keyword, String status, String company, String department) {
+    public int countFiltered(String keyword, String status, String company) {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) FROM RecruiterProfiles r " +
             "LEFT JOIN Companies c ON r.CompanyId = c.CompanyId " +
-            "LEFT JOIN Departments d ON r.DepartmentId = d.DepartmentId " +
             "LEFT JOIN Users u ON r.UserId = u.UserId WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
-        applyRecruiterFilters(sql, params, keyword, status, company, department);
+        applyRecruiterFilters(sql, params, keyword, status, company);
 
         try (Connection conn = dbContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -492,7 +327,7 @@ public class RecruiterDAO {
     }
 
     private void applyRecruiterFilters(StringBuilder sql, List<Object> params,
-                                       String keyword, String status, String company, String department) {
+                                       String keyword, String status, String company) {
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ? OR c.CompanyName LIKE ?) ");
             params.add("%" + keyword.trim() + "%");
@@ -507,105 +342,5 @@ public class RecruiterDAO {
             sql.append("AND c.CompanyName = ? ");
             params.add(company);
         }
-        if (department != null && !department.isEmpty() && !"All".equals(department)) {
-            sql.append("AND d.DepartmentName = ? ");
-            params.add(department);
-        }
-    }
-
-    public List<Recruiter> getFilteredByCompanyId(long companyId, String keyword, String jobTitle, String status, int page, int pageSize) {
-        List<Recruiter> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder(
-            "SELECT rp.RecruiterId, rp.UserId, rp.CompanyId, rp.JobTitle, rp.IsPrimaryContact, rp.Status, " +
-            "u.FullName, u.Email, u.PhoneNumber, u.AvatarUrl " +
-            "FROM RecruiterProfiles rp " +
-            "INNER JOIN Users u ON rp.UserId = u.UserId " +
-            "WHERE rp.CompanyId = ? ");
-        List<Object> params = new ArrayList<>();
-        params.add(companyId);
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ?) ");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-        }
-        if (jobTitle != null && !jobTitle.isEmpty() && !"All".equals(jobTitle)) {
-            sql.append("AND rp.JobTitle = ? ");
-            params.add(jobTitle);
-        }
-        if (status != null && !status.isEmpty() && !"All".equals(status)) {
-            sql.append("AND rp.Status = ? ");
-            params.add(status);
-        }
-
-        sql.append("ORDER BY rp.IsPrimaryContact DESC, u.FullName ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
-        params.add((page - 1) * pageSize);
-        params.add(pageSize);
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Recruiter recruiter = new Recruiter();
-                recruiter.setRecruiterId(rs.getLong("RecruiterId"));
-                recruiter.setUserId(rs.getLong("UserId"));
-                recruiter.setCompanyId(rs.getLong("CompanyId"));
-                recruiter.setJobTitle(rs.getString("JobTitle"));
-                recruiter.setIsPrimaryContact(rs.getBoolean("IsPrimaryContact"));
-                recruiter.setStatus(rs.getString("Status"));
-                recruiter.setFullName(rs.getString("FullName"));
-                recruiter.setEmail(rs.getString("Email"));
-                recruiter.setPhoneNumber(rs.getString("PhoneNumber"));
-                recruiter.setAvatarUrl(rs.getString("AvatarUrl"));
-                list.add(recruiter);
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
-    }
-
-    public int countFilteredByCompanyId(long companyId, String keyword, String jobTitle, String status) {
-        StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) FROM RecruiterProfiles rp " +
-            "INNER JOIN Users u ON rp.UserId = u.UserId " +
-            "WHERE rp.CompanyId = ? ");
-        List<Object> params = new ArrayList<>();
-        params.add(companyId);
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND (u.FullName LIKE ? OR u.Email LIKE ?) ");
-            params.add("%" + keyword.trim() + "%");
-            params.add("%" + keyword.trim() + "%");
-        }
-        if (jobTitle != null && !jobTitle.isEmpty() && !"All".equals(jobTitle)) {
-            sql.append("AND rp.JobTitle = ? ");
-            params.add(jobTitle);
-        }
-        if (status != null && !status.isEmpty() && !"All".equals(status)) {
-            sql.append("AND rp.Status = ? ");
-            params.add(status);
-        }
-
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
-        return 0;
-    }
-
-    public List<String> getDistinctJobTitlesByCompanyId(long companyId) {
-        List<String> list = new ArrayList<>();
-        String sql = "SELECT DISTINCT JobTitle FROM RecruiterProfiles WHERE CompanyId = ? AND JobTitle IS NOT NULL AND JobTitle <> ''";
-        try (Connection conn = dbContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, companyId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(rs.getString("JobTitle"));
-            }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
     }
 }

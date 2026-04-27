@@ -16,15 +16,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
-import model.Job;
 import model.Report;
-import model.User;
 
 /**
  *
  * @author ADMIN
  */
-@WebServlet(name = "AdminServlet", urlPatterns = {"/admin"})
+@WebServlet(name = "AdminServlet", urlPatterns = {"/AdminServlet"})
 public class AdminServlet extends HttpServlet {
 
     /**
@@ -92,36 +90,32 @@ public class AdminServlet extends HttpServlet {
         int totalReports = reportDAO.getAll().size();
 
         List<Report> reports = reportDAO.getAll();
-        List<Job> listJob = jobDAO.getLatestJobs(5);
-// 🔥 THÊM Ở ĐÂY
-        List<User> listuser = userDAO.getTopUsers(5);
 
-// 👉 set attribute
-        request.setAttribute("listJob", listJob);
+        // 👉 set attribute
         request.setAttribute("totalUsers", totalUsers);
         request.setAttribute("totalJobs", totalJobs);
         request.setAttribute("totalReports", totalReports);
         request.setAttribute("reports", reports);
-        request.setAttribute("listuser", listuser); // 🔥 QUAN TRỌNG
 
-// 👉 forward
+        // 👉 forward
         request.getRequestDispatcher("admin_dashboard.jsp").forward(request, response);
+    
 
-    }
 
-    /**
+    } 
+
+    /** 
      * Handles the HTTP <code>POST</code> method.
-     *
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, IOException {
         String action = request.getParameter("action");
-
+        
         // 👉 xử lý report
         if ("updateReport".equals(action)) {
 
@@ -136,16 +130,15 @@ public class AdminServlet extends HttpServlet {
         }
 
         response.sendRedirect("AdminServlet");
-
+    
     }
 
-    /**
+    /** 
      * Returns a short description of the servlet.
-     *
      * @return a String containing servlet description
      */
     @Override
-    public String getServletInfo() {
+public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 

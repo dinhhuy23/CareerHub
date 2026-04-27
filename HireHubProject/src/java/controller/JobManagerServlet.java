@@ -62,58 +62,48 @@ public class JobManagerServlet extends HttpServlet {
             throws ServletException, IOException {
         JobDAO dao = new JobDAO();
 
-    int page = 1;
-    int pageSize = 5;
+        int page = 1;
+        int pageSize = 5;
 
-    String pageParam = request.getParameter("page");
-    if (pageParam != null) {
-        page = Integer.parseInt(pageParam);
-    }
-
-    int offset = (page - 1) * pageSize;
-
-    // 🔥 LẤY PARAM FILTER
-    String keyword = request.getParameter("keyword");
-    String status = request.getParameter("status");
-    String sortSalary = request.getParameter("sortSalary");
-
-    // 👉 gọi DAO mới
-    List<Job> list = dao.searchJobs(keyword, status, sortSalary, offset, pageSize);
-    int totalJobs = dao.countSearchJobs(keyword, status);
-    int totalPages = (int) Math.ceil((double) totalJobs / pageSize);
-
-    request.setAttribute("list", list);
-    request.setAttribute("currentPage", page);
-    request.setAttribute("totalPages", totalPages);
-
-    // 👉 giữ lại giá trị filter cho JSP
-    request.setAttribute("keyword", keyword);
-    request.setAttribute("status", status);
-    request.setAttribute("sortSalary", sortSalary);
-
-    String action = request.getParameter("action");
-
-    try {
-        if (action == null) {
-            request.getRequestDispatcher("job-manager.jsp").forward(request, response);
-
-        } else if ("view".equals(action)) {
-            long id = Long.parseLong(request.getParameter("id"));
-            Job job = dao.findById(id);
-
-            request.setAttribute("job", job);
-            request.getRequestDispatcher("job-detail-admin.jsp").forward(request, response);
-
-        } else if ("delete".equals(action)) {
-            long id = Long.parseLong(request.getParameter("id"));
-            dao.closeJob(id);
-
-            response.sendRedirect("jobmanager");
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            page = Integer.parseInt(pageParam);
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
+        int offset = (page - 1) * pageSize;
+
+        // 👉 bạn cần viết thêm hàm paging trong DAO
+        List<Job> list = dao.getJobsPaging(offset, pageSize);
+        int totalJobs = dao.countAllJobs();
+        int totalPages = (int) Math.ceil((double) totalJobs / pageSize);
+
+        request.setAttribute("list", list);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+
+        String action = request.getParameter("action");
+
+        try {
+            if (action == null) {
+                request.getRequestDispatcher("job-manager.jsp").forward(request, response);
+
+            } else if ("view".equals(action)) {
+                long id = Long.parseLong(request.getParameter("id"));
+                Job job = dao.findById(id);
+
+                request.setAttribute("job", job);
+                request.getRequestDispatcher("/WEB-INF/views/job_detail.jsp").forward(request, response);
+
+            } else if ("delete".equals(action)) {
+                long id = Long.parseLong(request.getParameter("id"));
+
+                dao.closeJob(id); // hoặc viết delete riêng
+                response.sendRedirect("jobmanager");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

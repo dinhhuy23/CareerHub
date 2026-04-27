@@ -98,37 +98,9 @@
 
                 <div class="page-title">💼 Quản lý Job</div>
 
-                <!--                <div class="action-top">
-                                    <button class="btn btn-create" onclick="openModal()">➕ Tạo Job</button>
-                                </div>-->
-                <form method="get" action="jobmanager" style="margin-bottom:15px; display:flex; gap:10px; flex-wrap:wrap;">
-
-                    <input type="text"
-                           name="keyword"
-                           value="${keyword}"
-                           placeholder="🔍 Tìm job..."
-                           style="padding:8px; border-radius:8px; border:none;">
-
-                    <select name="status" style="padding:8px; border-radius:8px;">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="DRAFT" ${status == 'DRAFT' ? 'selected' : ''}>Nháp</option>
-                        <option value="PUBLISHED" ${status == 'PUBLISHED' ? 'selected' : ''}>Đã đăng</option>
-                        <option value="CLOSED" ${status == 'CLOSED' ? 'selected' : ''}>Đã đóng</option>
-                        <option value="DELETED" ${status == 'DELETED' ? 'selected' : ''}>Đã xóa</option>
-                    </select>
-
-                    <select name="sortSalary" style="padding:8px; border-radius:8px;">
-                        <option value="">Sắp xếp lương</option>
-                        <option value="asc" ${sortSalary == 'asc' ? 'selected' : ''}>Thấp → Cao</option>
-                        <option value="desc" ${sortSalary == 'desc' ? 'selected' : ''}>Cao → Thấp</option>
-                    </select>
-
-                    <button type="submit" class="btn btn-view">Lọc</button>
-
-                    <!-- reset filter -->
-                    <a href="jobmanager" class="btn btn-delete">Reset</a>
-
-                </form>
+                <div class="action-top">
+                    <button class="btn btn-create" onclick="openModal()">➕ Tạo Job</button>
+                </div>
 
                 <!-- TABLE -->
                 <div class="glass-card table-container">
@@ -171,7 +143,7 @@
 
                                     <td>
                                         <a class="btn btn-view"
-                                           href="jobmanager?action=view&id=${j.jobId}">
+                                           href="job-detail?action=view&id=${j.jobId}">
                                             Chi tiết
                                         </a>
 
@@ -208,38 +180,19 @@
                         </c:if>
 
                         <c:forEach begin="1" end="${totalPages}" var="i">
-
-                            <c:url value="jobmanager" var="pageUrl">
-                                <c:param name="page" value="${i}" />
-                                <c:param name="keyword" value="${keyword}" />
-                                <c:param name="status" value="${status}" />
-                                <c:param name="sortSalary" value="${sortSalary}" />
-                            </c:url>
-
                             <a class="btn"
                                style="${i == currentPage ? 'background:#4ade80;color:black' : ''}"
-                               href="${pageUrl}">
+                               href="jobmanager?page=${i}">
                                 ${i}
                             </a>
-
                         </c:forEach>
-                        <c:url value="jobmanager" var="prevUrl">
-                            <c:param name="page" value="${currentPage - 1}" />
-                            <c:param name="keyword" value="${keyword}" />
-                            <c:param name="status" value="${status}" />
-                            <c:param name="sortSalary" value="${sortSalary}" />
-                        </c:url>
 
-                        <a class="btn btn-view" href="${prevUrl}">← Trước</a>
-
-                        <c:url value="jobmanager" var="nextUrl">
-                            <c:param name="page" value="${currentPage + 1}" />
-                            <c:param name="keyword" value="${keyword}" />
-                            <c:param name="status" value="${status}" />
-                            <c:param name="sortSalary" value="${sortSalary}" />
-                        </c:url>
-
-                        <a class="btn btn-view" href="${nextUrl}">Tiếp →</a>
+                        <c:if test="${currentPage < totalPages}">
+                            <a class="btn btn-view"
+                               href="jobmanager?page=${currentPage + 1}">
+                                Tiếp →
+                            </a>
+                        </c:if>
 
                     </div>
                 </div>
@@ -280,10 +233,8 @@
                     </div>
                 </div>
 
-                <div style="margin-top:20px; text-align:center;">
-                    <a href="admin" class="btn btn-view">
-                        ← Quay lại Dashboard
-                    </a>
+                <div style="margin-top:20px;">
+                    <a href="AdminServlet">← Quay lại Dashboard</a>
                 </div>
 
             </div>

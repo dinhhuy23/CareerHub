@@ -122,7 +122,7 @@ public class LoginController extends HttpServlet {
 
         // Chuyển hướng sau đăng nhập theo vai trò
         if ("ADMIN".equals(roleCode)) {
-            response.sendRedirect(request.getContextPath() + "/admin");
+            response.sendRedirect(request.getContextPath() + "/AdminServlet");
         } else if ("RECRUITER".equals(roleCode)) {
             response.sendRedirect(request.getContextPath() + "/employer/dashboard");
         } else {

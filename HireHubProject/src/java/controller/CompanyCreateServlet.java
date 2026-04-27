@@ -166,7 +166,7 @@ public class CompanyCreateServlet extends HttpServlet {
 
             if (newId > 0) {
                 setToast(request, "success", "Thêm công ty thành công!");
-                response.sendRedirect(request.getContextPath() + "/company/detail?id=" + newId);
+                response.sendRedirect(request.getContextPath() + "/company?id=" + newId);
             } else {
                 setToast(request, "error", "Thêm công ty thất bại. Vui lòng thử lại.");
                 request.setAttribute("company",   company);

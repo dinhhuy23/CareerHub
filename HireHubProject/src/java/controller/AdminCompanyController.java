@@ -41,8 +41,6 @@ public class AdminCompanyController extends HttpServlet {
         String keyword  = nvl(request.getParameter("keyword"));
         String industry = nvl(request.getParameter("industry"), "All");
         String location = nvl(request.getParameter("location"), "All");
-        String size     = nvl(request.getParameter("size"), "All");
-        String status   = nvl(request.getParameter("status"), "All");
 
         // ── Phân trang ────────────────────────────────────────────────────────
         int page = parsePage(request.getParameter("page"));
@@ -52,26 +50,17 @@ public class AdminCompanyController extends HttpServlet {
         int activeCount = companyDAO.countActive();
 
         // Filtered counts
-        int totalItems = companyDAO.countFiltered(keyword, industry, location, size, status);
+        int totalItems = companyDAO.countFiltered(keyword, industry, location);
         int totalPages = Math.max(1, (int) Math.ceil((double) totalItems / PAGE_SIZE));
         page = Math.min(page, totalPages);
 
-        List<Company> companies = companyDAO.getFiltered(keyword, industry, location, size, status, page, PAGE_SIZE);
-
-        // Fetch dynamic filter lists
-        List<String> industriesList = companyDAO.getDistinctIndustries();
-        List<String> sizesList = companyDAO.getDistinctSizes();
-        List<String> statusesList = companyDAO.getDistinctStatuses();
-        dal.LocationDAO locationDAO = new dal.LocationDAO();
-        List<model.Location> locationsList = locationDAO.getAllActive();
+        List<Company> companies = companyDAO.getFiltered(keyword, industry, location, page, PAGE_SIZE);
 
         // ── Attributes ────────────────────────────────────────────────────────
         request.setAttribute("companies",    companies);
         request.setAttribute("keyword",      keyword);
         request.setAttribute("industry",     industry);
         request.setAttribute("location",     location);
-        request.setAttribute("size",         size);
-        request.setAttribute("status",       status);
         request.setAttribute("currentPage",  page);
         request.setAttribute("totalPages",   totalPages);
         request.setAttribute("totalItems",   totalItems);
@@ -79,11 +68,6 @@ public class AdminCompanyController extends HttpServlet {
         request.setAttribute("totalCount",   totalCount);
         request.setAttribute("activeCount",  activeCount);
         request.setAttribute("pageNums",     buildPageNums(page, totalPages));
-        
-        request.setAttribute("industriesList", industriesList);
-        request.setAttribute("sizesList",      sizesList);
-        request.setAttribute("statusesList",   statusesList);
-        request.setAttribute("locationsList",  locationsList);
 
         request.getRequestDispatcher("/company/company-list.jsp").forward(request, response);
     }

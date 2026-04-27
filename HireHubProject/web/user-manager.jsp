@@ -107,63 +107,6 @@
             .input-success{
                 border:1px solid #22c55e !important;
             }
-            .search-box{
-                display:flex;
-                justify-content:center;
-                gap:10px;
-                margin-bottom:20px;
-            }
-
-            .search-box input{
-                width:300px;
-                padding:10px 14px;
-                border-radius:10px;
-                border:none;
-                outline:none;
-                background: rgba(255,255,255,0.08);
-                color:white;
-            }
-
-            .search-box input::placeholder{
-                color:rgba(255,255,255,0.5);
-            }
-
-            .search-box button{
-                padding:10px 18px;
-                border-radius:10px;
-                border:none;
-                background: linear-gradient(135deg,#6366f1,#8b5cf6);
-                color:white;
-                cursor:pointer;
-            }
-
-            .search-box button:hover{
-                opacity:0.9;
-            }
-            .status-filter{
-                padding:10px 14px;
-                border-radius:10px;
-                border:none;
-                outline:none;
-
-                background: rgba(255,255,255,0.08);
-                color:white;
-
-                cursor:pointer;
-                min-width:180px;
-
-                transition: 0.2s ease;
-            }
-
-            .status-filter:hover{
-                background: rgba(255,255,255,0.12);
-            }
-
-            .status-filter option{
-                color:black; /* option dropdown vẫn dễ đọc */
-            }
-
-
         </style>
     </head>
 
@@ -175,22 +118,7 @@
             <div class="container">
 
                 <div class="page-title">👤 Quản lý người dùng</div>
-                <form action="usermanager" method="get" class="search-box">
 
-                    <input type="text"
-                           name="keyword"
-                           placeholder="🔍 Tìm theo tên..."
-                           value="${keyword}" />
-
-                    <!-- STATUS FILTER -->
-                    <select name="status" class="status-filter">
-                        <option value="">🔎 Tất cả trạng thái</option>
-                        <option value="ACTIVE" ${status == 'ACTIVE' ? 'selected' : ''}>🟢 Active</option>
-                        <option value="INACTIVE" ${status == 'INACTIVE' ? 'selected' : ''}>🔴 Inactive</option>
-                    </select>
-
-                    <button class="btn btn-view" type="submit">Tìm</button>
-                </form>
                 <!-- CREATE BUTTON -->
                 <div class="action-top">
                     <button class="btn btn-create" onclick="openModal()">➕ Tạo User</button>
@@ -251,10 +179,10 @@
                                                                                    onclick="return confirm('Bạn có chắc chắn muốn ban tài khoản này ?')">
                                                                                     Chặn
                                                                                 </a>-->
-                                        <!--                                        <button class="btn btn-delete"
-                                                                                        onclick="return confirm('Xác nhận khóa tài khoản?')">
-                                                                                    Chặn
-                                                                                </button>-->
+<!--                                        <button class="btn btn-delete"
+                                                onclick="return confirm('Xác nhận khóa tài khoản?')">
+                                            Chặn
+                                        </button>-->
                                         <button class="btn btn-delete" onclick="return askReason(${u.userId})">Chặn</button
                                     </td>
                                 </tr>
@@ -265,45 +193,23 @@
                     <div style="text-align:center; margin-top:20px;">
 
                         <c:if test="${currentPage > 1}">
-
-                            <c:url value="usermanager" var="prevUrl">
-                                <c:param name="page" value="${currentPage - 1}" />
-                                <c:param name="keyword" value="${keyword}" />
-                                <c:param name="status" value="${status}" />
-                            </c:url>
-
-                            <a class="btn btn-view" href="${prevUrl}">
+                            <a class="btn btn-view"
+                               href="usermanager?page=${currentPage - 1}">
                                 ← Trước đó
                             </a>
                         </c:if>
 
-
                         <c:forEach begin="1" end="${totalPages}" var="i">
-
-                            <c:url value="usermanager" var="pageUrl">
-                                <c:param name="page" value="${i}" />
-                                <c:param name="keyword" value="${keyword}" />
-                                <c:param name="status" value="${status}" />
-                            </c:url>
-
                             <a class="btn"
                                style="${i == currentPage ? 'background:#4ade80;color:black' : ''}"
-                               href="${pageUrl}">
+                               href="usermanager?page=${i}">
                                 ${i}
                             </a>
-
                         </c:forEach>
 
-
                         <c:if test="${currentPage < totalPages}">
-
-                            <c:url value="usermanager" var="nextUrl">
-                                <c:param name="page" value="${currentPage + 1}" />
-                                <c:param name="keyword" value="${keyword}" />
-                                <c:param name="status" value="${status}" />
-                            </c:url>
-
-                            <a class="btn btn-view" href="${nextUrl}">
+                            <a class="btn btn-view"
+                               href="usermanager?page=${currentPage + 1}">
                                 Tiếp →
                             </a>
                         </c:if>
@@ -364,10 +270,8 @@
                     </div>
                 </div>
                 <!-- BACK -->
-                <div style="margin-top:20px; text-align:center;">
-                    <a href="admin" class="btn btn-view">
-                        ← Quay lại Dashboard
-                    </a>
+                <div style="margin-top:20px;">
+                    <a href="AdminServlet">← Quay lại Dashboard</a>
                 </div>
 
             </div>
