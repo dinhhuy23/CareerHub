@@ -2,6 +2,7 @@
     <%@page import="java.util.List" %>
         <%@page import="model.Company" %>
             <%@page import="model.Recruiter" %>
+            <%@page import="model.Department" %>
 
                 <!DOCTYPE html>
                 <html lang="vi">
@@ -394,6 +395,48 @@
                             font-size: 0.9rem;
                         }
 
+                        
+                        /* Filters and Pagination */
+                        .filter-bar {
+                            display: flex;
+                            gap: 10px;
+                            margin-bottom: 15px;
+                            flex-wrap: wrap;
+                        }
+                        .filter-input {
+                            background: rgba(255, 255, 255, 0.05);
+                            border: 1px solid var(--glass-border);
+                            color: var(--text-primary);
+                            padding: 0 14px;
+                            height: 38px;
+                            border-radius: 8px;
+                            font-size: 0.85rem;
+                            outline: none;
+                        }
+                        .filter-input option {
+                            background: #1e293b;
+                            color: white;
+                        }
+                        .filter-input:focus { border-color: var(--primary); }
+                        .filter-btn {
+                            background: linear-gradient(135deg, var(--primary), var(--accent));
+                            color: white; border: none; padding: 0 20px; height: 38px; border-radius: 8px;
+                            font-weight: 600; cursor: pointer; font-size: 0.85rem;
+                            display: inline-flex; align-items: center; justify-content: center;
+                            transition: opacity 0.2s;
+                        }
+                        .filter-btn:hover { opacity: 0.9; }
+                        .pagination { display: flex; gap: 5px; margin-top: 15px; justify-content: space-between; align-items: center; }
+                        .pg-btn {
+                            display: inline-flex; align-items: center; justify-content: center;
+                            min-width: 32px; height: 32px; border-radius: 6px; font-size: 0.8rem;
+                            font-weight: 600; text-decoration: none;
+                            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border);
+                            color: var(--text-secondary);
+                        }
+                        .pg-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+                        .pg-btn:hover:not(.active) { background: rgba(255, 255, 255, 0.1); }
+
                         /* ── Action buttons ── */
                         .action-bar {
                             max-width: 1100px;
@@ -408,11 +451,31 @@
                 <body class="app-page">
                     <jsp:include page="/WEB-INF/views/header.jsp" />
 
-                    <% Company company=(Company) request.getAttribute("company"); List<Recruiter> recruiters = (List
-                        <Recruiter>) request.getAttribute("recruiters");
-                            String locationName = (String) request.getAttribute("locationName");
-                            boolean isActive = company != null && "ACTIVE".equalsIgnoreCase(company.getStatus());
-                            %>
+                    <% 
+    Company company = (Company) request.getAttribute("company"); 
+    List<Recruiter> recruiters = (List<Recruiter>) request.getAttribute("recruiters");
+    List<Department> departments = (List<Department>) request.getAttribute("departments");
+    String locationName = (String) request.getAttribute("locationName");
+    boolean isActive = company != null && "ACTIVE".equalsIgnoreCase(company.getStatus());
+    
+    // Recruiter filters
+    String recKeyword = request.getAttribute("recKeyword") != null ? (String)request.getAttribute("recKeyword") : "";
+    String recJobTitle = request.getAttribute("recJobTitle") != null ? (String)request.getAttribute("recJobTitle") : "All";
+    String recStatus = request.getAttribute("recStatus") != null ? (String)request.getAttribute("recStatus") : "All";
+    List<String> jobTitlesList = (List<String>) request.getAttribute("jobTitlesList");
+    Integer recPage = (Integer) request.getAttribute("recPage");
+    Integer recTotalPages = (Integer) request.getAttribute("recTotalPages");
+    Integer recTotalItems = (Integer) request.getAttribute("recTotalItems");
+    List<Integer> recPageNums = (List<Integer>) request.getAttribute("recPageNums");
+
+    // Department filters
+    String deptKeyword = request.getAttribute("deptKeyword") != null ? (String)request.getAttribute("deptKeyword") : "";
+    String deptStatus = request.getAttribute("deptStatus") != null ? (String)request.getAttribute("deptStatus") : "All";
+    Integer deptPage = (Integer) request.getAttribute("deptPage");
+    Integer deptTotalPages = (Integer) request.getAttribute("deptTotalPages");
+    Integer deptTotalItems = (Integer) request.getAttribute("deptTotalItems");
+    List<Integer> deptPageNums = (List<Integer>) request.getAttribute("deptPageNums");
+%>
 
                             <!-- Cover -->
                             <div class="admin-cover">
@@ -537,6 +600,92 @@
                                         </div>
                                     </div>
 
+                                    
+                                    <!-- Departments -->
+                                    <div class="d-card animate-fadeInUp" style="animation-delay:0.15s;">
+                                        <div class="d-heading">
+                                            <div class="d-heading-icon">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M3 21h18"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path>
+                                                </svg>
+                                            </div>
+                                            Danh sách phòng ban
+                                            <span style="margin-left:auto; background:var(--primary-100); color:var(--primary-light); font-size:0.75rem; font-weight:700; padding:2px 10px; border-radius:var(--radius-full);">
+                                                <%= deptTotalItems != null ? deptTotalItems : 0 %> phòng ban
+                                            </span>
+                                        </div>
+                                        
+                                        <form method="get" action="" class="filter-bar" style="margin-top:15px; margin-bottom:15px;">
+                                            <input type="hidden" name="id" value="<%= company != null ? company.getCompanyId() : "" %>" />
+                                            <input type="hidden" name="recPage" value="<%= recPage != null ? recPage : 1 %>" />
+                                            <input type="hidden" name="recKeyword" value="<%= recKeyword %>" />
+                                            <input type="hidden" name="recJobTitle" value="<%= recJobTitle %>" />
+                                            <input type="hidden" name="recStatus" value="<%= recStatus %>" />
+                                            
+                                            <input type="text" name="deptKeyword" class="filter-input" placeholder="Tìm tên phòng..." value="<%= deptKeyword %>" />
+                                            <select name="deptStatus" class="filter-input" onchange="this.form.submit()">
+                                                <option value="All" <%= "All".equals(deptStatus) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                                <option value="active" <%= "active".equals(deptStatus) ? "selected" : "" %>>Hoạt động</option>
+                                                <option value="inactive" <%= "inactive".equals(deptStatus) ? "selected" : "" %>>Đã khóa</option>
+                                            </select>
+                                            <button type="submit" class="filter-btn">Lọc</button>
+                                        </form>
+
+                                        <div class="table-wrap">
+                                            <% if (departments != null && !departments.isEmpty()) { %>
+                                                <table class="rec-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Tên phòng ban</th>
+                                                            <th>Quản lý</th>
+                                                            <th>Email liên hệ</th>
+                                                            <th>Trạng thái</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <% for (Department d : departments) { 
+                                                            boolean dActive = d.isIsActive(); 
+                                                        %>
+                                                            <tr>
+                                                                <td><span class="rec-name"><%= d.getDepartmentName() %></span></td>
+                                                                <td><%= d.getManagerName() != null ? d.getManagerName() : "—" %></td>
+                                                                <td><%= d.getContactEmail() != null ? d.getContactEmail() : "—" %></td>
+                                                                <td>
+                                                                    <span class="rec-status <%= dActive ? "active" : "inactive" %>">
+                                                                        <span class="status-dot"></span>
+                                                                        <%= dActive ? "Hoạt động" : "Đã khóa" %>
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        <% } %>
+                                                    </tbody>
+                                                </table>
+                                                
+                                                <% if (deptTotalPages != null && deptTotalPages > 1) { %>
+                                                <div class="pagination">
+                                                    <span style="font-size:0.8rem;color:var(--text-muted);">Tổng cộng: <%= deptTotalItems %></span>
+                                                    <div>
+                                                        <% for (int pn : deptPageNums) { 
+                                                            if (pn == -1) { %>
+                                                                <span style="color:var(--text-muted);padding:0 5px;">...</span>
+                                                            <% } else if (pn == deptPage) { %>
+                                                                <span class="pg-btn active"><%= pn %></span>
+                                                            <% } else { %>
+                                                                <a class="pg-btn" href="?id=<%= company.getCompanyId() %>&deptPage=<%= pn %>&deptKeyword=<%= deptKeyword %>&deptStatus=<%= deptStatus %>&recPage=<%= recPage %>&recKeyword=<%= recKeyword %>&recJobTitle=<%= recJobTitle %>&recStatus=<%= recStatus %>"><%= pn %></a>
+                                                            <% }
+                                                        } %>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+
+                                            <% } else { %>
+                                                <div class="empty-rec">
+                                                    Chưa có phòng ban nào.
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+
                                     <!-- Recruiters -->
                                     <div class="d-card animate-fadeInUp" style="animation-delay:0.2s;">
                                         <div class="d-heading">
@@ -552,9 +701,29 @@
                                             Đội ngũ tuyển dụng
                                             <span
                                                 style="margin-left:auto; background:var(--primary-100); color:var(--primary-light); font-size:0.75rem; font-weight:700; padding:2px 10px; border-radius:var(--radius-full);">
-                                                <%= recruiters !=null ? recruiters.size() : 0 %> người
+                                                <%= recTotalItems != null ? recTotalItems : 0 %> người
                                             </span>
                                         </div>
+                                        <form method="get" action="" class="filter-bar" style="margin-top:15px; margin-bottom:15px;">
+                                            <input type="hidden" name="id" value="<%= company != null ? company.getCompanyId() : "" %>" />
+                                            <input type="hidden" name="deptPage" value="<%= deptPage != null ? deptPage : 1 %>" />
+                                            <input type="hidden" name="deptKeyword" value="<%= deptKeyword %>" />
+                                            <input type="hidden" name="deptStatus" value="<%= deptStatus %>" />
+                                            
+                                            <input type="text" name="recKeyword" class="filter-input" placeholder="Tìm tên, email..." value="<%= recKeyword %>" />
+                                            <select name="recJobTitle" class="filter-input" onchange="this.form.submit()">
+                                                <option value="All" <%= "All".equals(recJobTitle) ? "selected" : "" %>>Tất cả chức danh</option>
+                                                <% if (jobTitlesList != null) { for(String jt : jobTitlesList) { %>
+                                                    <option value="<%= jt %>" <%= jt.equals(recJobTitle) ? "selected" : "" %>><%= jt %></option>
+                                                <% }} %>
+                                            </select>
+                                            <select name="recStatus" class="filter-input" onchange="this.form.submit()">
+                                                <option value="All" <%= "All".equals(recStatus) ? "selected" : "" %>>Tất cả trạng thái</option>
+                                                <option value="ACTIVE" <%= "ACTIVE".equals(recStatus) ? "selected" : "" %>>Hoạt động</option>
+                                                <option value="INACTIVE" <%= "INACTIVE".equals(recStatus) ? "selected" : "" %>>Đã khóa</option>
+                                            </select>
+                                            <button type="submit" class="filter-btn">Lọc</button>
+                                        </form>
                                         <div class="table-wrap">
                                             <% if (recruiters !=null && !recruiters.isEmpty()) { %>
                                                 <table class="rec-table">
@@ -605,6 +774,24 @@
                                                             <% } %>
                                                     </tbody>
                                                 </table>
+                                                
+                                                <% if (recTotalPages != null && recTotalPages > 1) { %>
+                                                <div class="pagination">
+                                                    <span style="font-size:0.8rem;color:var(--text-muted);">Tổng cộng: <%= recTotalItems %> người</span>
+                                                    <div>
+                                                        <% for (int pn : recPageNums) { 
+                                                            if (pn == -1) { %>
+                                                                <span style="color:var(--text-muted);padding:0 5px;">...</span>
+                                                            <% } else if (pn == recPage) { %>
+                                                                <span class="pg-btn active"><%= pn %></span>
+                                                            <% } else { %>
+                                                                <a class="pg-btn" href="?id=<%= company.getCompanyId() %>&recPage=<%= pn %>&recKeyword=<%= recKeyword %>&recJobTitle=<%= recJobTitle %>&recStatus=<%= recStatus %>&deptPage=<%= deptPage %>&deptKeyword=<%= deptKeyword %>&deptStatus=<%= deptStatus %>"><%= pn %></a>
+                                                            <% }
+                                                        } %>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+                                                
                                                 <% } else { %>
                                                     <div class="empty-rec">
                                                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none"

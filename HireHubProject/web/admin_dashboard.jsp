@@ -154,7 +154,7 @@
 
                     <div class="stat-card glass-card">
                         <h3>Quản lí Công ty</h3>
-                        <a href="company" class="btn btn-primary">Xem</a>
+                        <a href="/HireHubProject/admin/company" class="btn btn-primary">Xem</a>
                     </div>
                     <div class="stat-card glass-card">
                         <h3>Quản lí nhà tuyển dụng</h3>
