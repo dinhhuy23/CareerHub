@@ -1,5 +1,6 @@
 package dal;
 
+import java.math.BigDecimal;
 import model.Job;
 import java.sql.*;
 import java.util.ArrayList;
@@ -73,7 +74,31 @@ public class JobDAO {
 
         return job;
     }
+public List<Job> getLatestJobs(int limit) {
+    List<Job> list = new ArrayList<>();
+    String sql = "SELECT TOP (?) * FROM Jobs ORDER BY CreatedAt DESC";
 
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, limit);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+            Job j = new Job();
+            j.setJobId(rs.getLong("JobId"));
+            j.setTitle(rs.getString("Title"));
+            j.setSalaryMin((BigDecimal) rs.getObject("SalaryMin"));
+            j.setSalaryMax((BigDecimal) rs.getObject("SalaryMax"));
+            j.setStatus(rs.getString("Status"));
+            list.add(j);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
     public long insert(Job job) throws SQLException {
         // 1. Lấy RecruiterId và CompanyId của nhà tuyển dụng từ UserId
         long companyId = 1; // Default fallback

@@ -41,6 +41,50 @@ public class UserDAO {
         }
         return null;
     }
+        public List<User> getTopUsers(int limit) {
+    List<User> list = new ArrayList<>();
+
+    String sql = "SELECT TOP (?) * FROM Users ORDER BY CreatedAt DESC";
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, limit);
+
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            User u = new User();
+            u.setUserId(rs.getLong("UserId"));
+            u.setFullName(rs.getString("FullName"));
+            u.setEmail(rs.getString("Email"));
+            u.setPhoneNumber(rs.getString("PhoneNumber"));
+            u.setGender(rs.getString("Gender"));
+            u.setStatus(rs.getString("Status"));
+
+            list.add(u);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+    public void saveResetToken(String email, String token) {
+
+    String sql = "UPDATE Users SET ResetToken = ?, TokenExpiry = DATEADD(MINUTE, 15, GETDATE()) WHERE Email = ?";
+
+    try (Connection con = dbContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, token);
+        ps.setString(2, email);
+        ps.executeUpdate();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
     public User findByToken(String token) {
 
     String sql = "SELECT * FROM Users WHERE ResetToken = ? AND TokenExpiry > GETDATE()";
