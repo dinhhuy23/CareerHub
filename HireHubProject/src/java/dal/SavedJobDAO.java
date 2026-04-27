@@ -18,7 +18,7 @@ public class SavedJobDAO {
     private final DBContext dbContext = new DBContext();
 
     /**
-     * Tìm CandidateId thật từ UserId đăng nhập
+     * Tim CandidateId that from UserId.
      */
     private Long getCandidateIdByUserId(Connection conn, long userId) throws SQLException {
         String sql = "SELECT TOP 1 CandidateId FROM CandidateProfiles WHERE UserId = ?";
@@ -39,8 +39,8 @@ public class SavedJobDAO {
             return candidateId;
         }
 
-        String createProfileSql = "INSERT INTO CandidateProfiles (UserId, CreatedAt, UpdatedAt) " +
-                "VALUES (?, SYSUTCDATETIME(), SYSUTCDATETIME())";
+        String createProfileSql = "INSERT INTO CandidateProfiles (UserId, CreatedAt, UpdatedAt) "
+                + "VALUES (?, SYSUTCDATETIME(), SYSUTCDATETIME())";
 
         try (PreparedStatement psCreate = conn.prepareStatement(createProfileSql, Statement.RETURN_GENERATED_KEYS)) {
             psCreate.setLong(1, userId);
@@ -71,14 +71,13 @@ public class SavedJobDAO {
     }
 
     /**
-     * Kiểm tra job đã được lưu chưa
-     * Tham số truyền vào là UserId của user đang đăng nhập
+     * Check if a job is already saved.
      */
     public boolean isJobSaved(long candidateUserId, long jobId) {
         try (Connection conn = dbContext.getConnection()) {
             Long candidateId = getCandidateIdByUserId(conn, candidateUserId);
             if (candidateId == null) {
-                LOGGER.warning("Không tìm thấy CandidateProfile cho UserId = " + candidateUserId);
+                LOGGER.warning("CandidateProfile not found for UserId = " + candidateUserId);
                 return false;
             }
             return isJobSaved(conn, candidateId, jobId);
@@ -89,18 +88,17 @@ public class SavedJobDAO {
     }
 
     /**
-     * Lưu việc làm
-     * Tham số truyền vào là UserId của candidate
+     * Save job for candidate.
      */
     public boolean saveJob(long candidateUserId, long jobId) {
-        String sql = "INSERT INTO SavedJobs (CandidateId, JobId, SavedAt, IsFavorite) " +
-                "VALUES (?, ?, SYSUTCDATETIME(), 0)";
+        String sql = "INSERT INTO SavedJobs (CandidateId, JobId, SavedAt, IsFavorite) "
+                + "VALUES (?, ?, SYSUTCDATETIME(), 0)";
 
         try (Connection conn = dbContext.getConnection()) {
             Long candidateId = getOrCreateCandidateIdByUserId(conn, candidateUserId);
 
             if (candidateId == null) {
-                LOGGER.warning("Không thể tạo hoặc tìm thấy CandidateProfile cho UserId = " + candidateUserId);
+                LOGGER.warning("Cannot create/find CandidateProfile for UserId = " + candidateUserId);
                 return false;
             }
 
@@ -121,8 +119,7 @@ public class SavedJobDAO {
     }
 
     /**
-     * Bỏ lưu việc làm
-     * Tham số truyền vào là UserId của candidate
+     * Unsave job for candidate.
      */
     public boolean unsaveJob(long candidateUserId, long jobId) {
         String sql = "DELETE FROM SavedJobs WHERE CandidateId = ? AND JobId = ?";
@@ -130,7 +127,7 @@ public class SavedJobDAO {
         try (Connection conn = dbContext.getConnection()) {
             Long candidateId = getCandidateIdByUserId(conn, candidateUserId);
             if (candidateId == null) {
-                LOGGER.warning("Không tìm thấy CandidateProfile cho UserId = " + candidateUserId);
+                LOGGER.warning("CandidateProfile not found for UserId = " + candidateUserId);
                 return false;
             }
 
@@ -147,18 +144,18 @@ public class SavedJobDAO {
     }
 
     public boolean toggleFavorite(long candidateUserId, long jobId) {
-        String insertIfNotSavedSql = "INSERT INTO SavedJobs (CandidateId, JobId, SavedAt, IsFavorite) " +
-                "VALUES (?, ?, SYSUTCDATETIME(), 1)";
+        String insertIfNotSavedSql = "INSERT INTO SavedJobs (CandidateId, JobId, SavedAt, IsFavorite) "
+                + "VALUES (?, ?, SYSUTCDATETIME(), 1)";
 
-        String toggleSql = "UPDATE SavedJobs " +
-                "SET IsFavorite = CASE WHEN ISNULL(IsFavorite, 0) = 1 THEN 0 ELSE 1 END " +
-                "WHERE CandidateId = ? AND JobId = ?";
+        String toggleSql = "UPDATE SavedJobs "
+                + "SET IsFavorite = CASE WHEN ISNULL(IsFavorite, 0) = 1 THEN 0 ELSE 1 END "
+                + "WHERE CandidateId = ? AND JobId = ?";
 
         try (Connection conn = dbContext.getConnection()) {
             Long candidateId = getOrCreateCandidateIdByUserId(conn, candidateUserId);
 
             if (candidateId == null) {
-                LOGGER.warning("Không thể tạo hoặc tìm thấy CandidateProfile cho UserId = " + candidateUserId);
+                LOGGER.warning("Cannot create/find CandidateProfile for UserId = " + candidateUserId);
                 return false;
             }
 
@@ -183,28 +180,28 @@ public class SavedJobDAO {
     }
 
     /**
-     * Lấy danh sách việc làm đã lưu theo UserId của candidate
+     * Get saved jobs by candidate user id.
      */
     public List<SavedJob> getSavedJobsByCandidateId(long candidateUserId) {
         List<SavedJob> list = new ArrayList<>();
 
         String sql = "SELECT sj.SavedJobId, sj.CandidateId, sj.JobId, sj.SavedAt, ISNULL(sj.IsFavorite, 0) AS IsFavorite, "
-                + "       j.Title, j.SalaryMin, j.SalaryMax, j.CurrencyCode, j.Status, " 
-                + "       u.FullName AS EmployerName, c.CompanyName, l.LocationName, et.TypeName " 
-                + "FROM SavedJobs sj " 
-                + "INNER JOIN Jobs j ON sj.JobId = j.JobId " 
-                + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId " 
-                + "LEFT JOIN Users u ON rp.UserId = u.UserId " 
-                + "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " 
-                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId " 
-                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId " 
-                + "WHERE sj.CandidateId = ? " 
+                + "       j.Title, j.SalaryMin, j.SalaryMax, j.CurrencyCode, j.Status, "
+                + "       u.FullName AS EmployerName, c.CompanyName, l.LocationName, et.TypeName "
+                + "FROM SavedJobs sj "
+                + "INNER JOIN Jobs j ON sj.JobId = j.JobId "
+                + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
+                + "LEFT JOIN Users u ON rp.UserId = u.UserId "
+                + "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId "
+                + "LEFT JOIN Locations l ON j.LocationId = l.LocationId "
+                + "LEFT JOIN EmploymentTypes et ON j.EmploymentTypeId = et.EmploymentTypeId "
+                + "WHERE sj.CandidateId = ? "
                 + "ORDER BY ISNULL(sj.IsFavorite, 0) DESC, sj.SavedAt DESC";
 
         try (Connection conn = dbContext.getConnection()) {
             Long candidateId = getCandidateIdByUserId(conn, candidateUserId);
             if (candidateId == null) {
-                LOGGER.warning("Không tìm thấy CandidateProfile cho UserId = " + candidateUserId);
+                LOGGER.warning("CandidateProfile not found for UserId = " + candidateUserId);
                 return list;
             }
 
@@ -244,4 +241,3 @@ public class SavedJobDAO {
         return list;
     }
 }
-

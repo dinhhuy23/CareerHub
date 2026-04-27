@@ -63,17 +63,76 @@ public class NotificationServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        System.out.println("SESSION USER ID = " + session.getAttribute("userId"));
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
+
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("userId") == null) {
             response.sendRedirect("login");
             return;
         }
+
+        long userId = (Long) session.getAttribute("userId");
+        String role = (String) session.getAttribute("userRole"); // 👈 QUAN TRỌNG
+        String view = request.getParameter("view");
+
+// =============================
+// 👉 ADMIN
+// =============================
+        if ("ADMIN".equals(role)) {
+
+            // 👉 nếu chưa có view thì auto chuyển sang sent
+            if (view == null) {
+                response.sendRedirect("notification?view=sent");
+                return;
+            }
+
+            // 👉 ADMIN xem list đã gửi
+            if ("sent".equals(view)) {
+
+                int page = 1;
+                int pageSize = 5;
+
+                String pageParam = request.getParameter("page");
+                if (pageParam != null) {
+                    page = Integer.parseInt(pageParam);
+                }
+
+                int offset = (page - 1) * pageSize;
+
+                String keyword = request.getParameter("keyword");
+
+                List<Notification> list;
+                int total;
+
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    list = dao.searchNotifications(keyword, offset, pageSize);
+                    total = dao.getTotalSearchNotifications(keyword);
+                    request.setAttribute("keyword", keyword);
+                } else {
+                    list = dao.getNotificationsPaging(offset, pageSize);
+                    total = dao.getTotalNotifications();
+                }
+
+                int totalPages = (int) Math.ceil((double) total / pageSize);
+
+                request.setAttribute("notifications", list);
+                request.setAttribute("currentPage", page);
+                request.setAttribute("totalPages", totalPages);
+
+                request.getRequestDispatcher("notifications_sent.jsp")
+                        .forward(request, response);
+                return;
+            }
+        }
+
+// =============================
+// 👉 USER (mặc định)
+// =============================
         List<Notification> list = dao.getByUser(userId);
 
         request.setAttribute("notifications", list);
-        request.getRequestDispatcher("/WEB-INF/views/notifications.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/notifications.jsp")
+                .forward(request, response);
     }
 
     /**
@@ -119,9 +178,9 @@ public class NotificationServlet extends HttpServlet {
             }
 
             if (ok) {
-                response.sendRedirect("AdminServlet?success=1");
+                response.sendRedirect("admin?success=1");
             } else {
-                response.sendRedirect("AdminServlet?error=1");
+                response.sendRedirect("admin?error=1");
             }
         }
 

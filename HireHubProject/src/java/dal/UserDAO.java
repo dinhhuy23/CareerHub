@@ -41,6 +41,262 @@ public class UserDAO {
         }
         return null;
     }
+    public User findByToken(String token) {
+
+    String sql = "SELECT * FROM Users WHERE ResetToken = ? AND TokenExpiry > GETDATE()";
+
+    try (Connection con = dbContext.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+
+        ps.setString(1, token);
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            User u = new User();
+            u.setUserId(rs.getLong("UserId"));
+            return u;
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return null;
+}
+ public int getTotalUsersAdvanced(String keyword, String status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Users WHERE 1=1 ");
+
+        if (keyword != null && !keyword.isEmpty()) {
+            sql.append(" AND FullName LIKE ? ");
+        }
+
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND Status = ? ");
+        }
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (keyword != null && !keyword.isEmpty()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
+
+            if (status != null && !status.isEmpty()) {
+                ps.setString(index++, status);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public List<User> searchUsersAdvanced(String keyword, String status, int offset, int limit) {
+        List<User> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("SELECT * FROM Users WHERE 1=1 ");
+
+        if (keyword != null && !keyword.isEmpty()) {
+            sql.append(" AND FullName LIKE ? ");
+        }
+
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND Status = ? ");
+        }
+
+        sql.append(" ORDER BY UserId OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (keyword != null && !keyword.isEmpty()) {
+                ps.setString(index++, "%" + keyword + "%");
+            }
+
+            if (status != null && !status.isEmpty()) {
+                ps.setString(index++, status);
+            }
+
+            ps.setInt(index++, offset);
+            ps.setInt(index++, limit);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToUser(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+    public List<User> searchUsers(String keyword, int offset, int limit) {
+        List<User> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM Users "
+                + "WHERE FullName LIKE ? "
+                + "ORDER BY UserId "
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = dbContext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, "%" + keyword + "%");
+            ps.setInt(2, offset);
+            ps.setInt(3, limit);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToUser(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public void scheduleDeactivate(long userId) {
+
+        String sql = "UPDATE Users SET DeactivateAt = DATEADD(day, 1, GETDATE()) WHERE UserId = ?";
+
+        try (Connection con = dbContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setLong(1, userId);
+            ps.executeUpdate();
+
+            // 🔔 gửi thông báo
+            sendToUser(userId,
+                    "⚠ Tài khoản sắp bị khóa",
+                    "Tài khoản của bạn sẽ bị khóa sau 24h. Nếu có thắc mắc hãy liên hệ admin."
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendToUser(long userId, String title, String content) {
+
+        String insertNoti = "INSERT INTO Notifications (Title, Content, NotificationType, CreatedAt) VALUES (?, ?, ?, GETDATE())";
+        String insertRec = "INSERT INTO NotificationRecipients (NotificationId, UserId, IsRead, DeliveryStatus, CreatedAt) VALUES (?, ?, 0, 'SENT', GETDATE())";
+
+        try (Connection con = dbContext.getConnection()) {
+
+            // tạo notification
+            PreparedStatement ps1 = con.prepareStatement(insertNoti, Statement.RETURN_GENERATED_KEYS);
+            ps1.setString(1, title);
+            ps1.setString(2, content);
+            ps1.setString(3, "SYSTEM");
+            ps1.executeUpdate();
+
+            ResultSet rs = ps1.getGeneratedKeys();
+            rs.next();
+            long notiId = rs.getLong(1);
+
+            // insert recipient
+            PreparedStatement ps2 = con.prepareStatement(insertRec);
+            ps2.setLong(1, notiId);
+            ps2.setLong(2, userId);
+            ps2.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+//    public void deactivateUser(long userId) {
+//
+//    String getEmail = "SELECT Email FROM Users WHERE UserId = ?";
+//    String update = "UPDATE Users SET Status = 'INACTIVE' WHERE UserId = ?";
+//
+//    try (Connection con = dbContext.getConnection()) {
+//
+//        // 1. lấy email
+//        PreparedStatement ps1 = con.prepareStatement(getEmail);
+//        ps1.setLong(1, userId);
+//        ResultSet rs = ps1.executeQuery();
+//
+//        String email = null;
+//        if (rs.next()) {
+//            email = rs.getString("Email");
+//        }
+//
+//        // 2. khóa tài khoản
+//        PreparedStatement ps2 = con.prepareStatement(update);
+//        ps2.setLong(1, userId);
+//        ps2.executeUpdate();
+//
+//        // 3. gửi email
+//        if (email != null) {
+//            EmailService.send(email,
+//                    "⚠ Tài khoản đã bị khóa",
+//                    "Tài khoản của bạn đã bị khóa bởi admin. Nếu có thắc mắc, vui lòng liên hệ hỗ trợ.");
+//        }
+//
+//    } catch (Exception e) {
+//        e.printStackTrace();
+//    }
+//}
+//public boolean deactivateUser(long userId) {
+//
+//    String sql = "UPDATE Users SET Status = 'INACTIVE' WHERE UserId = ?";
+//
+//    try (Connection con = dbContext.getConnection();
+//         PreparedStatement ps = con.prepareStatement(sql)) {
+//
+//        ps.setLong(1, userId);
+//        return ps.executeUpdate() > 0;
+//
+//    } catch (Exception e) {
+//        e.printStackTrace();
+//    }
+//
+//    return false;
+//}
+
+    public List<User> getAllUsers() {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT * FROM Users";
+
+        try (Connection con = dbContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                User u = new User();
+
+                u.setUserId(rs.getLong("UserId"));
+                u.setEmail(rs.getString("Email"));
+                u.setPasswordHash(rs.getString("PasswordHash"));
+                u.setFullName(rs.getString("FullName"));
+                u.setPhoneNumber(rs.getString("PhoneNumber"));
+                u.setAvatarUrl(rs.getString("AvatarUrl"));
+                u.setGender(rs.getString("Gender"));
+                u.setDateOfBirth(rs.getDate("DateOfBirth"));
+                u.setStatus(rs.getString("Status"));
+                u.setEmailVerified(rs.getBoolean("EmailVerified"));
+                u.setLastLoginAt(rs.getTimestamp("LastLoginAt"));
+                u.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                u.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+//                u.setRoleCode(rs.getString("roleCode"));
+//                u.setRoleName(rs.getString("roleName"));
+
+                list.add(u);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 
     public List<User> searchUsers(String keyword, int offset, int limit) {
         List<User> list = new ArrayList<>();

@@ -262,12 +262,15 @@
 
                                                         <div class="job-meta">
                                                             <span class="salary-badge">
-                                                                <fmt:formatNumber value="${sj.job.salaryMin}"
-                                                                    maxFractionDigits="0" />
-                                                                -
-                                                                <fmt:formatNumber value="${sj.job.salaryMax}"
-                                                                    maxFractionDigits="0" />
-                                                                ${sj.job.currencyCode}
+                                                                <c:choose>
+                                                                    <c:when test="${sj.job.salaryMin != null and sj.job.salaryMax != null}">
+                                                                        <fmt:formatNumber value="${sj.job.salaryMin}" maxFractionDigits="0" />
+                                                                        -
+                                                                        <fmt:formatNumber value="${sj.job.salaryMax}" maxFractionDigits="0" />
+                                                                        ${sj.job.currencyCode}
+                                                                    </c:when>
+                                                                    <c:otherwise>Thỏa thuận</c:otherwise>
+                                                                </c:choose>
                                                             </span>
                                                             <span>${sj.job.locationName}</span>
                                                         </div>
@@ -320,12 +323,15 @@
 
                                                         <div class="job-meta">
                                                             <span class="salary-badge">
-                                                                <fmt:formatNumber value="${sj.job.salaryMin}"
-                                                                    maxFractionDigits="0" />
-                                                                -
-                                                                <fmt:formatNumber value="${sj.job.salaryMax}"
-                                                                    maxFractionDigits="0" />
-                                                                ${sj.job.currencyCode}
+                                                                <c:choose>
+                                                                    <c:when test="${sj.job.salaryMin != null and sj.job.salaryMax != null}">
+                                                                        <fmt:formatNumber value="${sj.job.salaryMin}" maxFractionDigits="0" />
+                                                                        -
+                                                                        <fmt:formatNumber value="${sj.job.salaryMax}" maxFractionDigits="0" />
+                                                                        ${sj.job.currencyCode}
+                                                                    </c:when>
+                                                                    <c:otherwise>Thỏa thuận</c:otherwise>
+                                                                </c:choose>
                                                             </span>
                                                             <span>${sj.job.locationName}</span>
                                                         </div>

@@ -1,10 +1,10 @@
-package util;
+package utils;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.util.Map;
+import jakarta.servlet.http.Part;
 
 public class CloudinaryUtil {
 

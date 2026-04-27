@@ -305,7 +305,7 @@ public class JobDAO {
 
         try (Connection conn = dbContext.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            
+
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
@@ -334,8 +334,7 @@ public class JobDAO {
                         + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
                         + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
                         + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
-                        + "WHERE j.Status = 'PUBLISHED' AND c.Status = 'ACTIVE' ");
-
+                        + "WHERE j.Status = 'PUBLISHED' ");
 
         List<Object> params = new ArrayList<>();
 
@@ -396,9 +395,7 @@ public class JobDAO {
 
                 + "FROM Jobs j "
                 + "LEFT JOIN Users u ON j.PostedByRecruiterId = u.UserId "
-                + "LEFT JOIN RecruiterProfiles rp ON j.PostedByRecruiterId = rp.RecruiterId "
-                + "LEFT JOIN Companies c ON rp.CompanyId = c.CompanyId "
-                + "WHERE j.Status = 'PUBLISHED' AND c.Status = 'ACTIVE' "
+                + "WHERE j.Status = 'PUBLISHED' "
         );
 
         List<Object> params = new ArrayList<>();
@@ -621,14 +618,118 @@ public class JobDAO {
 
         return 0;
     }
+public List<Job> searchJobs(String keyword, String status, String sortSalary, int offset, int pageSize) {
 
+    List<Job> list = new ArrayList<>();
+
+    // 👉 clean input
+    if (keyword != null && keyword.trim().isEmpty()) {
+        keyword = null;
+    }
+
+    if (status != null && status.trim().isEmpty()) {
+        status = null;
+    }
+
+    // 👉 xử lý sort (an toàn hơn CASE WHEN)
+    String orderBy = "ORDER BY JobId DESC"; // default
+    if ("asc".equalsIgnoreCase(sortSalary)) {
+        orderBy = "ORDER BY SalaryMax ASC";
+    } else if ("desc".equalsIgnoreCase(sortSalary)) {
+        orderBy = "ORDER BY SalaryMax DESC";
+    }
+
+    String sql = """
+        SELECT * FROM Jobs
+        WHERE 1=1
+        AND (? IS NULL OR Title LIKE ?)
+        AND (? IS NULL OR Status = ?)
+    """ + orderBy + """
+        OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+    """;
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, keyword);
+        ps.setString(2, keyword == null ? null : "%" + keyword + "%");
+
+        ps.setString(3, status);
+        ps.setString(4, status);
+
+        ps.setInt(5, offset);
+        ps.setInt(6, pageSize);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+
+                Job job = new Job();
+                job.setJobId(rs.getLong("JobId"));
+                job.setTitle(rs.getString("Title"));
+                job.setSalaryMin(rs.getBigDecimal("SalaryMin"));
+                job.setSalaryMax(rs.getBigDecimal("SalaryMax"));
+                job.setStatus(rs.getString("Status"));
+                job.setResponsibilities(rs.getString("Responsibilities"));
+                job.setRequirements(rs.getString("Requirements"));
+                job.setPostedByRecruiterId(rs.getLong("PostedByRecruiterId"));
+
+                list.add(job);
+            }
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return list;
+}
+
+public int countSearchJobs(String keyword, String status) {
+
+    String sql = """
+        SELECT COUNT(*) FROM Jobs
+        WHERE 1=1
+        AND (? IS NULL OR Title LIKE ?)
+        AND (? IS NULL OR Status = ?)
+    """;
+
+    // 👉 clean dữ liệu
+    if (keyword != null && keyword.trim().isEmpty()) {
+        keyword = null;
+    }
+
+    if (status != null && status.trim().isEmpty()) {
+        status = null;
+    }
+
+    try (Connection conn = dbContext.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, keyword);
+        ps.setString(2, keyword == null ? null : "%" + keyword + "%");
+
+        ps.setString(3, status);
+        ps.setString(4, status);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return 0;
+}
     public List<Job> getRecommendedJobs(String targetRole, int limit) {
         List<Job> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT TOP (?) j.*, c.CompanyName " +
             "FROM Jobs j " +
             "LEFT JOIN Companies c ON j.CompanyId = c.CompanyId " +
-            "WHERE j.Status = 'PUBLISHED' AND c.Status = 'ACTIVE' "
+            "WHERE j.Status = 'PUBLISHED' "
         );
         
         String[] words = null;
