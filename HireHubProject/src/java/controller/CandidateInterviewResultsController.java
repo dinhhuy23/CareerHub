@@ -33,12 +33,40 @@ public class CandidateInterviewResultsController extends HttpServlet {
         // Lấy tất cả đơn ứng tuyển của ứng viên này
         List<Application> allApps = appDAO.findByCandidateId(userId);
 
+        // Thống kê sơ bộ
+        long countPass = allApps.stream().filter(a -> "OFFERED".equals(a.getStatus())).count();
+        long countFail = allApps.stream().filter(a -> "REJECTED".equals(a.getStatus())).count();
+        long countInterview = allApps.stream().filter(a -> "INTERVIEW_ROUND_2".equals(a.getStatus())).count();
+        
+        request.setAttribute("countPass", countPass);
+        request.setAttribute("countFail", countFail);
+        request.setAttribute("countInterview", countInterview);
+        request.setAttribute("countTotal", countPass + countFail + countInterview);
+
         // Lọc ra những đơn ĐÃ CÓ KẾT QUẢ hoặc ĐANG PHỎNG VẤN VÒNG 2
         List<Application> allResults = allApps.stream()
                 .filter(app -> "OFFERED".equals(app.getStatus()) 
                             || "REJECTED".equals(app.getStatus())
                             || "INTERVIEW_ROUND_2".equals(app.getStatus()))
                 .collect(Collectors.toList());
+
+        // --- Xử lý Tìm kiếm và Lọc ---
+        String search = request.getParameter("search");
+        String statusFilter = request.getParameter("status");
+
+        if (search != null && !search.trim().isEmpty()) {
+            String s = search.toLowerCase().trim();
+            allResults = allResults.stream()
+                    .filter(a -> (a.getJobTitle() != null && a.getJobTitle().toLowerCase().contains(s))
+                              || (a.getCompanyName() != null && a.getCompanyName().toLowerCase().contains(s)))
+                    .collect(Collectors.toList());
+        }
+
+        if (statusFilter != null && !statusFilter.trim().isEmpty() && !"ALL".equals(statusFilter)) {
+            allResults = allResults.stream()
+                    .filter(a -> statusFilter.equals(a.getStatus()))
+                    .collect(Collectors.toList());
+        }
 
         // --- Xử lý phân trang In-Memory ---
         int pageSize = 6;
@@ -75,6 +103,16 @@ public class CandidateInterviewResultsController extends HttpServlet {
             }
         }
         request.setAttribute("interviews", interviews);
+
+        // --- Gợi ý việc làm tương tự (Recommended Jobs) ---
+        List<model.Job> recommendedJobs = new ArrayList<>();
+        dal.JobDAO jobDAO = new dal.JobDAO();
+        String latestJobTitle = "";
+        if (!allApps.isEmpty()) {
+            latestJobTitle = allApps.get(0).getJobTitle();
+        }
+        recommendedJobs = jobDAO.getRecommendedJobs(latestJobTitle, 4);
+        request.setAttribute("recommendedJobs", recommendedJobs);
 
         request.getRequestDispatcher("/WEB-INF/views/interview_results.jsp").forward(request, response);
     }

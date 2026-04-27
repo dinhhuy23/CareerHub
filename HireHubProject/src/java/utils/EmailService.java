@@ -15,8 +15,8 @@ public class EmailService {
 
     public static void send(String to, String subject, String content) {
 
-        final String from = "vuthanhtrung1120@gmail.com";
-        final String password = "adnc cmwu mclz ykpt"; // 🔥 dùng App Password
+        final String from = "hienmtthe180121@fpt.edu.vn";
+        final String password = "tkbu bryg fqma rris"; // 
 
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");

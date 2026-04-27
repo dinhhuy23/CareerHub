@@ -85,16 +85,33 @@ public class AdminServlet extends HttpServlet {
         JobDAO jobDAO = new JobDAO();
         ReportDAO reportDAO = new ReportDAO();
 
-        int totalUsers = userDAO.getAllUsers().size();
-        int totalJobs = jobDAO.getAllJobs().size();
-        int totalReports = reportDAO.getAll().size();
-
+        List<model.User> allUsers = userDAO.getAllUsers();
+        List<model.Job> allJobs = jobDAO.getAllJobs();
         List<Report> reports = reportDAO.getAll();
+
+        int totalUsers = allUsers.size();
+        int totalJobs = allJobs.size();
+        int totalReports = reports.size();
+        
+        // --- Bổ sung thống kê chi tiết ---
+        int candidateCount = 0;
+        int recruiterCount = 0;
+        for(model.User u : allUsers) {
+            if("CANDIDATE".equals(u.getRole())) candidateCount++;
+            else if("RECRUITER".equals(u.getRole())) recruiterCount++;
+        }
+        
+        List<model.Job> recentJobs = allJobs.size() > 5 ? allJobs.subList(0, 5) : allJobs;
+        List<model.User> recentUsers = allUsers.size() > 5 ? allUsers.subList(allUsers.size() - 5, allUsers.size()) : allUsers;
 
         // 👉 set attribute
         request.setAttribute("totalUsers", totalUsers);
         request.setAttribute("totalJobs", totalJobs);
         request.setAttribute("totalReports", totalReports);
+        request.setAttribute("candidateCount", candidateCount);
+        request.setAttribute("recruiterCount", recruiterCount);
+        request.setAttribute("recentJobs", recentJobs);
+        request.setAttribute("recentUsers", recentUsers);
         request.setAttribute("reports", reports);
 
         // 👉 forward

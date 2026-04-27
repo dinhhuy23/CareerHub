@@ -64,6 +64,16 @@
         .contact-email-hint strong {
             color: var(--primary);
         }
+
+        /* Error Message Styles */
+        .error-msg {
+            display: block;
+            color: #EF4444;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 500;
+            min-height: 18px; /* Giữ chỗ để layout không bị nhảy */
+        }
     </style>
 </head>
 <body class="app-page">
@@ -130,12 +140,14 @@
                             <input type="text" id="fullName" name="fullName" class="form-input"
                                    value="${user.fullName}" required maxlength="150"
                                    placeholder="Nguyễn Văn A">
+                            <span id="error-fullName" class="error-msg"></span>
                         </div>
 
                         <div class="form-group">
                             <label for="phoneNumber" class="form-label">Số điện thoại</label>
                             <input type="tel" id="phoneNumber" name="phoneNumber" class="form-input"
                                    value="${user.phoneNumber}" placeholder="0901234567">
+                            <span id="error-phoneNumber" class="error-msg"></span>
                         </div>
                     </div>
 
@@ -148,12 +160,14 @@
                                 <option value="Nu"   ${user.gender == 'Nu'   ? 'selected' : ''}>Nữ</option>
                                 <option value="Khac" ${user.gender == 'Khac' ? 'selected' : ''}>Khác</option>
                             </select>
+                            <span class="error-msg"></span> <%-- Giữ chỗ cho layout cân đối --%>
                         </div>
 
                         <div class="form-group">
                             <label for="dateOfBirth" class="form-label">Ngày sinh</label>
                             <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-input"
                                    value="<fmt:formatDate value='${user.dateOfBirth}' pattern='yyyy-MM-dd'/>">
+                            <span id="error-dateOfBirth" class="error-msg"></span>
                         </div>
                     </div>
 
@@ -174,6 +188,7 @@
                         <input type="email" id="contactEmail" name="contactEmail" class="form-input"
                                value="${user.contactEmail}"
                                placeholder="example@gmail.com">
+                        <span id="error-contactEmail" class="error-msg"></span>
                         <p class="contact-email-hint">
                             Đây là Gmail dùng để nhà tuyển dụng hoặc hệ thống liên hệ với bạn. 
                             Phải là địa chỉ <strong>@gmail.com</strong> và mỗi tài khoản chỉ được liên kết 
@@ -193,15 +208,65 @@
 
     <script src="${pageContext.request.contextPath}/js/main.js"></script>
     <script>
-        // Client-side validation nhanh
         document.getElementById('editProfileForm').addEventListener('submit', function(e) {
-            const contactEmail = document.getElementById('contactEmail').value.trim();
-            if (contactEmail) {
-                if (!contactEmail.endsWith('@gmail.com')) {
-                    e.preventDefault();
-                    alert('⚠ Gmail liên hệ phải là địa chỉ @gmail.com');
-                    document.getElementById('contactEmail').focus();
+            let hasError = false;
+            const fullName = document.getElementById('fullName');
+            const phoneNumber = document.getElementById('phoneNumber');
+            const dateOfBirth = document.getElementById('dateOfBirth');
+            const contactEmail = document.getElementById('contactEmail');
+
+            // Reset errors
+            document.querySelectorAll('.error-msg').forEach(el => el.innerText = '');
+            [fullName, phoneNumber, dateOfBirth, contactEmail].forEach(el => {
+                el.style.borderColor = '';
+            });
+
+            const showError = (input, msgId, message) => {
+                input.style.borderColor = '#EF4444';
+                document.getElementById(msgId).innerText = message;
+                if (!hasError) input.focus();
+                hasError = true;
+            };
+
+            // 1. Validate Full Name
+            if (fullName.value.trim().length < 2) {
+                showError(fullName, 'error-fullName', '⚠ Họ và tên phải có ít nhất 2 ký tự.');
+            }
+
+            // 2. Validate Phone (Vietnamese format)
+            if (phoneNumber.value.trim() !== '') {
+                const phoneRegex = /^0[35789]\d{8}$/;
+                if (!phoneRegex.test(phoneNumber.value.trim())) {
+                    showError(phoneNumber, 'error-phoneNumber', '⚠ Số điện thoại không hợp lệ (phải có 10 chữ số).');
                 }
+            }
+
+            // 3. Validate Age (Min 16)
+            if (dateOfBirth.value !== '') {
+                const dob = new Date(dateOfBirth.value);
+                const today = new Date();
+                let age = today.getFullYear() - dob.getFullYear();
+                const m = today.getMonth() - dob.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                    age--;
+                }
+                
+                if (dob > today) {
+                    showError(dateOfBirth, 'error-dateOfBirth', '⚠ Ngày sinh không thể ở tương lai.');
+                } else if (age < 16) {
+                    showError(dateOfBirth, 'error-dateOfBirth', '⚠ Bạn phải từ 16 tuổi trở lên.');
+                }
+            }
+
+            // 4. Validate Contact Email
+            if (contactEmail.value.trim() !== '') {
+                if (!contactEmail.value.trim().toLowerCase().endsWith('@gmail.com')) {
+                    showError(contactEmail, 'error-contactEmail', '⚠ Phải dùng địa chỉ @gmail.com');
+                }
+            }
+
+            if (hasError) {
+                e.preventDefault();
             }
         });
     </script>
